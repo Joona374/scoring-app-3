@@ -29,6 +29,10 @@ app.add_middleware(
 def read_root():
     return {"message": "Scoring App 3.0 API is live!"}
 
+@app.get("/test")
+def test_message():
+    return {"message": "This is a test message from the Scoring App 3.0 API!"}
+
 
 #TODO Test if this works before merging to dev!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @app.post("/register")
