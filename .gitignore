@@ -1,0 +1,10 @@
+# Basic python project .gitignore file
+# Python bytecode
+__pycache__/
+
+# VEnv
+venv/
+.env*
+
+
+*.docx
