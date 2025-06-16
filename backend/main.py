@@ -12,14 +12,14 @@ load_dotenv()
 
 app = FastAPI()
 
-FRONTEND_URL = os.getenv("FRONTEND_URL")
-if FRONTEND_URL is None:
-    raise ValueError("FRONTEND_URL environment variable is not set.")
+# FRONTEND_URL = os.getenv("FRONTEND_URL")
+# if FRONTEND_URL is None:
+#     raise ValueError("FRONTEND_URL environment variable is not set.")
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=FRONTEND_URL,  # List of origins that are allowed to make requests
+    allow_origin_regex=r"https://scoring-app-3\.vercel\.app|http://localhost(:\d+)?",
     allow_credentials=True, # Allows cookies to be included in requests
     allow_methods=["*"],    # Allows all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],    # Allows all headers
@@ -27,7 +27,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "Scoring App 3.0 API Main Version is live!"}
+    return {"message": "Scoring App 3.0 API is live!"}
 
 
 #TODO Test if this works before merging to dev!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
