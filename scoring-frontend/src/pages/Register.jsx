@@ -1,5 +1,5 @@
 import {useState} from "react"
-import "./register.css"
+import "./Register.css"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function Register() {
