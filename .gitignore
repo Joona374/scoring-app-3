@@ -70,3 +70,5 @@ htmlcov/
 .cache/
 
 *.stackdump
+
+README.md
