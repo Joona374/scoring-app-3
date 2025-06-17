@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import "./Home.css"
 import { useContext } from "react";
-import AuthContext from "../auth/AuthContext";
+import AuthContext from "../../auth/AuthContext";
 
 export default function Home() {
   const { isLoggedIn, logout } = useContext(AuthContext);

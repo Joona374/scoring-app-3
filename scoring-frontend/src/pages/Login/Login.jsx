@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthContext from "../auth/AuthContext";
+import AuthContext from "../../auth/AuthContext";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
