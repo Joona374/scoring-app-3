@@ -23,7 +23,7 @@ export default function Register() {
         }
 
         else if (username.includes("@")) {
-          setErrorMsg("Username cannot contain '@'")
+          setErrorMsg("Username cannot contain '@' ")
         }
         
         try {

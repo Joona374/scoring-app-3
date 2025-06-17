@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from db.db_manager import get_db_session
 from db.models import User
-from db.pydantic_schemas import UserCreate, UserLogin
-from utils import hash_password, verify_password
+from db.pydantic_schemas import UserCreate, UserLogin, LoginResponse
+from utils import hash_password, verify_password, create_jwt
 from dotenv import load_dotenv
 import os
 
@@ -33,7 +33,7 @@ def read_root():
 def test_message():
     return {"message": "This is a test message from the Scoring App 3.0 API!"}
 
-@app.post("/login")
+@app.post("/login", response_model=LoginResponse)
 def login(login_data: UserLogin, db_session: Session = Depends(get_db_session)):
     print("Received login data:", login_data)
     found_user = db_session.query(User).filter((User.username == login_data.user) | (User.email == login_data.user)).first()
@@ -47,7 +47,15 @@ def login(login_data: UserLogin, db_session: Session = Depends(get_db_session)):
         print(f"User: {login_data.user} passwords didnt match")
         raise HTTPException(status_code=400, detail="Either username or password is incorrect") # We dont want to tell which one for safety, right?
 
-    # TODO FINNIS THIS WITH RETURNING SOMETHING TO USER
+    user_data = {"sub": str(found_user.id)}
+    access_token = create_jwt(user_data, 60)
+    return LoginResponse(
+        username=found_user.username,
+        is_admin=found_user.is_admin,
+        jwt_token=access_token
+    )
+
+
 
 @app.post("/register")
 def register(user_data: UserCreate, db_session: Session = Depends(get_db_session)):

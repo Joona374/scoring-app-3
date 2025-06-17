@@ -22,3 +22,9 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     user: str
     password: str
+
+class LoginResponse(BaseModel):
+    username: str
+    is_admin: bool
+    jwt_token: str
+
