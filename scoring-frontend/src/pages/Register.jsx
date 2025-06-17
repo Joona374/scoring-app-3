@@ -21,6 +21,10 @@ export default function Register() {
           setErrorMsg("Password must be at least 8 characters");
           return
         }
+
+        else if (username.includes("@")) {
+          setErrorMsg("Username cannot contain '@'")
+        }
         
         try {
           const res = await fetch(`${BACKEND_URL}/register`, {

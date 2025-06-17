@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from db.db_manager import get_db_session
 from db.models import User
-from db.pydantic_schemas import UserCreate
-from utils import hash_password
+from db.pydantic_schemas import UserCreate, UserLogin
+from utils import hash_password, verify_password
 from dotenv import load_dotenv
 import os
 
@@ -33,8 +33,22 @@ def read_root():
 def test_message():
     return {"message": "This is a test message from the Scoring App 3.0 API!"}
 
+@app.post("/login")
+def login(login_data: UserLogin, db_session: Session = Depends(get_db_session)):
+    print("Received login data:", login_data)
+    found_user = db_session.query(User).filter((User.username == login_data.user) | (User.email == login_data.user)).first()
+    
+    if not found_user:
+        print(f"User: {login_data.user} was not found")
+        raise HTTPException(status_code=400, detail="Either username or password is incorrect") # We dont want to tell which one for safety, right?
 
-#TODO Test if this works before merging to dev!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    passwords_match = verify_password(login_data.password, found_user.password_hash)
+    if not passwords_match:
+        print(f"User: {login_data.user} passwords didnt match")
+        raise HTTPException(status_code=400, detail="Either username or password is incorrect") # We dont want to tell which one for safety, right?
+
+    # TODO FINNIS THIS WITH RETURNING SOMETHING TO USER
+
 @app.post("/register")
 def register(user_data: UserCreate, db_session: Session = Depends(get_db_session)):
     print("Received user data:", user_data)
@@ -57,4 +71,3 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
     db_session.refresh(new_user)
 
     return {"message": "User created successfully", "id": new_user.id}
-#TODO Test if this works before merging to dev!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
