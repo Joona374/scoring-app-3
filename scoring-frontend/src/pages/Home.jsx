@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import "./Home.css"
 import { useContext } from "react";
-import AuthContext from "../AuthContext";
+import AuthContext from "../auth/AuthContext";
 
 export default function Home() {
   const { isLoggedIn, logout } = useContext(AuthContext);
@@ -16,10 +16,16 @@ export default function Home() {
           <Link to="/register" className="home-button">
             Register
           </Link>
+          <Link to="/dashboard" className="home-button">
+            Dashboard
+          </Link>
         </>
       ) : (
         <>
           <h1>Welcome Back!</h1>
+          <Link to="/dashboard" className="home-button">
+            Dashboard
+          </Link>
           <button onClick={logout}>Logout</button>
         </>
       )}

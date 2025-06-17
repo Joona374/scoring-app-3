@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthContext from "../AuthContext";
+import AuthContext from "../auth/AuthContext";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -27,8 +27,8 @@ export default function Login() {
         setErrorMsg(data.detail || "Login failed");
       } else {
         console.log("Login succesful:", data);
-        localStorage.setItem("jwt_token", data.jwt_token);
-        login();
+        login(data.jwt_token);
+        console.log("After loging in", isLoggedIn);
         navigate("/dashboard");
       }
     } catch (err) {
