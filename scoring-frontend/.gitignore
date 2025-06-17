@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+javascript:(function(){
+  window.open("https://github.com/Joona374/scoring-app-3", "_blank");
+  window.open("https://vercel.com/joonas-projects-1cfc4654/scoring-app-3", "_blank");
+  window.open("https://dashboard.render.com/web/srv-d185i2ndiees73ao4h5g", "_blank");
+  window.open("https://console.neon.tech/app/projects/steep-haze-46920726", "_blank");
+})();
