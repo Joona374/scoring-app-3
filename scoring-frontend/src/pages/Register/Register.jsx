@@ -1,5 +1,5 @@
-import {useState} from "react"
-import "./Register.css"
+import { useState } from "react";
+import "./Register.css";
 import { useNavigate } from "react-router-dom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -44,8 +44,6 @@ export default function Register() {
       console.log("Success:", data);
       alert("Registeration succesful! Redirected to login.");
       navigate("/login");
-
-      // TODO: redirect to /login or auto‑login
     } catch (err) {
       console.error(err);
       setErrorMsg(err.message);
