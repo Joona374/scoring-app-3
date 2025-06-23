@@ -25,7 +25,9 @@ export default function Home() {
           <Link to="/dashboard" className="home-button">
             Dashboard
           </Link>
-          <button onClick={logout}>Logout</button>
+          <button onClick={logout} className="home-button">
+            Logout
+          </button>
         </>
       )}
     </div>
