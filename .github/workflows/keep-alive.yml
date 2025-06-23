@@ -2,11 +2,11 @@ name: Keep Render App Alive
 
 on:
   schedule:
-    - cron: "*/14 * * * *" # Every hour
+    - cron: "*/14 * * * *"
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render App
-        run: curl -fsSl https://scoring-app-3-dev.onrender.com/ || echo "Failed to ping Render app"
+        run: curl -fsSL https://scoring-app-3-dev.onrender.com/ || echo "Failed to ping Render app"
