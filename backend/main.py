@@ -79,3 +79,16 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
     db_session.refresh(new_user)
 
     return {"message": "User created successfully", "id": new_user.id}
+
+
+@app.get("/me")
+def get_current_user(db_session: Session = Depends(get_db_session)):
+    #TODO SET THIS UP TO GET THE CURRENT USER FROM THE JWT TOKEN
+    # For now, we will just return a dummy user
+    dummy_user = {
+        "id": 1,
+        "username": "dummy_user",
+        "email": "dunno@html.com"
+    }
+
+    return dummy_user
