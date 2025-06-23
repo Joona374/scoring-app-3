@@ -3,6 +3,8 @@ name: Keep Render App Alive
 on:
   schedule:
     - cron: "*/14 * * * *"
+  workflow_dispatch:        # enables manual trigger button
+
 
 jobs:
   ping:
