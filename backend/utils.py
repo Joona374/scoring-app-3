@@ -6,7 +6,12 @@ import os
 
 load_dotenv()
 
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+ALGORITHM = os.getenv("JWT_ALGORITHM")
+EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES"))
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def hash_password(password: str) -> str:
     """
@@ -48,10 +53,6 @@ def create_jwt(data: dict, expires_delta: int = None):
         ValueError: If any required environment variable is missing or invalid.
     """
 
-    SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-    ALGORITHM = os.getenv("JWT_ALGORITHM")
-    EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES"))
-
     data_to_encode = data.copy()
 
     if expires_delta:
@@ -63,3 +64,21 @@ def create_jwt(data: dict, expires_delta: int = None):
 
     encoded_jwt = jwt.encode(data_to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def decode_jwt(token: str) -> dict:
+    """
+    Decodes a JSON Web Token (JWT) and returns its payload.
+    Args:
+        token (str): The JWT string to decode.
+    Returns:
+        dict: The decoded payload from the JWT.
+    Raises:
+        jwt.JWTError: If the token is invalid or cannot be decoded.
+    """
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.JWTError as e:
+        print(f"Error handling JWT")
+        raise e

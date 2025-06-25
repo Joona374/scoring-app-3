@@ -1,21 +1,22 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from db.db_manager import get_db_session
-from db.models import User
-from db.pydantic_schemas import UserCreate, UserLogin, LoginResponse
-from utils import hash_password, verify_password, create_jwt
 from dotenv import load_dotenv
 import os
+
+from db.db_manager import get_db_session
+from db.models import User
+from db.pydantic_schemas import UserCreate, UserLogin, LoginResponse, UserData
+from utils import hash_password, verify_password, create_jwt, decode_jwt
+from routes import users
 
 load_dotenv()
 
 app = FastAPI()
 
-# FRONTEND_URL = os.getenv("FRONTEND_URL")
-# if FRONTEND_URL is None:
-#     raise ValueError("FRONTEND_URL environment variable is not set.")
+app.include_router(users.router)
 
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,12 +41,12 @@ def login(login_data: UserLogin, db_session: Session = Depends(get_db_session)):
     
     if not found_user:
         print(f"User: {login_data.user} was not found")
-        raise HTTPException(status_code=400, detail="Either username or password is incorrect") # We dont want to tell which one for safety, right?
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Either username or password is incorrect") # We dont want to tell which one for safety, right?
 
     passwords_match = verify_password(login_data.password, found_user.password_hash)
     if not passwords_match:
         print(f"User: {login_data.user} passwords didnt match")
-        raise HTTPException(status_code=400, detail="Either username or password is incorrect") # We dont want to tell which one for safety, right?
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Either username or password is incorrect") # We dont want to tell which one for safety, right?
 
     user_data = {"sub": str(found_user.id)}
     access_token = create_jwt(user_data, 60)
@@ -63,7 +64,7 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
     existing_user = db_session.query(User).filter((User.username == user_data.username) | (User.email == user_data.email)).first()
     print(existing_user)
     if existing_user:
-        raise HTTPException(status_code=400, detail="Username or email already exists")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username or email already exists")
     
     hashed_password = hash_password(user_data.password)
 
@@ -81,14 +82,3 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
     return {"message": "User created successfully", "id": new_user.id}
 
 
-@app.get("/me")
-def get_current_user(db_session: Session = Depends(get_db_session)):
-    #TODO SET THIS UP TO GET THE CURRENT USER FROM THE JWT TOKEN
-    # For now, we will just return a dummy user
-    dummy_user = {
-        "id": 1,
-        "username": "dummy_user",
-        "email": "dunno@html.com"
-    }
-
-    return dummy_user
