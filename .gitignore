@@ -1,6 +1,7 @@
 # Basic python project .gitignore file
 # Python bytecode
 __pycache__/
+.github/instructions/
 
 # VEnv
 venv/

@@ -28,6 +28,8 @@ export default function Login() {
       } else {
         console.log("Login succesful:", data);
         login(data.jwt_token);
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("user_id", data.user_id);
         console.log("After loging in", isLoggedIn);
         navigate("/dashboard");
       }

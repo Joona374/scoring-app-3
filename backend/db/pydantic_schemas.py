@@ -25,6 +25,7 @@ class UserLogin(BaseModel):
 
 class LoginResponse(BaseModel):
     username: str
+    user_id: int
     is_admin: bool
     jwt_token: str
 
@@ -32,3 +33,7 @@ class UserData(BaseModel):
     id: int
     username: str
     email: str
+
+class TeamCreate(BaseModel):
+    name: str
+    creator_id: int

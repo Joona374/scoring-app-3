@@ -1,14 +1,7 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 from dotenv import load_dotenv
-import os
-
-from db.db_manager import get_db_session
-from db.models import User
-from db.pydantic_schemas import UserCreate, UserLogin, LoginResponse, UserData
-from utils import hash_password, verify_password, create_jwt, decode_jwt
-from routes import users, auth
+from routes import users, auth, teams
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -19,6 +12,8 @@ app = FastAPI()
 # Include all the routers. REMEMBER TO ADD HERE ANY NEW ROUTERS.
 app.include_router(users.router)
 app.include_router(auth.router)
+app.include_router(teams.router)
+
 
 # Middleware to handle CORS. TODO: Make sure to update the regex to match your frontend URL.
 app.add_middleware(
