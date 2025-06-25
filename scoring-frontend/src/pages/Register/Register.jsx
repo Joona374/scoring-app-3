@@ -29,7 +29,7 @@ export default function Register() {
     }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/register`, {
+      const res = await fetch(`${BACKEND_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
