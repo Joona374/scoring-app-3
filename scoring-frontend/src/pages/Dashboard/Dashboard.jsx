@@ -10,7 +10,7 @@ export default function Dashboard() {
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
       try {
-        const response = await fetch(`${BACKEND_URL}/me`, {
+        const response = await fetch(`${BACKEND_URL}/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -35,7 +35,6 @@ export default function Dashboard() {
     <div>
       <h1>Dashboard</h1>
       <h3>Welcome {username}</h3>
-      <Link to="/">Home</Link>
     </div>
   );
 }

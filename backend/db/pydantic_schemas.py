@@ -28,3 +28,7 @@ class LoginResponse(BaseModel):
     is_admin: bool
     jwt_token: str
 
+class UserData(BaseModel):
+    id: int
+    username: str
+    email: str
