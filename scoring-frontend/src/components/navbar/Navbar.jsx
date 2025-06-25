@@ -1,6 +1,7 @@
 import "./Navbar.css";
 import { useContext } from "react";
 import AuthContext from "../../auth/AuthContext";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const { isLoggedIn } = useContext(AuthContext);
@@ -15,15 +16,15 @@ export default function Navbar() {
           <>
             {" "}
             <li>
-              <a href="/register">Register</a>
+              <Link to="/register">Register</Link>
             </li>
             <li>
-              <a href="/login">Login</a>
+              <Link to="/login">Login</Link>
             </li>
           </>
         ) : (
           <li>
-            <a href="/dashboard">Dashboard</a>
+            <Link to="/dashboard">Dashboard</Link>
           </li>
         )}
       </ul>
