@@ -5,6 +5,7 @@ import Register from "./pages/Register/Register";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ProtectRoute from "./routing/ProtectedRoute";
 import Navbar from "./components/navbar/Navbar";
+import CreateTeam from "./pages/CreateTeam/CreateTeam";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             </ProtectRoute>
           }
         />
+        <Route path="/createteam" element={<CreateTeam />} />
       </Routes>
     </div>
   );

@@ -3,7 +3,6 @@ import "./Register.css";
 import { useNavigate } from "react-router-dom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-console.log(BACKEND_URL);
 
 export default function Register() {
   const [username, setUsername] = useState("");

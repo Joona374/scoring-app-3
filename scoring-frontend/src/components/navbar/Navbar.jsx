@@ -23,9 +23,14 @@ export default function Navbar() {
             </li>
           </>
         ) : (
-          <li>
-            <Link to="/dashboard">Dashboard</Link>
-          </li>
+          <>
+            <li>
+              <Link to="/dashboard">Dashboard</Link>
+            </li>
+            <li>
+              <Link to="/createteam">Create a Team</Link>
+            </li>
+          </>
         )}
       </ul>
     </nav>

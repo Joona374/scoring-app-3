@@ -1,15 +1,20 @@
-from models import Base, User
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from models import Base
+from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 import os
-from sqlalchemy.exc import OperationalError
 
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-
 engine = create_engine(DATABASE_URL)
+######### FOR FORCEFULLY EMPTYING THE DB. ADD NEEDED TABLE NAMES ########
+# print("Attempting to forcefully drop tables with CASCADE...")
+# with engine.connect() as connection:
+#     # We use text() to tell SQLAlchemy this is a literal SQL command.
+#     # CASCADE tells PostgreSQL to drop dependent objects (like constraints) too.
+#     connection.execute(text("DROP TABLE IF EXISTS users, teams CASCADE;"))
+#     connection.commit() # Make sure the transaction is committed
+# print("Forceful drop successful.")
 
 if __name__ == "__main__":
     print("\nFirst dropping all existing tables...")

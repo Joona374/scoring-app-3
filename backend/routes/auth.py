@@ -16,7 +16,6 @@ router = APIRouter(
 def register(user_data: UserCreate, db_session: Session = Depends(get_db_session)):
     print("Received user data:", user_data)
     existing_user = db_session.query(User).filter((User.username == user_data.username) | (User.email == user_data.email)).first()
-    print(existing_user)
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username or email already exists")
     
