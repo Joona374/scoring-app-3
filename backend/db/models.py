@@ -26,7 +26,7 @@ class Team(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, unique=True)
     name: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
-    code: Mapped[str] = mapped_column(String(6), unique=True, nullable=False)
+    code: Mapped[str] = mapped_column(String(6), unique=False, nullable=False)
 
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="fk_team_creator"), nullable=False)
     creator: Mapped["User"] = relationship(back_populates="created_teams", foreign_keys=[creator_id])
