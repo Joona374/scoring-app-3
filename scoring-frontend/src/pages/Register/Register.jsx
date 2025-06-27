@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import "./Register.css";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../../auth/AuthContext";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -9,10 +10,41 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [code, setCode] = useState("");
 
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const [errorMsg, setErrorMsg] = useState("");
+
+  const autoLogin = async (creator) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user: username, password: password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.detail || "Login failed");
+      } else {
+        console.log("Login succesful:", data);
+        login(data.jwt_token);
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("user_id", data.user_id);
+        if (creator) {
+          navigate("/create-team");
+        } else {
+          navigate("/dashboard");
+        }
+      }
+    } catch (err) {
+      setErrorMsg("Something went wrong with login");
+      console.error("Login error:", err);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -31,7 +63,7 @@ export default function Register() {
       const res = await fetch(`${BACKEND_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, email, password, code }),
       });
 
       if (!res.ok) {
@@ -42,8 +74,16 @@ export default function Register() {
 
       const data = await res.json();
       console.log("Success:", data);
-      alert("Registeration succesful! Redirected to login.");
-      navigate("/login");
+
+      const redirect_to_create = data.creator;
+
+      if (redirect_to_create) {
+        alert("Registeration succesful! Create your team next.");
+      } else {
+        alert("Registeration succesful! Redirecting to team dashboard.");
+      }
+
+      autoLogin(redirect_to_create);
     } catch (err) {
       console.error(err);
       setErrorMsg(err.message);
@@ -90,6 +130,16 @@ export default function Register() {
           placeholder="confirm password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
+        />
+        <label htmlFor="code">Regiesteration Code</label>
+        <input
+          type="text"
+          id="code"
+          placeholder="123ABC"
+          minLength="6"
+          maxLength="6"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
         />
         <button type="submit">Register</button>
       </form>

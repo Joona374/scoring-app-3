@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from db.pydantic_schemas import LoginResponse, UserLogin, UserCreate
-from db.models import User
+from db.models import User, RegCode
 from db.db_manager import get_db_session
 from utils import create_jwt, verify_password, hash_password
 
@@ -15,24 +15,47 @@ router = APIRouter(
 @router.post("/register")
 def register(user_data: UserCreate, db_session: Session = Depends(get_db_session)):
     print("Received user data:", user_data)
+
+    reg_code = db_session.query(RegCode).filter(RegCode.code == user_data.code).first()
+    if not reg_code:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Registration code invalid")
+
     existing_user = db_session.query(User).filter((User.username == user_data.username) | (User.email == user_data.email)).first()
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username or email already exists")
     
     hashed_password = hash_password(user_data.password)
 
-    new_user = User(
+    if reg_code.join_code:
+        if reg_code.team_related:
+            new_user = User(
+            username=user_data.username,
+            email=user_data.email,
+            is_admin=False,
+            password_hash=hashed_password,
+            team=reg_code.team_related
+            )
+    
+        else:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="The registration code is of JOIN type, but there is no team_related. This is a problem at the server.")
+
+    elif reg_code.creation_code:
+        new_user = User(
         username=user_data.username,
         email=user_data.email,
         is_admin=False,
-        password_hash=hashed_password
-    )
+        password_hash=hashed_password,
+        has_creation_privilege=True
+        )
+
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="The registeration code is neither of type CREATOR or JOIN. This is a problem at the server.")
 
     db_session.add(new_user)
     db_session.commit()
     db_session.refresh(new_user)
 
-    return {"message": "User created successfully", "id": new_user.id}
+    return {"message": "User created successfully", "id": new_user.id, "creator": new_user.has_creation_privilege}
 
 
 @router.post("/login", response_model=LoginResponse)

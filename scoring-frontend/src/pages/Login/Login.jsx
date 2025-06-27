@@ -9,7 +9,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
-  const { isLoggedIn, login } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -30,7 +30,6 @@ export default function Login() {
         login(data.jwt_token);
         localStorage.setItem("username", data.username);
         localStorage.setItem("user_id", data.user_id);
-        console.log("After loging in", isLoggedIn);
         navigate("/dashboard");
       }
     } catch (err) {

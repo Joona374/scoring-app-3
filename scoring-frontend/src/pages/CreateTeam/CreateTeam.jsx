@@ -13,7 +13,6 @@ export default function CreateTeam() {
     console.log(teamName);
 
     const token = localStorage.getItem("jwt_token");
-    const user_id = localStorage.getItem("user_id");
 
     try {
       const response = await fetch(`${BACKEND_URL}/teams/create`, {
@@ -22,7 +21,7 @@ export default function CreateTeam() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: teamName, creator_id: user_id }),
+        body: JSON.stringify({ name: teamName }),
       });
 
       if (!response.ok) {
@@ -33,6 +32,7 @@ export default function CreateTeam() {
 
       const data = await response.json();
       console.log(data);
+      setErrorMsg(`Team JOIN code: ${data.code_for_team}`);
     } catch (err) {
       setErrorMsg(err.message);
     }

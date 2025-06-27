@@ -23,7 +23,7 @@ function App() {
             </ProtectRoute>
           }
         />
-        <Route path="/createteam" element={<CreateTeam />} />
+        <Route path="/create-team" element={<CreateTeam />} />
       </Routes>
     </div>
   );

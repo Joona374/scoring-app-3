@@ -1,4 +1,6 @@
 from passlib.context import CryptContext
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
@@ -12,6 +14,7 @@ EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES"))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def hash_password(password: str) -> str:
     """
@@ -80,5 +83,16 @@ def decode_jwt(token: str) -> dict:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except jwt.JWTError as e:
-        print(f"Error handling JWT")
+        print(f"Error decoding JWT")
         raise e
+    
+
+def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
+    try:
+        payload = decode_jwt(token)
+        user_id = payload.get("sub")
+        if user_id is None:
+            HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+        return user_id
+    except jwt.JWTError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")

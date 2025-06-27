@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from routes import users, auth, teams
-
+import logging
 # Load the environment variables from the .env file
 load_dotenv()
 
@@ -23,6 +23,8 @@ app.add_middleware(
     allow_methods=["*"],    # Allows all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],    # Allows all headers
 )
+
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 # Root endpoint to check if the API is live
 @app.get("/")

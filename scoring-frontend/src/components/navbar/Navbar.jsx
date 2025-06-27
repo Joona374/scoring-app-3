@@ -28,7 +28,7 @@ export default function Navbar() {
               <Link to="/dashboard">Dashboard</Link>
             </li>
             <li>
-              <Link to="/createteam">Create a Team</Link>
+              <Link to="/create-team">Create a Team</Link>
             </li>
           </>
         )}
