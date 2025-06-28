@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, field_validator
+from db.models import Positions
 
 class UserCreate(BaseModel):
     model_config = {"extra": "forbid"}
@@ -55,3 +56,10 @@ class TeamCreate(BaseModel):
     model_config = {"extra": "forbid"}
 
     name: str
+
+class PlayerCreate(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    first_name: str
+    last_name: str
+    position: Positions

@@ -24,5 +24,7 @@ def get_current_user(request: Request, db_session: Session = Depends(get_db_sess
 
     user_id = int(token_payload["sub"])
     user = db_session.query(User).filter(User.id==user_id).first()
-
-    return UserData(id=user.id, username=user.username, email=user.email)
+    if user:
+        return UserData(id=user.id, username=user.username, email=user.email)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found in db")

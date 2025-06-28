@@ -30,6 +30,9 @@ export default function Navbar() {
             <li>
               <Link to="/create-team">Create a Team</Link>
             </li>
+            <li>
+              <Link to="/create-player">Create a Player</Link>
+            </li>
           </>
         )}
       </ul>
