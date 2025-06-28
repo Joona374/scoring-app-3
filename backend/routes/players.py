@@ -25,7 +25,7 @@ def create_a_player(player_data: PlayerCreate, db_session: Session = Depends(get
 
     new_player = Player(
         first_name=player_first_name,
-        last_name=player_first_name,
+        last_name=player_last_name,
         position=player_position,
         team=user.team
     )
