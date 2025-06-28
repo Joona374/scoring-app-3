@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from routes import users, auth, teams, players
+from routes import users, auth, teams, players, tagging
 import logging
 # Load the environment variables from the .env file
 load_dotenv()
@@ -14,6 +14,7 @@ app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(teams.router)
 app.include_router(players.router)
+app.include_router(tagging.router)
 
 # Middleware to handle CORS. TODO: Make sure to update the regex to match your frontend URL.
 app.add_middleware(

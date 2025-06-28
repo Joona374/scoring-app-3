@@ -32,3 +32,15 @@ export default function TaggingArea() {
     </div>
   );
 }
+
+// TODO: MVP Question Flow
+// - Fetch questions.json from backend on mount (useEffect)
+// - Store questions and currentQuestionId in context or local state
+// - Look up current question object by ID
+// - Render question component based on type:
+//     - SHOT_LOCATION -> <ShotLocationQuestion />
+//     - TEXT          -> <TextQuestion />
+// - Each question component calls `submitAnswer(value)` to:
+//     - Save answer (optional)
+//     - Update currentQuestionId to next_question_id
+// - If final_question is true -> show "Done" or summary

@@ -26,9 +26,30 @@ function App() {
           }
         />
         {/* TODO: PROTECT THESE ROUTER */}
-        <Route path="/create-team" element={<CreateTeam />} />
-        <Route path="/create-player" element={<CreatePlayer />} />
-        <Route path="/tagging" element={<Tagging />} />
+        <Route
+          path="/create-team"
+          element={
+            <ProtectRoute>
+              <CreateTeam />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/create-player"
+          element={
+            <ProtectRoute>
+              <CreatePlayer />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/tagging"
+          element={
+            <ProtectRoute>
+              <Tagging />
+            </ProtectRoute>
+          }
+        />
       </Routes>
     </div>
   );
