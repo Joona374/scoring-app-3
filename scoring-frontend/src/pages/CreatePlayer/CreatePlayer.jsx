@@ -47,7 +47,7 @@ export default function CreatePlayer() {
     <div>
       <h1>Create Player</h1>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="first-name"></label>
+        <label htmlFor="first-name">First Name</label>
         <input
           type="text"
           id="first-name"
@@ -55,7 +55,7 @@ export default function CreatePlayer() {
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
         />
-        <label htmlFor="last-name"></label>
+        <label htmlFor="last-name">Last Name</label>
         <input
           type="text"
           id="last-name"
@@ -63,7 +63,7 @@ export default function CreatePlayer() {
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
         />
-        <label htmlFor="position"></label>
+        <label htmlFor="position">Position</label>
         <select
           name="position"
           id="position"
