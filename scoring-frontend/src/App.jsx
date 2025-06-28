@@ -7,6 +7,7 @@ import ProtectRoute from "./routing/ProtectedRoute";
 import Navbar from "./components/navbar/Navbar";
 import CreateTeam from "./pages/CreateTeam/CreateTeam";
 import CreatePlayer from "./pages/CreatePlayer/CreatePlayer";
+import Tagging from "./pages/Tagging/Tagging";
 
 function App() {
   return (
@@ -25,8 +26,30 @@ function App() {
           }
         />
         {/* TODO: PROTECT THESE ROUTER */}
-        <Route path="/create-team" element={<CreateTeam />} />
-        <Route path="/create-player" element={<CreatePlayer />} />
+        <Route
+          path="/create-team"
+          element={
+            <ProtectRoute>
+              <CreateTeam />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/create-player"
+          element={
+            <ProtectRoute>
+              <CreatePlayer />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/tagging"
+          element={
+            <ProtectRoute>
+              <Tagging />
+            </ProtectRoute>
+          }
+        />
       </Routes>
     </div>
   );

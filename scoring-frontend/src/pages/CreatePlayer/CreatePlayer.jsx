@@ -30,14 +30,15 @@ export default function CreatePlayer() {
 
       if (!response.ok) {
         const errorBody = await response.json();
-        console.log("Error creating team");
+        console.log("Error creating player");
         console.error(errorBody);
       }
 
       const data = await response.json();
       console.log(data);
+      alert("Player created successfully");
     } catch (err) {
-      console.log("Error creating team");
+      console.log("Error creating player");
       console.log(err);
       return;
     }
