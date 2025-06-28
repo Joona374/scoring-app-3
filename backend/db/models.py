@@ -6,6 +6,7 @@ from enum import Enum
 class Base(DeclarativeBase):
     pass
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -21,6 +22,7 @@ class User(Base):
 
     created_teams: Mapped[List["Team"]] = relationship(back_populates="creator", foreign_keys="Team.creator_id")
 
+
 class Team(Base):
     __tablename__ = "teams"
 
@@ -32,7 +34,7 @@ class Team(Base):
 
     users: Mapped[List["User"]] = relationship(back_populates="team", foreign_keys="User.team_id")
     code: Mapped[List["RegCode"]] = relationship(back_populates="team_related", foreign_keys="RegCode.team_related_id")
-    players: Mapped[List["Player"]] = relationship(back_populates="team", foreign_keys="Team.team_id")
+    players: Mapped[List["Player"]] = relationship(back_populates="team", foreign_keys="Player.team_id")
 
 
 class RegCode(Base):
@@ -45,6 +47,7 @@ class RegCode(Base):
 
     team_related_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=True)
     team_related: Mapped[Optional["Team"]] = relationship(back_populates="code", foreign_keys=[team_related_id])
+
 
 class Positions(Enum):
     FORWARD = "Hyökkääjä"
