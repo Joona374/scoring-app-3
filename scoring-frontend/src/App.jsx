@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import ProtectRoute from "./routing/ProtectedRoute";
 import Navbar from "./components/navbar/Navbar";
 import CreateTeam from "./pages/CreateTeam/CreateTeam";
+import CreatePlayer from "./pages/CreatePlayer/CreatePlayer";
 
 function App() {
   return (
@@ -23,7 +24,9 @@ function App() {
             </ProtectRoute>
           }
         />
+        {/* TODO: PROTECT THESE ROUTER */}
         <Route path="/create-team" element={<CreateTeam />} />
+        <Route path="/create-player" element={<CreatePlayer />} />
       </Routes>
     </div>
   );
