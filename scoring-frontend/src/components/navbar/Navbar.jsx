@@ -33,6 +33,9 @@ export default function Navbar() {
             <li>
               <Link to="/create-player">Create a Player</Link>
             </li>
+            <li>
+              <Link to="/tagging">Tagging</Link>
+            </li>
           </>
         )}
       </ul>
