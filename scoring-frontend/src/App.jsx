@@ -11,46 +11,51 @@ import Tagging from "./pages/Tagging/Tagging";
 
 function App() {
   return (
-    <div>
+    <div
+      className="app-container"
+      style={{ display: "flex", flexDirection: "column", height: "100%" }}
+    >
       <Navbar></Navbar>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectRoute>
-              <Dashboard />
-            </ProtectRoute>
-          }
-        />
-        {/* TODO: PROTECT THESE ROUTER */}
-        <Route
-          path="/create-team"
-          element={
-            <ProtectRoute>
-              <CreateTeam />
-            </ProtectRoute>
-          }
-        />
-        <Route
-          path="/create-player"
-          element={
-            <ProtectRoute>
-              <CreatePlayer />
-            </ProtectRoute>
-          }
-        />
-        <Route
-          path="/tagging"
-          element={
-            <ProtectRoute>
-              <Tagging />
-            </ProtectRoute>
-          }
-        />
-      </Routes>
+      <div className="routes-container" style={{ flex: 1, overflow: "hidden" }}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectRoute>
+                <Dashboard />
+              </ProtectRoute>
+            }
+          />
+          {/* TODO: PROTECT THESE ROUTER */}
+          <Route
+            path="/create-team"
+            element={
+              <ProtectRoute>
+                <CreateTeam />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/create-player"
+            element={
+              <ProtectRoute>
+                <CreatePlayer />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/tagging"
+            element={
+              <ProtectRoute>
+                <Tagging />
+              </ProtectRoute>
+            }
+          />
+        </Routes>
+      </div>
     </div>
   );
 }

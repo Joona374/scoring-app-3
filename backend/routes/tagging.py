@@ -1,4 +1,6 @@
+from pathlib import Path
 from fastapi import APIRouter
+import json
 
 router = APIRouter(
     prefix="/tagging",
@@ -10,7 +12,10 @@ router = APIRouter(
 def test_tagging():
     return "Hello :D"
 
-# TODO: Serve questions.json to React frontend
-# - Create GET endpoint (e.g. /api/questions)
-# - Load and return the questions from questions.json
-# - Later: support custom question sets if needed (query param or user-specific)
+@router.get("/questions")
+def get_questions():
+    questions_json_path = Path("./tagging/questions.json")
+    text = questions_json_path.read_text()
+    parsed_json = json.loads(text)
+
+    return parsed_json

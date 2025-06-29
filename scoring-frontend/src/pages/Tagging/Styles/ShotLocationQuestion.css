@@ -1,0 +1,9 @@
+.kaukalo-image-container {
+    width: 100%;
+    background-color: red;
+}
+
+.kaukalo-image {
+    width: 100%;
+    display: block;
+}
