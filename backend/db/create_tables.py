@@ -59,6 +59,4 @@ if __name__ == "__main__":
 
     add_creator_code()
 
-
-
     print("Tables created successfully.")
