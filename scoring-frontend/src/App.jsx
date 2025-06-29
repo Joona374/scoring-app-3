@@ -8,6 +8,7 @@ import Navbar from "./components/navbar/Navbar";
 import CreateTeam from "./pages/CreateTeam/CreateTeam";
 import CreatePlayer from "./pages/CreatePlayer/CreatePlayer";
 import Tagging from "./pages/Tagging/Tagging";
+import AdminPage from "./pages/Admin/AdminPage";
 
 function App() {
   return (
@@ -51,6 +52,14 @@ function App() {
             element={
               <ProtectRoute>
                 <Tagging />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectRoute>
+                <AdminPage />
               </ProtectRoute>
             }
           />

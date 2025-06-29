@@ -1,7 +1,7 @@
-from models import Base
+from .models import Base
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from models import RegCode  # Import your model
+from .models import RegCode  # Import your model
 from dotenv import load_dotenv
 import os
 import random
@@ -24,6 +24,14 @@ def force_drop_tables():
     print("Forceful drop successful.")
 
 def add_creator_code():
+    """
+    Generates a random 6-character creator code consisting of uppercase letters and digits,
+    creates a new RegCode instance with this code (marked as a creation code), adds it to the database,
+    commits the transaction, and returns the generated code.
+    Returns:
+        str: The generated 6-character creator code.
+    """
+
     Session = sessionmaker(bind=engine)
     session = Session()
     
@@ -43,8 +51,16 @@ def add_creator_code():
     session.close()
 
     print(f"Seeded creator code: {random_code}")
+    return random_code
 
-if __name__ == "__main__":
+def main():
+    """
+    Drops all existing database tables and recreates them based on the current SQLAlchemy models.
+    Prints the progress of dropping and creating tables, lists the created tables, and adds a creator code.
+    Returns:
+        str: The randomly generated creator code.
+    """
+
     force_drop_tables()
 
     print("\nFirst dropping all existing tables...")
@@ -57,6 +73,12 @@ if __name__ == "__main__":
     for table in Base.metadata.sorted_tables:
         print(f"- {table.name}")
 
-    add_creator_code()
+    random_code = add_creator_code()
 
     print("Tables created successfully.")
+
+    return random_code
+
+
+if __name__ == "__main__":
+    main()
