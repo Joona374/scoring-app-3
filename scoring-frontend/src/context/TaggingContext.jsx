@@ -10,6 +10,20 @@ export const TaggingProvider = ({ children }) => {
   const [taggedEvents, setTaggedEvents] = useState([]);
   const [questionObjects, setQuestionObjects] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
+  const [firstQuestionId, setFirstQuestionId] = useState(null);
+
+  const advanceQuestion = (last_question, next_question_id, newTag) => {
+    if (last_question === true) {
+      const new_tagged_events = [...taggedEvents, newTag];
+      setTaggedEvents(new_tagged_events);
+      console.log("This is the latest currentTag: ", new_tagged_events);
+      setCurrentTag({});
+      setCurrentQuestionId(firstQuestionId);
+    } else {
+      setCurrentTag(newTag);
+      setCurrentQuestionId(next_question_id);
+    }
+  };
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -30,7 +44,9 @@ export const TaggingProvider = ({ children }) => {
         );
         setQuestionObjects(questionObjs);
         if (questionObjs.length > 0) {
+          // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
           setCurrentQuestionId(questionObjs[0].id);
+          setFirstQuestionId(questionObjs[0].id);
         }
       } catch (err) {
         console.error("Error fetching questions from backend:", err);
@@ -50,6 +66,9 @@ export const TaggingProvider = ({ children }) => {
         setQuestionObjects,
         currentQuestionId,
         setCurrentQuestionId,
+        firstQuestionId,
+        setFirstQuestionId,
+        advanceQuestion,
       }}
     >
       {children}
