@@ -17,12 +17,26 @@ export const TaggingProvider = ({ children }) => {
       const new_tagged_events = [...taggedEvents, newTag];
       setTaggedEvents(new_tagged_events);
       console.log("This is the latest currentTag: ", new_tagged_events);
+      postTag(newTag);
       setCurrentTag({});
       setCurrentQuestionId(firstQuestionId);
     } else {
       setCurrentTag(newTag);
       setCurrentQuestionId(next_question_id);
     }
+  };
+
+  const postTag = async (newTag) => {
+    const token = localStorage.getItem("jwt_token");
+    const res = await fetch(`${BACKEND_URL}/tagging/add-tag`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tag: newTag }),
+    });
+    console.log("POSTING TAG! :D");
   };
 
   useEffect(() => {

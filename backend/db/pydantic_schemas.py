@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from db.models import Positions
+from typing import Optional
 
 class UserCreate(BaseModel):
     model_config = {"extra": "forbid"}
@@ -63,3 +64,17 @@ class PlayerCreate(BaseModel):
     first_name: str
     last_name: str
     position: Positions
+
+class Tag(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    location: dict
+    shot_result: str
+    shot_type: str
+    extra_data: Optional[str]
+
+class AddTag(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    tag: dict
+

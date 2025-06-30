@@ -65,3 +65,27 @@ class Player(Base):
 
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=True)
     team: Mapped["Team"] = relationship(back_populates="players", foreign_keys=[team_id])
+
+class ShotResultTypes(Enum):
+    GOAL_FOR = "Maali +"
+    GOAL_AGAINST = "Goal -"
+    CHANCE_FOR = "MP +"
+    CHANCE_AGAINST = "MP -" 
+
+class ShotResult(Base):
+    __tablename__ = "shot_results"
+
+    id: Mapped[int] = mapped_column(primary_key=True, unique=True)
+    value: Mapped[ShotResultTypes] = mapped_column(SQLEnum(ShotResultTypes), nullable=False, unique=True)
+
+class ShotTypeTypes(Enum):
+    WRIST_SHOT = "Wrist Shot"
+    SLAP_SHOT = "Slap Shot"
+    SNAP_SHOT = "Snap Shot"
+    ONE_TIMER = "One-Timer" 
+
+class ShotType(Base):
+    __tablename__ = "shot_types"
+
+    id: Mapped[int] = mapped_column(primary_key=True, unique=True)
+    value: Mapped[ShotTypeTypes] = mapped_column(SQLEnum(ShotTypeTypes), nullable=False, unique=True)

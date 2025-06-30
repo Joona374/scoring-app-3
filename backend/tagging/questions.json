@@ -16,24 +16,24 @@
             "text": "What was the shot result?",
             "options": [
                 {
-                    "answer": "Goal +",
+                    "answer": "Maali +",
                     "next_question_id": 3,
                     "last_question": false
 
                 },
                 {
-                    "answer": "Goal -",
+                    "answer": "Maali -",
                     "next_question_id": 3,
                     "last_question": false
 
                 },
                 {
-                    "answer": "Shot +",
+                    "answer": "MP +",
                     "next_question_id": 3,
                     "last_question": false
                 },
                 {
-                    "answer": "Shot -",
+                    "answer": "MP -",
                     "next_question_id": 3,
                     "last_question": false
                 }
