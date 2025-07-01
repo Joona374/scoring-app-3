@@ -6,3 +6,8 @@
   background-color: #333;
   color: #aaa;
 }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}

@@ -3,6 +3,7 @@
         {
             "id": 1,
             "type": "SHOT LOCATION",
+            "key": "shot_location",
             "text": "<SHOT_LOCATION>",
             "next_question_id": 2,
             "last_question": false
@@ -11,10 +12,11 @@
         {
             "id": 2,
             "type": "TEXT",
+            "key": "shot_result",
             "text": "What was the shot result?",
             "options": [
                 {
-                    "answer": "Goal +",
+                    "answer": "Maali +",
                     "next_question_id": 3,
                     "last_question": false
 
@@ -26,12 +28,12 @@
 
                 },
                 {
-                    "answer": "Shot +",
+                    "answer": "MP +",
                     "next_question_id": 3,
                     "last_question": false
                 },
                 {
-                    "answer": "Shot -",
+                    "answer": "MP -",
                     "next_question_id": 3,
                     "last_question": false
                 }
@@ -43,6 +45,7 @@
         {
             "id": 3,
             "type": "TEXT",
+            "key": "shot_type",
             "text": "What was the shot type?",
             "options": [
                 {

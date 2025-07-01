@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from dotenv import load_dotenv
 import os
 from sqlalchemy.exc import OperationalError
@@ -15,7 +15,7 @@ engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db_session():
-	db_session = SessionLocal()
+	db_session: Session = SessionLocal()
 	try:
 		yield db_session		
 	finally:

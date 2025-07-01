@@ -1,36 +1,42 @@
-import { useContext } from "react";
-import kaukalo from "../../assets/kaukalo.png";
+import { useContext, useEffect } from "react";
 import { TaggingContext } from "../../context/TaggingContext";
+import ShotLocationQuestion from "./TaggingComponents/ShotLocationQuestion";
+import GridChoiceQuestion from "./TaggingComponents/GridChoiceQuestion";
+import "./Styles/TaggingArea.css";
 
 export default function TaggingArea() {
-  const { currentTag, setCurrentTag, taggedEvents, setTaggedEvents } =
-    useContext(TaggingContext);
+  // Import the "public" variables from context
+  const {
+    currentTag,
+    setCurrentTag,
+    taggedEvents,
+    setTaggedEvents,
+    questionObjects,
+    setQuestionObjects,
+    currentQuestionId,
+    setCurrentQuestionId,
+  } = useContext(TaggingContext);
 
-  const handleImageClick = (event) => {
-    const x = event.nativeEvent.offsetX;
-    const y = event.nativeEvent.offsetY;
+  // Get the current question using the currentQuestionId
+  const currentQuestion = questionObjects.find(
+    (q) => q.id === currentQuestionId
+  );
 
-    const newTag = {
-      ...currentTag,
-      location: { x, y },
-    };
+  // If no currentQuestion (still fecthing) display Loading...
+  if (!currentQuestion) return <p>Loading...</p>;
 
-    setCurrentTag(newTag);
-    setTaggedEvents([...taggedEvents, newTag]);
-
-    console.log("New currentTag:", newTag);
-    console.log("All tagged events (incl. this):", [...taggedEvents, newTag]);
-
-    // Optional reset
-    setCurrentTag({});
+  const renderQuestionComponent = () => {
+    switch (currentQuestion.type) {
+      case "SHOT LOCATION":
+        return <ShotLocationQuestion question={currentQuestion} />;
+      case "TEXT":
+        return <GridChoiceQuestion question={currentQuestion} />;
+      default:
+        return <p>Unknow question type</p>;
+    }
   };
 
-  return (
-    <div>
-      <h1>Tagging</h1>
-      <img src={kaukalo} alt="Kaukalo" onClick={handleImageClick} />
-    </div>
-  );
+  return <div className="question-container">{renderQuestionComponent()}</div>;
 }
 
 // TODO: MVP Question Flow

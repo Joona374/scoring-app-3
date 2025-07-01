@@ -11,8 +11,9 @@ export default function CreatePlayer() {
     event.preventDefault();
     console.log("Create player");
     console.log(firstName, lastName, position);
+    if (position === "") return;
 
-    const token = localStorage.getItem("jwt_token");
+    const token = sessionStorage.getItem("jwt_token");
 
     try {
       const response = await fetch(`${BACKEND_URL}/players/create`, {
@@ -71,6 +72,9 @@ export default function CreatePlayer() {
           value={position}
           onChange={(e) => setPosition(e.target.value)}
         >
+          <option value="" disabled>
+            -- Valitse pelipaikka --
+          </option>
           <option value="Hyökkääjä">Hyökkääjä</option>
           <option value="Puolustaja">Puolustaja</option>
           <option value="Maalivahti">Maalivahti</option>

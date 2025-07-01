@@ -1,0 +1,17 @@
+.tagging-page {
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+.left-column {
+    flex: 2;
+}
+
+.right-column {
+    background-color: #002c29;
+    flex: 1;
+    border-left: 3px solid #fff;
+
+}
