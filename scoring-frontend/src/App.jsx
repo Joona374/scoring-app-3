@@ -55,14 +55,8 @@ function App() {
               </ProtectRoute>
             }
           />
-          <Route
-            path="/admin"
-            element={
-              <ProtectRoute>
-                <AdminPage />
-              </ProtectRoute>
-            }
-          />
+          {/* TODO: PROTECT THIS IN PROD */}
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </div>
     </div>

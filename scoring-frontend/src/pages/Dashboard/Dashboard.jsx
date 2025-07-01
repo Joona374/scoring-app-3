@@ -6,7 +6,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchUserinfo = async () => {
-      const token = localStorage.getItem("jwt_token");
+      const token = sessionStorage.getItem("jwt_token");
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
       try {

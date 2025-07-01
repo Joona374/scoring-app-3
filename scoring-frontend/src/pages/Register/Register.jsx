@@ -32,8 +32,8 @@ export default function Register() {
       } else {
         console.log("Login succesful:", data);
         login(data.jwt_token);
-        localStorage.setItem("username", data.username);
-        localStorage.setItem("user_id", data.user_id);
+        sessionStorage.setItem("username", data.username);
+        sessionStorage.setItem("user_id", data.user_id);
         if (creator) {
           navigate("/create-team");
         } else {

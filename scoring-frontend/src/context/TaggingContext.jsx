@@ -27,7 +27,8 @@ export const TaggingProvider = ({ children }) => {
   };
 
   const postTag = async (newTag) => {
-    const token = localStorage.getItem("jwt_token");
+    console.log("POSTING TAG! :D");
+    const token = sessionStorage.getItem("jwt_token");
     const res = await fetch(`${BACKEND_URL}/tagging/add-tag`, {
       method: "POST",
       headers: {
@@ -36,12 +37,17 @@ export const TaggingProvider = ({ children }) => {
       },
       body: JSON.stringify({ tag: newTag }),
     });
-    console.log("POSTING TAG! :D");
+    if (!res.ok) {
+      console.error(res);
+      return;
+    }
+    const data = await res.json();
+    console.log("Succes adding tag:", data);
   };
 
   useEffect(() => {
     async function fetchQuestions() {
-      const token = localStorage.getItem("jwt_token");
+      const token = sessionStorage.getItem("jwt_token");
 
       try {
         const res = await fetch(`${BACKEND_URL}/tagging/questions`, {

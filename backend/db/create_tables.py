@@ -1,11 +1,12 @@
-from .models import Base
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from .models import RegCode  # Import your model
 from dotenv import load_dotenv
 import os
 import random
 import string
+
+from .models import Base, RegCode  # Import your model
+from .seed_tables import main as seed_tables
 
 load_dotenv()
 
@@ -74,6 +75,8 @@ def main():
         print(f"- {table.name}")
 
     random_code = add_creator_code()
+
+    seed_tables()
 
     print("Tables created successfully.")
 

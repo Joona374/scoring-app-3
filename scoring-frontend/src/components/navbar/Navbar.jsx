@@ -21,6 +21,10 @@ export default function Navbar() {
             <li>
               <Link to="/login">Login</Link>
             </li>
+            {/* TODO: PROTECT THIS IN PROD */}
+            <li>
+              <Link to="/admin">Admin</Link>
+            </li>
           </>
         ) : (
           <>

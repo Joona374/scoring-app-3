@@ -13,7 +13,7 @@ export default function CreatePlayer() {
     console.log(firstName, lastName, position);
     if (position === "") return;
 
-    const token = localStorage.getItem("jwt_token");
+    const token = sessionStorage.getItem("jwt_token");
 
     try {
       const response = await fetch(`${BACKEND_URL}/players/create`, {

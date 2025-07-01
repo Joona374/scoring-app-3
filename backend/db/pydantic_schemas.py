@@ -65,9 +65,7 @@ class PlayerCreate(BaseModel):
     last_name: str
     position: Positions
 
-class Tag(BaseModel):
-    model_config = {"extra": "forbid"}
-
+class TagSchema(BaseModel):
     location: dict
     shot_result: str
     shot_type: str
