@@ -8,49 +8,57 @@ import Navbar from "./components/navbar/Navbar";
 import CreateTeam from "./pages/CreateTeam/CreateTeam";
 import CreatePlayer from "./pages/CreatePlayer/CreatePlayer";
 import Tagging from "./pages/Tagging/Tagging";
+import AdminPage from "./pages/Admin/AdminPage";
 
 function App() {
   return (
-    <div>
+    <div
+      className="app-container"
+      style={{ display: "flex", flexDirection: "column", height: "100%" }}
+    >
       <Navbar></Navbar>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectRoute>
-              <Dashboard />
-            </ProtectRoute>
-          }
-        />
-        {/* TODO: PROTECT THESE ROUTER */}
-        <Route
-          path="/create-team"
-          element={
-            <ProtectRoute>
-              <CreateTeam />
-            </ProtectRoute>
-          }
-        />
-        <Route
-          path="/create-player"
-          element={
-            <ProtectRoute>
-              <CreatePlayer />
-            </ProtectRoute>
-          }
-        />
-        <Route
-          path="/tagging"
-          element={
-            <ProtectRoute>
-              <Tagging />
-            </ProtectRoute>
-          }
-        />
-      </Routes>
+      <div className="routes-container" style={{ flex: 1, overflow: "hidden" }}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectRoute>
+                <Dashboard />
+              </ProtectRoute>
+            }
+          />
+          {/* TODO: PROTECT THESE ROUTER */}
+          <Route
+            path="/create-team"
+            element={
+              <ProtectRoute>
+                <CreateTeam />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/create-player"
+            element={
+              <ProtectRoute>
+                <CreatePlayer />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/tagging"
+            element={
+              <ProtectRoute>
+                <Tagging />
+              </ProtectRoute>
+            }
+          />
+          {/* TODO: PROTECT THIS IN PROD */}
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </div>
     </div>
   );
 }

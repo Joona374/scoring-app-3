@@ -12,7 +12,7 @@ export default function CreateTeam() {
     console.log("Submit");
     console.log(teamName);
 
-    const token = localStorage.getItem("jwt_token");
+    const token = sessionStorage.getItem("jwt_token");
 
     try {
       const response = await fetch(`${BACKEND_URL}/teams/create`, {

@@ -6,7 +6,6 @@ export default function ProtectRoute({ children }) {
   const { isLoggedIn } = useContext(AuthContext);
 
   if (!isLoggedIn) {
-    console.log("Moving back?");
     return <Navigate to="/" replace />;
   }
 

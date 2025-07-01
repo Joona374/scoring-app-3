@@ -5,7 +5,7 @@ export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt_token");
+    const token = sessionStorage.getItem("jwt_token");
     if (token) {
       setIsLoggedIn(true);
     }
@@ -13,12 +13,12 @@ export function AuthProvider({ children }) {
 
   const login = (token) => {
     setIsLoggedIn(true);
-    localStorage.setItem("jwt_token", token);
+    sessionStorage.setItem("jwt_token", token);
   };
 
   const logout = () => {
     setIsLoggedIn(false);
-    localStorage.removeItem("jwt_token");
+    sessionStorage.clear();
   };
 
   const authData = {
