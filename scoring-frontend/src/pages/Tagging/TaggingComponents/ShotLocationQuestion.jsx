@@ -13,14 +13,21 @@ export default function ShotLocationQuestion() {
   );
 
   const handleImageClick = (event) => {
+    const img = event.target;
+
     const x = event.nativeEvent.offsetX;
+    const imageWidth = img.offsetWidth;
+    const percentageX = Math.round((x / imageWidth) * 100);
+
     const y = event.nativeEvent.offsetY;
+    const imageHeight = img.offsetHeight;
+    const percentageY = Math.round((y / imageHeight) * 100);
 
     const last_question = currentQuestion.last_question;
     const next_question_id = currentQuestion.next_question_id;
     const newTag = {
       ...currentTag,
-      location: { x, y },
+      location: { x: percentageX, y: percentageY },
     };
 
     advanceQuestion(last_question, next_question_id, newTag);
