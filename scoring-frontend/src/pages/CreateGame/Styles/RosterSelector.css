@@ -1,0 +1,71 @@
+.roster-selector {
+  display: flex;
+  flex-direction: row;
+}
+
+.lineup {
+    display: flex;
+    flex-direction: row;
+    flex: 3;
+    background-color: red;
+}
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    flex: 2;
+    background-color: green;
+}
+
+.right-column {
+    flex: 2;
+    background-color: yellow;
+}
+
+.positions-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    margin-bottom: 10px;
+    background-color: inherit;
+}
+
+.goalies-row {
+    display: flex;
+    margin-top: auto;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: lightblue;
+}
+
+.player-in-roster-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+    color: black;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: lightgray;
+    height: 40px;
+    width: 30%;
+}
+
+.player-in-roster-box.active {
+  border: 2px solid green;
+  background-color: lightgreen;
+}
+
+.player-in-roster-box:hover {
+    background-color: darkgray;
+}
+
+.player-list {
+    flex: 1;
+    background-color: blue;
+}

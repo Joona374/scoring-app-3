@@ -69,6 +69,11 @@ class PlayerCreate(BaseModel):
     last_name: str
     position: Positions
 
+class PlayerResponse(BaseModel):
+    first_name: str
+    last_name: str
+    position: str  # This would be "FORWARD", "DEFENDER", etc.
+
 class TagSchema(BaseModel):
     location: dict
     shot_result: str
@@ -80,10 +85,6 @@ class AddTag(BaseModel):
 
     tag: dict
 
-class PlayerResponse(BaseModel):
-    first_name: str
-    last_name: str
-    position: str  # This would be "FORWARD", "DEFENDER", etc.
 
 class TeamResponse(BaseModel):
     team_name: str

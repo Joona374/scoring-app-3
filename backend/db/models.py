@@ -1,4 +1,4 @@
-from sqlalchemy import String, ForeignKey, Enum as SQLEnum, func, DateTime
+from sqlalchemy import String, ForeignKey, Enum as SQLEnum, func, DateTime, Date
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime
 from typing import Optional, List
@@ -64,6 +64,9 @@ class Player(Base):
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=True)
     team: Mapped["Team"] = relationship(back_populates="players", foreign_keys=[team_id])
 
+    in_rosters: Mapped[List["GameInRoster"]] = relationship(back_populates="player", foreign_keys="GameInRoster.player_id")
+
+
 class ShotResultTypes(Enum):
     GOAL_FOR = "Maali +"
     GOAL_AGAINST = "Maali -"
@@ -115,3 +118,23 @@ class Tag(Base):
     # SHOT TYPE
     shot_type_id: Mapped[int] = mapped_column(ForeignKey("shot_types.id"))
     shot_type: Mapped["ShotType"] = relationship(back_populates="tags", foreign_keys=[shot_type_id])
+
+class Game(Base):
+    __tablename__ = "games"
+
+    date: Mapped[Date] = mapped_column(Date, nullable=False)
+    opponent: Mapped[str] = mapped_column(String(128), nullable=False)
+    home: Mapped[bool] = mapped_column(nullable=False)
+    in_rosters: Mapped[List["GameInRoster"]] = relationship(back_populates="game", foreign_keys="GameInRoster.game_id")
+
+class GameInRoster(Base):
+    __tablename__ = "games_in_roster"
+
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), nullable=False)
+    game: Mapped["Game"] = relationship(back_populates="in_rosters", foreign_keys=[game_id])
+
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), nullable=False) 
+    player: Mapped[Player] = relationship(back_populates="in_rosters", foreign_keys=[player_id])
+
+    line: Mapped[int] = mapped_column(nullable=False)
+    position: Mapped[str] = mapped_column(String(2), nullable=False)

@@ -9,6 +9,7 @@ import CreateTeam from "./pages/CreateTeam/CreateTeam";
 import CreatePlayer from "./pages/CreatePlayer/CreatePlayer";
 import Tagging from "./pages/Tagging/Tagging";
 import AdminPage from "./pages/Admin/AdminPage";
+import CreateGame from "./pages/CreateGame/CreateGame";
 
 function App() {
   return (
@@ -51,6 +52,14 @@ function App() {
             element={
               <ProtectRoute>
                 <Tagging />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/create-game"
+            element={
+              <ProtectRoute>
+                <CreateGame />
               </ProtectRoute>
             }
           />
