@@ -1,0 +1,11 @@
+ul.dashboard-players {
+    background-color: inherit;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    flex-direction: column;
+}
+
+li {
+    background-color: inherit;
+}

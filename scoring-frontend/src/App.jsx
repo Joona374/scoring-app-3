@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
-import Dashboard from "./pages/Dashboard/Dashboard";
+import TeamDashboard from "./pages/Dashboard/Dashboard";
 import ProtectRoute from "./routing/ProtectedRoute";
 import Navbar from "./components/navbar/Navbar";
 import CreateTeam from "./pages/CreateTeam/CreateTeam";
@@ -26,11 +26,10 @@ function App() {
             path="/dashboard"
             element={
               <ProtectRoute>
-                <Dashboard />
+                <TeamDashboard />
               </ProtectRoute>
             }
           />
-          {/* TODO: PROTECT THESE ROUTER */}
           <Route
             path="/create-team"
             element={

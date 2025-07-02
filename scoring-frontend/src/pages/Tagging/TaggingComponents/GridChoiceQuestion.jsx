@@ -31,7 +31,4 @@ export default function GridChoiceQuestion() {
       })}
     </>
   );
-
-  // AFTER ANSWER, CHECK IF IS LAST QUESTION, then reset currentQuestionId to firstQuestionId.
-  // This should be done in some DRY way.
 }
