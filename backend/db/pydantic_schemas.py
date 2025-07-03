@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from db.models import Positions
-from typing import Optional, List
+from typing import Optional, List, Dict
+from datetime import date
 
 class UserCreate(BaseModel):
     model_config = {"extra": "forbid"}
@@ -70,6 +71,7 @@ class PlayerCreate(BaseModel):
     position: Positions
 
 class PlayerResponse(BaseModel):
+    id: int
     first_name: str
     last_name: str
     position: str  # This would be "FORWARD", "DEFENDER", etc.
@@ -85,9 +87,19 @@ class AddTag(BaseModel):
 
     tag: dict
 
-
 class TeamResponse(BaseModel):
     team_name: str
     join_code: str
     players: List[PlayerResponse]
+
+class PositionInRoster(BaseModel):
+    line: int
+    position: str
+    player: Optional[PlayerResponse]
+
+class GameCreate(BaseModel):
+    opponent: str
+    game_date: date
+    home_game: bool
+    players_in_roster: List[PositionInRoster]
 

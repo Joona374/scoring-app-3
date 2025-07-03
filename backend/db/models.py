@@ -35,7 +35,7 @@ class Team(Base):
     users: Mapped[List["User"]] = relationship(back_populates="team", foreign_keys="User.team_id")
     code: Mapped[List["RegCode"]] = relationship(back_populates="team_related", foreign_keys="RegCode.team_related_id")
     players: Mapped[List["Player"]] = relationship(back_populates="team", foreign_keys="Player.team_id")
-
+    games: Mapped[List["Game"]] = relationship(back_populates="team", foreign_keys="Game.team_id")
 
 class RegCode(Base):
     __tablename__ = "reg_codes"
@@ -126,6 +126,9 @@ class Game(Base):
     opponent: Mapped[str] = mapped_column(String(128), nullable=False)
     home: Mapped[bool] = mapped_column(nullable=False)
     in_rosters: Mapped[List["GameInRoster"]] = relationship(back_populates="game", foreign_keys="GameInRoster.game_id")
+
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=False)
+    team: Mapped["Team"] = relationship(back_populates="games", foreign_keys=[team_id])
 
 class GameInRoster(Base):
     __tablename__ = "games_in_roster"

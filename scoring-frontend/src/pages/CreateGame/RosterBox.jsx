@@ -1,5 +1,6 @@
 export default function RosterBox({
   id,
+  player,
   selectingPosition,
   setSelectingPosition,
 }) {
@@ -22,7 +23,7 @@ export default function RosterBox({
       }`}
       onClick={(event) => handleRosterBoxClick(event.target)}
     >
-      {id}
+      {player ? `${player.first_name} ${player.last_name}` : id}
     </div>
   );
 }

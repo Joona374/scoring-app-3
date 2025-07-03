@@ -48,6 +48,7 @@ def get_player_for_team(db_session: Session = Depends(get_db_session), current_u
     response_players_list = []
     for player in teams_players:
         player_response = PlayerResponse(
+            id=player.id,
             first_name=player.first_name,
             last_name=player.last_name,
             position=player.position.name

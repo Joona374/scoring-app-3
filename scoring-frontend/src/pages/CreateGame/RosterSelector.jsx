@@ -2,32 +2,13 @@ import { useEffect, useState } from "react";
 import "./Styles/RosterSelector.css";
 import RosterBox from "./RosterBox";
 
-export default function RosterSelector({ setShowRosterSelector, players }) {
-  const generateEmptyPlayersInRoster = () => {
-    let emptyPlayersInRoster = [];
-    for (let i = 1; i <= 5; i++) {
-      ["LW", "C", "RW"].map((position) =>
-        emptyPlayersInRoster.push({ line: i, position: position, player: null })
-      );
-    }
-    for (let i = 1; i <= 4; i++) {
-      ["LD", "RD"].map((position) =>
-        emptyPlayersInRoster.push({ line: i, position: position, player: null })
-      );
-    }
-    for (let i = 1; i <= 2; i++) {
-      ["G"].map((position) =>
-        emptyPlayersInRoster.push({ line: i, position: position, player: null })
-      );
-    }
-
-    return emptyPlayersInRoster;
-  };
-
+export default function RosterSelector({
+  setShowRosterSelector,
+  players,
+  playersInRoster,
+  setPlayersInRoster,
+}) {
   const [selectingPosition, setSelectingPosition] = useState("");
-  const [playersInRoster, setPlayersInRoster] = useState(
-    generateEmptyPlayersInRoster()
-  );
 
   const handlePlayerListClick = (target, index) => {
     if (selectingPosition) {
@@ -44,9 +25,13 @@ export default function RosterSelector({ setShowRosterSelector, players }) {
         return spot;
       });
       setPlayersInRoster(newPlayersInRoster);
+      console.log("new: ", newPlayersInRoster);
 
-      const selectedBox = document.getElementById(selectingPosition);
-      selectedBox.innerText = `${player.first_name} ${player.last_name}`;
+      if (rosterSpotIndex < 24) {
+        const nextSpot = playersInRoster[rosterSpotIndex + 1];
+        console.log("Next:", nextSpot.line, nextSpot.position);
+        setSelectingPosition(`${nextSpot.line}-${nextSpot.position}`);
+      }
     } else {
       alert("No position selected");
     }
@@ -62,10 +47,18 @@ export default function RosterSelector({ setShowRosterSelector, players }) {
               return (
                 <div className="positions-row" key={`${num}-DROW`}>
                   {[`${num}-LD`, `${num}-RD`].map((position_id) => {
+                    const rosterSpot = playersInRoster.find(
+                      (spot) => `${spot.line}-${spot.position}` === position_id
+                    );
+
+                    const playerForThisBox = rosterSpot
+                      ? rosterSpot.player
+                      : null;
                     return (
                       <RosterBox
                         id={position_id}
                         key={position_id}
+                        player={playerForThisBox}
                         selectingPosition={selectingPosition}
                         setSelectingPosition={setSelectingPosition}
                       />
@@ -76,16 +69,21 @@ export default function RosterSelector({ setShowRosterSelector, players }) {
             })}
 
             <div className="goalies-row">
-              <RosterBox
-                id="1-G"
-                selectingPosition={selectingPosition}
-                setSelectingPosition={setSelectingPosition}
-              />
-              <RosterBox
-                id="2-G"
-                selectingPosition={selectingPosition}
-                setSelectingPosition={setSelectingPosition}
-              />
+              {["1-G", "2-G"].map((position_id) => {
+                const rosterSpot = playersInRoster.find(
+                  (spot) => `${spot.line}-${spot.position}` === position_id
+                );
+                const playerForThisBox = rosterSpot ? rosterSpot.player : null;
+                return (
+                  <RosterBox
+                    id={position_id}
+                    key={position_id}
+                    player={playerForThisBox}
+                    selectingPosition={selectingPosition}
+                    setSelectingPosition={setSelectingPosition}
+                  />
+                );
+              })}
             </div>
           </div>
           <div className="right-column">
@@ -93,10 +91,18 @@ export default function RosterSelector({ setShowRosterSelector, players }) {
               return (
                 <div className="positions-row" key={`${num}-FROW`}>
                   {[`${num}-LW`, `${num}-C`, `${num}-RW`].map((position_id) => {
+                    const rosterSpot = playersInRoster.find(
+                      (spot) => `${spot.line}-${spot.position}` === position_id
+                    );
+                    const playerForThisBox = rosterSpot
+                      ? rosterSpot.player
+                      : null;
+
                     return (
                       <RosterBox
                         id={position_id}
                         key={position_id}
+                        player={playerForThisBox}
                         selectingPosition={selectingPosition}
                         setSelectingPosition={setSelectingPosition}
                       />

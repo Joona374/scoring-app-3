@@ -7,7 +7,7 @@ export default function CreateGameForm({
   submitGame,
 }) {
   const changeHomeRadio = (new_value) => {
-    setHomeGame(new_value === "true");
+    setHomeGame(new_value === "home");
   };
 
   return (
