@@ -10,6 +10,7 @@ import CreatePlayer from "./pages/CreatePlayer/CreatePlayer";
 import Tagging from "./pages/Tagging/Tagging";
 import AdminPage from "./pages/Admin/AdminPage";
 import CreateGame from "./pages/CreateGame/CreateGame";
+import ExcelTest from "./pages/ExcelTest/ExcelTest";
 
 function App() {
   return (
@@ -60,6 +61,14 @@ function App() {
             element={
               <ProtectRoute>
                 <CreateGame />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/excel-test"
+            element={
+              <ProtectRoute>
+                <ExcelTest />
               </ProtectRoute>
             }
           />

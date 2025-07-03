@@ -44,6 +44,9 @@ export default function Navbar() {
               <Link to="/tagging">Tagging</Link>
             </li>
             <li>
+              <Link to="/excel-test">Excel Test</Link>
+            </li>
+            <li>
               <Link to="/admin">Admin</Link>
             </li>
           </>
