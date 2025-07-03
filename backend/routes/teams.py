@@ -76,6 +76,7 @@ def get_my_team(db_session: Session = Depends(get_db_session), current_user_id: 
     teams_players = []
     for player in team.players:
         player_response = PlayerResponse(
+            id=player.id,
             first_name=player.first_name,
             last_name=player.last_name,
             position=player.position.name
