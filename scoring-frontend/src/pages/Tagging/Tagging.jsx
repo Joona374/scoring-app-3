@@ -7,10 +7,10 @@ export default function Tagging() {
   return (
     <TaggingProvider>
       <div className="tagging-page">
-        <div className="left-column">
+        <div className="tagging-area-column">
           <TaggingArea></TaggingArea>
         </div>
-        <div className="right-column">
+        <div className="tagging-summary-column">
           <TaggingSummary></TaggingSummary>
         </div>
       </div>

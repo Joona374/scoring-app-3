@@ -9,7 +9,7 @@ export default function TaggingSummary() {
       <h3>Tagging summary</h3>
       {taggedEvents.map((tag, index) => {
         return (
-          <p className="listTag">
+          <p key={(tag, index)} className="listTag">
             {index + 1}. {tag.shot_result} {tag.shot_type}
           </p>
         );

@@ -11,6 +11,7 @@ export const TaggingProvider = ({ children }) => {
   const [questionObjects, setQuestionObjects] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [firstQuestionId, setFirstQuestionId] = useState(null);
+  const [playersInRoster, setPlayersInRoster] = useState([]);
 
   const advanceQuestion = (last_question, next_question_id, newTag) => {
     try {
@@ -102,6 +103,8 @@ export const TaggingProvider = ({ children }) => {
         firstQuestionId,
         setFirstQuestionId,
         advanceQuestion,
+        playersInRoster,
+        setPlayersInRoster,
       }}
     >
       {children}

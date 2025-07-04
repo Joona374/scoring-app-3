@@ -103,3 +103,8 @@ class GameCreate(BaseModel):
     home_game: bool
     players_in_roster: List[PositionInRoster]
 
+class GameInRosterResponse(BaseModel):
+    line: int
+    position: str
+    player: PlayerResponse
+    
