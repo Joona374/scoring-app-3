@@ -69,7 +69,8 @@ Thumbs.db
 coverage/
 htmlcov/
 .cache/
-
 *.stackdump
+*.xls
+*.xlsx
 
 README.md
