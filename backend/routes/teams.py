@@ -23,7 +23,7 @@ def generate_random_code() -> str:
 @router.post("/create")
 def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     # Pull the required data from the request body
-    team_name = team_data.name
+    team_name = team_data.name.strip()
     
     # Find the user who want to create a team
     user = db_session.query(User).filter(User.id == current_user_id).first()

@@ -126,6 +126,8 @@ class Game(Base):
     opponent: Mapped[str] = mapped_column(String(128), nullable=False)
     home: Mapped[bool] = mapped_column(nullable=False)
     in_rosters: Mapped[List["GameInRoster"]] = relationship(back_populates="game", foreign_keys="GameInRoster.game_id")
+    team_stats_tags: Mapped[List["TeamStatsTag"]] = relationship(back_populates="game", foreign_keys="TeamStatsTag.game_id")
+
 
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=False)
     team: Mapped["Team"] = relationship(back_populates="games", foreign_keys=[team_id])
@@ -141,3 +143,39 @@ class GameInRoster(Base):
 
     line: Mapped[int] = mapped_column(nullable=False)
     position: Mapped[str] = mapped_column(String(2), nullable=False)
+
+class TeamStatsTag(Base):
+    __tablename__ = "team_stats_tags"
+
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), nullable=False)
+    game: Mapped["Game"] = relationship(back_populates="team_stats_tags", foreign_keys=[game_id])
+
+    play_result: Mapped[str] = mapped_column(String(40), nullable=False)
+    play_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    v5v5_type: Mapped[str] = mapped_column("5v5_type", String(40), nullable=True)
+    rush_type1: Mapped[str] = mapped_column(String(40), nullable=True)
+    rush_type2: Mapped[str] = mapped_column(String(40), nullable=True)
+    takeaway_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    takeaway_happ_pahp_type: Mapped[str] = mapped_column("takeaway_happ/pahp_type", String(40), nullable=True)
+    takeaway_kapp_kahp_type: Mapped[str] = mapped_column("takeaway_kapp/kahp_type", String(40), nullable=True)
+    takeaway_kapp_kahp_type: Mapped[str] = mapped_column("takeaway_papp/hahp_type", String(40), nullable=True)
+    takeaway_jatkopaine_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    hahp_papp_type: Mapped[str] = mapped_column("hahp/papp_type", String(40), nullable=True)
+    hahp_papp_taytto_type: Mapped[str] = mapped_column("hahp/papp_taytto_type", String(40), nullable=True)
+    hahp_papp_alapeli_type: Mapped[str] = mapped_column("hahp/papp_alapeli_type", String(40), nullable=True)
+    hahp_papp_ylapeli_type: Mapped[str] = mapped_column("hahp/papp_ylapeli_type", String(40), nullable=True)
+    rebound_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    faceoff_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    v5v5_other_type: Mapped[str] = mapped_column("5v5_other_type", String(40), nullable=True)
+    pp_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    pp_faceoff_entry_type: Mapped[str] = mapped_column("pp_faceoff/entry_type", String(40), nullable=True)
+    pp_shot_deflection_low_type1: Mapped[str] = mapped_column("pp_shot/deflection_low_type1", String(40), nullable=True)
+    pp_shot_deflection_low_type2: Mapped[str] = mapped_column("pp_shot/deflection_low_type2", String(40), nullable=True)
+    pp_blueline_shot_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    pp_pressure_brokenplay_type: Mapped[str] = mapped_column("pp_pressure/brokenplay_type", String(40), nullable=True)
+    pp_other_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    pp_5vs3_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    pp_av_yv_type: Mapped[str] = mapped_column("pp_av/yv_type", String(40), nullable=True)
+    ot_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    v3vs3_type: Mapped[str] = mapped_column("3vs3_type", String(40), nullable=True)
+    ps_type: Mapped[str] = mapped_column(String(40), nullable=True)

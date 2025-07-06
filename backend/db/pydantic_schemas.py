@@ -108,3 +108,7 @@ class GameInRosterResponse(BaseModel):
     position: str
     player: PlayerResponse
     
+class TeamStatsTagResponse(BaseModel):
+    id: Optional[int]
+    succes: bool
+    tag: dict

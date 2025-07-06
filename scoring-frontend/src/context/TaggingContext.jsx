@@ -36,7 +36,7 @@ export const TaggingProvider = ({ children }) => {
     const token = sessionStorage.getItem("jwt_token");
 
     try {
-      const res = await fetch(`${BACKEND_URL}/tagging/add-tag`, {
+      const res = await fetch(`${BACKEND_URL}/tagging/add-team-tag`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,6 +52,7 @@ export const TaggingProvider = ({ children }) => {
         return;
       }
       const data = await res.json();
+      console.log("data for tag: ", data);
     } catch (error) {
       setTaggedEvents(rollbackTags);
       console.warn("Rolled tagged event back to:", rollbackTags);
@@ -77,6 +78,7 @@ export const TaggingProvider = ({ children }) => {
           (element) => new Question(element)
         );
         setQuestionObjects(questionObjs);
+        console.log(questionObjs);
         if (questionObjs.length > 0) {
           // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
           setCurrentQuestionId(questionObjs[0].id);

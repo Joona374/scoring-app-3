@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { TaggingContext } from "../../../context/TaggingContext";
-
+import "../Styles/GridChoiceQuestion.css";
 export default function GridChoiceQuestion() {
   const { currentTag, questionObjects, currentQuestionId, advanceQuestion } =
     useContext(TaggingContext);
@@ -20,15 +20,27 @@ export default function GridChoiceQuestion() {
   };
 
   return (
-    <>
-      <p>{questionText}</p>
-      {questionOptions.map((option, index) => {
-        return (
-          <div onClick={() => handleAnswerClick(option)} key={index}>
-            {option.answer}
-          </div>
-        );
-      })}
-    </>
+    <div className="grid-question-container">
+      <h3 className="grid-question-text">{questionText}</h3>
+      <div
+        className={
+          currentQuestion.options.length <= 1
+            ? "grid-options single-grid-option"
+            : "grid-options"
+        }
+      >
+        {questionOptions.map((option, index) => {
+          return (
+            <button
+              className="grid-option-button"
+              onClick={() => handleAnswerClick(option)}
+              key={index}
+            >
+              {option.answer}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

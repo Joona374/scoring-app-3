@@ -1,8 +1,8 @@
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 import json
-from db.pydantic_schemas import AddTag, TagSchema, GameInRosterResponse, PlayerResponse
-from db.models import User, Tag, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes
+from db.pydantic_schemas import AddTag, TagSchema, GameInRosterResponse, PlayerResponse, TeamStatsTagResponse
+from db.models import User, Tag, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag
 from db.db_manager import get_db_session
 from sqlalchemy.orm import Session
 from utils import get_current_user_id
@@ -15,11 +15,34 @@ router = APIRouter(
 
 @router.get("/questions")
 def get_questions():
-    questions_json_path = Path("./tagging/new_team_tags.json")
+    questions_json_path = Path("./tagging/team_stats_questions.json")
     text = questions_json_path.read_text()
     parsed_json = json.loads(text)
 
     return parsed_json
+
+@router.post("/add-team-tag")
+def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    GAME_ID = 1 # TODO: ACTUALLY GET THE ID FROM FRONTEND
+    
+    filtered_tag = {k: v for k, v in tag_data.tag.items() if k != "new_question"}
+    tag_for_model = {}
+    for key, value in filtered_tag.items():
+        key_to_use = key
+        key_to_use = key.replace("5v5", "v5v5")
+        key_to_use = key_to_use.replace("/", "_")
+        tag_for_model[key_to_use] = value
+
+
+    tag_for_model["game_id"] = GAME_ID
+    print(tag_for_model)
+    new_team_stats_tag = TeamStatsTag(**tag_for_model)
+    db_session.add(new_team_stats_tag)
+    db_session.commit()
+
+    return TeamStatsTagResponse(id=new_team_stats_tag.id, succes=True, tag=filtered_tag)
+
+
 
 @router.post("/add-tag")
 def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):

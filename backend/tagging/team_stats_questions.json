@@ -1,6 +1,23 @@
 {
     "questions": [
         {
+            "id": 0,
+            "type": "TEXT",
+            "key": "new_question",
+            "text": "Merkitse uusi maalipaikka?",
+            "options": [
+                {
+                    "answer": "Merkitse uusi maalipaikka",
+                    "next_question_id": 1,
+                    "last_question": false
+
+                }
+            ],
+            "next_question_id": null,
+            "last_question": null
+        },
+
+        {
             "id": 1,
             "type": "TEXT",
             "key": "play_result",
@@ -334,7 +351,7 @@
         {
             "id": 12,
             "type": "TEXT",
-            "key": "hahp/papp_täyttö_type",
+            "key": "hahp/papp_taytto_type",
             "text": "HAHP/PAPP täyttö tarkenne?",
             "options": [
                 {
@@ -386,7 +403,7 @@
         {
             "id": 14,
             "type": "TEXT",
-            "key": "hahp/papp_yläpeli_type",
+            "key": "hahp/papp_ylapeli_type",
             "text": "HAHP/PAPP yläpeli tarkenne?",
             "options": [
                 {
@@ -785,7 +802,7 @@
         {
             "id": 28,
             "type": "TEXT",
-            "key": "ot_type",
+            "key": "3vs3_type",
             "text": "Millainen 3 vs 3 paikka?",
             "options": [
                 {
@@ -812,7 +829,7 @@
         {
             "id": 29,
             "type": "TEXT",
-            "key": "ot_type",
+            "key": "ps_type",
             "text": "Mikä ratkaisu rankkarissa?",
             "options": [
                 {

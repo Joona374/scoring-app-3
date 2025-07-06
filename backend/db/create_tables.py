@@ -20,7 +20,7 @@ def force_drop_tables():
     with engine.connect() as connection:
         # We use text() to tell SQLAlchemy this is a literal SQL command.
         # CASCADE tells PostgreSQL to drop dependent objects (like constraints) too.
-        connection.execute(text("DROP TABLE IF EXISTS users, teams, reg_codes, players, shot_results, shot_types, tags, games, games_in_roster CASCADE;"))
+        connection.execute(text("DROP TABLE IF EXISTS users, teams, reg_codes, players, shot_results, shot_types, tags, games, games_in_roster, team_stats_tags CASCADE;"))
         connection.commit() # Make sure the transaction is committed
     print("Forceful drop successful.")
 
