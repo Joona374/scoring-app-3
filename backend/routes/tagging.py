@@ -13,18 +13,13 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/test")
-def test_tagging():
-    return "Hello :D"
-
 @router.get("/questions")
 def get_questions():
-    questions_json_path = Path("./tagging/questions.json")
+    questions_json_path = Path("./tagging/new_team_tags.json")
     text = questions_json_path.read_text()
     parsed_json = json.loads(text)
 
     return parsed_json
-
 
 @router.post("/add-tag")
 def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):

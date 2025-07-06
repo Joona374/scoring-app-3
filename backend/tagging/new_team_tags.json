@@ -1,0 +1,839 @@
+{
+    "questions": [
+        {
+            "id": 1,
+            "type": "TEXT",
+            "key": "play_result",
+            "text": "Oliko tilanne Maali +, Maali -, MP + vai MP -?",
+            "options": [
+                {
+                    "answer": "Maali +",
+                    "next_question_id": 2,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Maali -",
+                    "next_question_id": 2,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "MP +",
+                    "next_question_id": 2,
+                    "last_question": false
+                },
+                {
+                    "answer": "MP -",
+                    "next_question_id": 2,
+                    "last_question": false
+                }
+            ],
+            "next_question_id": null,
+            "last_question": null
+        },
+
+        {
+            "id": 2,
+            "type": "TEXT",
+            "key": "play_type",
+            "text": "Oliko tilanne 5vs5, YV / AV, vai jatkoaika?",
+            "options": [
+                {
+                    "answer": "5vs5",
+                    "next_question_id": 3,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "YV / AV",
+                    "next_question_id": 18,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Jatkoaika",
+                    "next_question_id": 27,
+                    "last_question": false
+
+                }
+            ]
+        },
+
+
+
+        {
+            "id": 3,
+            "type": "TEXT",
+            "key": "5v5_type",
+            "text": "Minkälainen 5 vs 5 tilanne?",
+            "options": [
+                {
+                    "answer": "SHP",
+                    "next_question_id": 4,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Riisto / Menetys",
+                    "next_question_id": 6,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "HAHP / PAPP",
+                    "next_question_id": 11,
+                    "last_question": false
+
+                },                {
+                    "answer": "Rebound",
+                    "next_question_id": 15,
+                    "last_question": false
+
+                },                {
+                    "answer": "Aloitus",
+                    "next_question_id": 16,
+                    "last_question": false
+
+                },                {
+                    "answer": "Muu",
+                    "next_question_id": 17,
+                    "last_question": false
+
+                }
+            ]
+        },
+
+        {
+            "id": 4,
+            "type": "TEXT",
+            "key": "rush_type1",
+            "text": "Millainen suorahyökkäys",
+            "options": [
+                {
+                    "answer": "Tasavoimainen",
+                    "next_question_id": 5,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Ylivoimainen",
+                    "next_question_id": 5,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Alivoimainen",
+                    "next_question_id": 5,
+                    "last_question": false
+
+                },
+                                {
+                    "answer": "Läpiajo",
+                    "next_question_id": 5,
+                    "last_question": false
+
+                }
+            ]
+        },
+
+        {
+            "id": 5,
+            "type": "TEXT",
+            "key": "rush_type2",
+            "text": "Mistä suorahyökkäys lähti?",
+            "options": [
+                {
+                    "answer": "PAHP",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "KAHP",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Kääntö",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 6,
+            "type": "TEXT",
+            "key": "takeaway_type",
+            "text": "Missä riisto / menetys tapahtui?",
+            "options": [
+                {
+                    "answer": "HAPP/PAHP",
+                    "next_question_id": 7,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "KAPP/KAHP",
+                    "next_question_id": 8,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "PAPP/HAHP",
+                    "next_question_id": 9,
+                    "last_question": false
+
+                },                {
+                    "answer": "Jatkopaine",
+                    "next_question_id": 10,
+                    "last_question": false
+
+                }
+            ]
+        },
+
+        {
+            "id": 7,
+            "type": "TEXT",
+            "key": "takeaway_happ/pahp_type",
+            "text": "Riiston tarkenne?",
+            "options": [
+                {
+                    "answer": "1. Paine",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "2. Paine",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "3. / Puolustajan Paine",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 8,
+            "type": "TEXT",
+            "key": "takeaway_kapp/kahp_type",
+            "text": "Riiston tarkenne?",
+            "options": [
+                {
+                    "answer": "Syöttö",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Kuljetus",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Muu",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 9,
+            "type": "TEXT",
+            "key": "takeaway_papp/hahp_type",
+            "text": "Riiston tarkenne?",
+            "options": [
+                {
+                    "answer": "Pohja",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Half Board",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Viiva",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 10,
+            "type": "TEXT",
+            "key": "takeaway_jatkopaine_type",
+            "text": "Riiston tarkenne?",
+            "options": [
+                {
+                    "answer": "1. Paine",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "2. Paine",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "3. / Puolustajan Paine",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 11,
+            "type": "TEXT",
+            "key": "hahp/papp_type",
+            "text": "Millainen HAHP/PAPP tilanne?",
+            "options": [
+                {
+                    "answer": "Täyttö",
+                    "next_question_id": 12,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Alapeli",
+                    "next_question_id": 13,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Yläpeli",
+                    "next_question_id": 14,
+                    "last_question": false
+
+                }
+            ]
+        },
+
+        {
+            "id": 12,
+            "type": "TEXT",
+            "key": "hahp/papp_täyttö_type",
+            "text": "HAHP/PAPP täyttö tarkenne?",
+            "options": [
+                {
+                    "answer": "Murtautuminen",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Syöttö 3",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Syöttö 4/5",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+        {
+            "id": 13,
+            "type": "TEXT",
+            "key": "hahp/papp_alapeli_type",
+            "text": "HAHP/PAPP alapeli tarkenne?",
+            "options": [
+                {
+                    "answer": "Syöttö sisään",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Murtautuminen sisään",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Muu",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+        {
+            "id": 14,
+            "type": "TEXT",
+            "key": "hahp/papp_yläpeli_type",
+            "text": "HAHP/PAPP yläpeli tarkenne?",
+            "options": [
+                {
+                    "answer": "Suora",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Ohjaus",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 15,
+            "type": "TEXT",
+            "key": "rebound_type",
+            "text": "Millaisesta hyökkäyksestä rebound syntyi?",
+            "options": [
+                {
+                    "answer": "SHP",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Riisto/Menetys",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "HAHP/PAPP",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+        {
+            "id": 16,
+            "type": "TEXT",
+            "key": "faceoff_type",
+            "text": "Missä aloitus oli?",
+            "options": [
+                {
+                    "answer": "Hyökkäysalue",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Keskialue",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Puolustusalue",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 17,
+            "type": "TEXT",
+            "key": "5v5_other_type",
+            "text": "Muu, mikä?",
+            "options": [
+                {
+                    "answer": "IM",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "TM",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "4v4",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 18,
+            "type": "TEXT",
+            "key": "pp_type",
+            "text": "Mistä YV / AV paikka syntyi?",
+            "options": [
+                {
+                    "answer": "Aloitus / Haku / Vastaanotto",
+                    "next_question_id": 19,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Laukaus / Ohjuri alhaalta",
+                    "next_question_id": 20,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Laukaus viivalta",
+                    "next_question_id": 22,
+                    "last_question": false
+
+                },
+                                {
+                    "answer": "Paineenpurku / Riisto / Brokenplay",
+                    "next_question_id": 23,
+                    "last_question": false
+
+                },                {
+                    "answer": "Muu",
+                    "next_question_id": 24,
+                    "last_question": false
+
+                },                {
+                    "answer": "5 vs 3",
+                    "next_question_id": 25,
+                    "last_question": false
+
+                },                {
+                    "answer": " AV / YV",
+                    "next_question_id": 26,
+                    "last_question": false
+
+                }
+            ]
+        },
+
+    {
+            "id": 19,
+            "type": "TEXT",
+            "key": "pp_faceoff/entry_type",
+            "text": "Aloitus vai haku?",
+            "options": [
+                {
+                    "answer": "Aloitus Vasen",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Aloitus Oikea",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Haku / vastaanotto",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 20,
+            "type": "TEXT",
+            "key": "pp_shot/deflection_low_type1",
+            "text": "Mistä syöttö tuli?",
+            "options": [
+                {
+                    "answer": "Päädystä",
+                    "next_question_id": 21,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Siiveltä",
+                    "next_question_id": 21,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Keskeltä",
+                    "next_question_id": 21,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Viivasta",
+                    "next_question_id": 21,
+                    "last_question": false
+
+                }
+            ]
+        },
+
+        {
+            "id": 21,
+            "type": "TEXT",
+            "key": "pp_shot/deflection_low_type2",
+            "text": "Laukaus / Ohjuri alhaalta tarkenne?",
+            "options": [
+                {
+                    "answer": "Kesk. / Pääty.",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Vasen Siipi",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Oikea siipi",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Viivasta",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 22,
+            "type": "TEXT",
+            "key": "pp_blueline_shot_type",
+            "text": "Millainen maalipaikka viivavedosta syntyi?",
+            "options": [
+                {
+                    "answer": "Suora",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Ohjuri",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Rebound",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+
+            ]
+        },
+
+        {
+            "id": 23,
+            "type": "TEXT",
+            "key": "pp_pressure/brokenplay_type",
+            "text": "Paineenpurku / Riisto / Brokenplay?",
+            "options": [
+                {
+                    "answer": "Paine",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Riisto",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Brokenplay",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 24,
+            "type": "TEXT",
+            "key": "pp_other_type",
+            "text": "Kuljetus / Punnerrus / Rebound?",
+            "options": [
+                {
+                    "answer": "Kuljetus",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Punnerrus",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Rebound",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 25,
+            "type": "TEXT",
+            "key": "pp_5vs3_type",
+            "text": "Millainen 5 vs 3 paikka?",
+            "options": [
+                {
+                    "answer": "Suora",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Ohjuri",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Rebound",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 26,
+            "type": "TEXT",
+            "key": "pp_av/yv_type",
+            "text": "Läpiajo / YV / TV??",
+            "options": [
+                {
+                    "answer": "Läpiajo",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "YV",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "TV",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 27,
+            "type": "TEXT",
+            "key": "ot_type",
+            "text": "Jatkoaika vai rankkari?",
+            "options": [
+                {
+                    "answer": "3 vs 3",
+                    "next_question_id": 28,
+                    "last_question": false
+
+                },
+                {
+                    "answer": "Rangaistus- / Voittolaukaus",
+                    "next_question_id": 29,
+                    "last_question": false
+
+                }
+            ]
+        },
+
+        {
+            "id": 28,
+            "type": "TEXT",
+            "key": "ot_type",
+            "text": "Millainen 3 vs 3 paikka?",
+            "options": [
+                {
+                    "answer": "Aloitus",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Hallinta",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Riisto / Menetys",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        },
+
+        {
+            "id": 29,
+            "type": "TEXT",
+            "key": "ot_type",
+            "text": "Mikä ratkaisu rankkarissa?",
+            "options": [
+                {
+                    "answer": "Laukaus",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Harhautus",
+                    "next_question_id": null,
+                    "last_question": true
+
+                },
+                {
+                    "answer": "Muu",
+                    "next_question_id": null,
+                    "last_question": true
+
+                }
+            ]
+        }
+    ]
+}
