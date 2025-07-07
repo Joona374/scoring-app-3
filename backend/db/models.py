@@ -152,30 +152,48 @@ class TeamStatsTag(Base):
 
     play_result: Mapped[str] = mapped_column(String(40), nullable=False)
     play_type: Mapped[str] = mapped_column(String(40), nullable=False)
-    v5v5_type: Mapped[str] = mapped_column("5v5_type", String(40), nullable=True)
+    v5v5_type: Mapped[str] = mapped_column(String(40), nullable=True)
     rush_type1: Mapped[str] = mapped_column(String(40), nullable=True)
     rush_type2: Mapped[str] = mapped_column(String(40), nullable=True)
     takeaway_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    takeaway_happ_pahp_type: Mapped[str] = mapped_column("takeaway_happ/pahp_type", String(40), nullable=True)
-    takeaway_kapp_kahp_type: Mapped[str] = mapped_column("takeaway_kapp/kahp_type", String(40), nullable=True)
-    takeaway_kapp_kahp_type: Mapped[str] = mapped_column("takeaway_papp/hahp_type", String(40), nullable=True)
+    takeaway_happ_pahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    takeaway_kapp_kahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    takeaway_kapp_kahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
     takeaway_jatkopaine_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    hahp_papp_type: Mapped[str] = mapped_column("hahp/papp_type", String(40), nullable=True)
-    hahp_papp_taytto_type: Mapped[str] = mapped_column("hahp/papp_taytto_type", String(40), nullable=True)
-    hahp_papp_alapeli_type: Mapped[str] = mapped_column("hahp/papp_alapeli_type", String(40), nullable=True)
-    hahp_papp_ylapeli_type: Mapped[str] = mapped_column("hahp/papp_ylapeli_type", String(40), nullable=True)
+    hahp_papp_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    hahp_papp_taytto_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    hahp_papp_alapeli_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    hahp_papp_ylapeli_type: Mapped[str] = mapped_column(String(40), nullable=True)
     rebound_type: Mapped[str] = mapped_column(String(40), nullable=True)
     faceoff_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    v5v5_other_type: Mapped[str] = mapped_column("5v5_other_type", String(40), nullable=True)
+    v5v5_other_type: Mapped[str] = mapped_column(String(40), nullable=True)
     pp_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    pp_faceoff_entry_type: Mapped[str] = mapped_column("pp_faceoff/entry_type", String(40), nullable=True)
-    pp_shot_deflection_low_type1: Mapped[str] = mapped_column("pp_shot/deflection_low_type1", String(40), nullable=True)
-    pp_shot_deflection_low_type2: Mapped[str] = mapped_column("pp_shot/deflection_low_type2", String(40), nullable=True)
+    pp_faceoff_entry_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    pp_shot_deflection_low_type1: Mapped[str] = mapped_column(String(40), nullable=True)
+    pp_shot_deflection_low_type2: Mapped[str] = mapped_column(String(40), nullable=True)
     pp_blueline_shot_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    pp_pressure_brokenplay_type: Mapped[str] = mapped_column("pp_pressure/brokenplay_type", String(40), nullable=True)
+    pp_pressure_brokenplay_type: Mapped[str] = mapped_column(String(40), nullable=True)
     pp_other_type: Mapped[str] = mapped_column(String(40), nullable=True)
     pp_5vs3_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    pp_av_yv_type: Mapped[str] = mapped_column("pp_av/yv_type", String(40), nullable=True)
+    pp_av_yv_type: Mapped[str] = mapped_column(String(40), nullable=True)
     ot_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    v3vs3_type: Mapped[str] = mapped_column("3vs3_type", String(40), nullable=True)
+    v3vs3_type: Mapped[str] = mapped_column(String(40), nullable=True)
     ps_type: Mapped[str] = mapped_column(String(40), nullable=True)
+
+    def __repr__(self):
+        datapoints = []
+        for key, value in vars(self).items():
+            if value != None and key != "_sa_instance_state":
+                if type(value) == str:
+                    datapoint = f"{key}='{value}'"
+                else:
+                    datapoint = f"{key}={value}"
+
+                datapoints.append(datapoint)
+
+        repr_string = "TeamStasTag("
+        for datapoint in datapoints:
+            repr_string += f"{datapoint}, "
+        repr_string = repr_string[:-2] + ")\n"
+
+        return repr_string

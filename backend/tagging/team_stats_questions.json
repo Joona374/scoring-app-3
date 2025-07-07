@@ -82,7 +82,7 @@
         {
             "id": 3,
             "type": "TEXT",
-            "key": "5v5_type",
+            "key": "v5v5_type",
             "text": "Minkälainen 5 vs 5 tilanne?",
             "options": [
                 {
@@ -216,7 +216,7 @@
         {
             "id": 7,
             "type": "TEXT",
-            "key": "takeaway_happ/pahp_type",
+            "key": "takeaway_happ_pahp_type",
             "text": "Riiston tarkenne?",
             "options": [
                 {
@@ -243,7 +243,7 @@
         {
             "id": 8,
             "type": "TEXT",
-            "key": "takeaway_kapp/kahp_type",
+            "key": "takeaway_kapp_kahp_type",
             "text": "Riiston tarkenne?",
             "options": [
                 {
@@ -270,7 +270,7 @@
         {
             "id": 9,
             "type": "TEXT",
-            "key": "takeaway_papp/hahp_type",
+            "key": "takeaway_papp_hahp_type",
             "text": "Riiston tarkenne?",
             "options": [
                 {
@@ -324,7 +324,7 @@
         {
             "id": 11,
             "type": "TEXT",
-            "key": "hahp/papp_type",
+            "key": "hahp_papp_type",
             "text": "Millainen HAHP/PAPP tilanne?",
             "options": [
                 {
@@ -351,7 +351,7 @@
         {
             "id": 12,
             "type": "TEXT",
-            "key": "hahp/papp_taytto_type",
+            "key": "hahp_papp_taytto_type",
             "text": "HAHP/PAPP täyttö tarkenne?",
             "options": [
                 {
@@ -377,7 +377,7 @@
         {
             "id": 13,
             "type": "TEXT",
-            "key": "hahp/papp_alapeli_type",
+            "key": "hahp_papp_alapeli_type",
             "text": "HAHP/PAPP alapeli tarkenne?",
             "options": [
                 {
@@ -403,7 +403,7 @@
         {
             "id": 14,
             "type": "TEXT",
-            "key": "hahp/papp_ylapeli_type",
+            "key": "hahp_papp_ylapeli_type",
             "text": "HAHP/PAPP yläpeli tarkenne?",
             "options": [
                 {
@@ -477,7 +477,7 @@
         {
             "id": 17,
             "type": "TEXT",
-            "key": "5v5_other_type",
+            "key": "v5v5_other_type",
             "text": "Muu, mikä?",
             "options": [
                 {
@@ -552,7 +552,7 @@
     {
             "id": 19,
             "type": "TEXT",
-            "key": "pp_faceoff/entry_type",
+            "key": "pp_faceoff_entry_type",
             "text": "Aloitus vai haku?",
             "options": [
                 {
@@ -579,7 +579,7 @@
         {
             "id": 20,
             "type": "TEXT",
-            "key": "pp_shot/deflection_low_type1",
+            "key": "pp_shot_deflection_low_type1",
             "text": "Mistä syöttö tuli?",
             "options": [
                 {
@@ -612,7 +612,7 @@
         {
             "id": 21,
             "type": "TEXT",
-            "key": "pp_shot/deflection_low_type2",
+            "key": "pp_shot_deflection_low_type2",
             "text": "Laukaus / Ohjuri alhaalta tarkenne?",
             "options": [
                 {
@@ -673,7 +673,7 @@
         {
             "id": 23,
             "type": "TEXT",
-            "key": "pp_pressure/brokenplay_type",
+            "key": "pp_pressure_brokenplay_type",
             "text": "Paineenpurku / Riisto / Brokenplay?",
             "options": [
                 {
@@ -704,7 +704,7 @@
             "text": "Kuljetus / Punnerrus / Rebound?",
             "options": [
                 {
-                    "answer": "Kuljetus",
+                    "answer": "Kuljetus YV",
                     "next_question_id": null,
                     "last_question": true
 
@@ -754,7 +754,7 @@
         {
             "id": 26,
             "type": "TEXT",
-            "key": "pp_av/yv_type",
+            "key": "pp_av_yv_type",
             "text": "Läpiajo / YV / TV??",
             "options": [
                 {
@@ -788,13 +788,11 @@
                     "answer": "3 vs 3",
                     "next_question_id": 28,
                     "last_question": false
-
                 },
                 {
                     "answer": "Rangaistus- / Voittolaukaus",
                     "next_question_id": 29,
                     "last_question": false
-
                 }
             ]
         },
@@ -802,7 +800,7 @@
         {
             "id": 28,
             "type": "TEXT",
-            "key": "3vs3_type",
+            "key": "v3vs3_type",
             "text": "Millainen 3 vs 3 paikka?",
             "options": [
                 {

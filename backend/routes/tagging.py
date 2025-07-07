@@ -29,8 +29,6 @@ def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_se
     tag_for_model = {}
     for key, value in filtered_tag.items():
         key_to_use = key
-        key_to_use = key.replace("5v5", "v5v5")
-        key_to_use = key_to_use.replace("/", "_")
         tag_for_model[key_to_use] = value
 
 
