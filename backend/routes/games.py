@@ -33,3 +33,11 @@ def create_game(data: GameCreate, db_session: Session = Depends(get_db_session),
 
     db_session.add(new_game)
     db_session.commit()
+
+    return {"game_id": new_game.id}
+
+@router.get("/get-for-user")
+def create_game(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    games = db_session.query(Game).filter(Game.team == user.team).all()
+    return games

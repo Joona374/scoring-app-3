@@ -1,10 +1,13 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { TaggingContext } from "../../context/TaggingContext";
 
 import ShotLocationQuestion from "./TaggingComponents/ShotLocationQuestion";
 import GridChoiceQuestion from "./TaggingComponents/GridChoiceQuestion";
 import ShooterQuestion from "./TaggingComponents/ShooterQuestion";
+import CreateGame from "../CreateGame/CreateGame";
 import "./Styles/TaggingArea.css";
+import GamePicker from "./GamePicker";
+import ContinueGamePicker from "./ContinueGamePicker";
 
 export default function TaggingArea() {
   // Import the "public" variables from context
@@ -19,7 +22,15 @@ export default function TaggingArea() {
     setCurrentQuestionId,
     playersInRoster,
     setPlayersInRoster,
+    currentGameId,
+    setCurrentGameId,
+    gamesForTeam,
+    setGamesForTEam,
   } = useContext(TaggingContext);
+
+  const [view, setView] = useState("picker"); // Options: 'picker', 'create'
+
+  console.log("setCurrentGameId type:", typeof setCurrentGameId);
 
   // This function gets the roster for this game form db
   const getRosterFromDb = async (gameId) => {
@@ -50,15 +61,66 @@ export default function TaggingArea() {
   };
 
   useEffect(() => {
-    // HARDOCED JUST FOR NOW TESTING TODO CHANGE!!
-    const gameId = 1;
-    getRosterFromDb(gameId);
+    const getGames = async () => {
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+      const token = sessionStorage.getItem("jwt_token");
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/games/get-for-user`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          console.log(
+            "Getting a list of games to continue from the server failed."
+          );
+        }
+
+        const data = await res.json();
+        console.log(data);
+        setGamesForTEam(data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getGames();
   }, []);
+
+  useEffect(() => {
+    if (currentGameId) getRosterFromDb(currentGameId);
+  }, [currentGameId]);
 
   // Get the current question using the currentQuestionId
   const currentQuestion = questionObjects.find(
     (q) => q.id === currentQuestionId
   );
+
+  if (!currentGameId) {
+    if (view === "picker") {
+      return (
+        <GamePicker
+          setCurrentGameId={setCurrentGameId}
+          onCreateGame={() => setView("create")}
+          onContinueGame={() => setView("continue")}
+        />
+      );
+    } else if (view === "create") {
+      return (
+        <CreateGame
+          setCurrentGameId={setCurrentGameId}
+          onCancel={() => setView("picker")}
+        />
+      );
+    } else {
+      return (
+        <ContinueGamePicker
+          gamesForTeam={gamesForTeam}
+          setCurrentGameId={setCurrentGameId}
+        ></ContinueGamePicker>
+      );
+    }
+  }
 
   // If no currentQuestion (still fecthing) display Loading...
   if (!currentQuestion) return <p>Loading...</p>;
@@ -78,12 +140,3 @@ export default function TaggingArea() {
 
   return <div className="question-container">{renderQuestionComponent()}</div>;
 }
-
-// TODO: MVP Question Flow
-// - Render question component based on type:
-//     - SHOT_LOCATION -> <ShotLocationQuestion />
-//     - TEXT          -> <TextQuestion />
-// - Each question component calls `submitAnswer(value)` to:
-//     - Save answer (optional)
-//     - Update currentQuestionId to next_question_id
-// - If final_question is true -> show "Done" or summary

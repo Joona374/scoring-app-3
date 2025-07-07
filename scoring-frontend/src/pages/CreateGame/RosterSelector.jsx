@@ -42,7 +42,7 @@ export default function RosterSelector({
       <h3>This is roster selector :ddD</h3>
       <div className="roster-selector">
         <div className="lineup">
-          <div className="left-column">
+          <div className="left-roster-column">
             {["1", "2", "3", "4"].map((num) => {
               return (
                 <div className="positions-row" key={`${num}-DROW`}>
@@ -86,7 +86,7 @@ export default function RosterSelector({
               })}
             </div>
           </div>
-          <div className="right-column">
+          <div className="right-roster-column">
             {["1", "2", "3", "4", "5"].map((num) => {
               return (
                 <div className="positions-row" key={`${num}-FROW`}>

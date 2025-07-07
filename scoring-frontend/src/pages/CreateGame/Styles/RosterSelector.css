@@ -10,15 +10,15 @@
     background-color: red;
 }
 
-.left-column {
+.left-roster-column {
     display: flex;
     flex-direction: column;
     flex: 2;
     background-color: green;
 }
 
-.right-column {
-    flex: 2;
+.right-roster-column {
+    flex: 3;
     background-color: yellow;
 }
 

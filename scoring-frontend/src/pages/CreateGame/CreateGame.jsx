@@ -5,7 +5,8 @@ import RosterSelector from "./RosterSelector";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-export default function CreateGame() {
+export default function CreateGame({ setCurrentGameId, onCancel }) {
+  console.log("CreateGame received setCurrentGameId:", typeof setCurrentGameId);
   const generateEmptyPlayersInRoster = () => {
     let emptyPlayersInRoster = [];
     for (let i = 1; i <= 5; i++) {
@@ -84,14 +85,10 @@ export default function CreateGame() {
 
       const data = await res.json();
       console.log("It went okay?", data);
+      setCurrentGameId(data.game_id);
     } catch (error) {
       console.log("OH NO ERROR: ", error);
     }
-
-    console.log(opponent);
-    console.log(gameDate);
-    console.log(homeGame);
-    console.log(playersInRoster);
   };
 
   return (

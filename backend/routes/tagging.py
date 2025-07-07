@@ -23,8 +23,6 @@ def get_questions():
 
 @router.post("/add-team-tag")
 def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    GAME_ID = 1 # TODO: ACTUALLY GET THE ID FROM FRONTEND
-    
     filtered_tag = {k: v for k, v in tag_data.tag.items() if k != "new_question"}
     tag_for_model = {}
     for key, value in filtered_tag.items():
@@ -32,7 +30,6 @@ def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_se
         tag_for_model[key_to_use] = value
 
 
-    tag_for_model["game_id"] = GAME_ID
     print(tag_for_model)
     new_team_stats_tag = TeamStatsTag(**tag_for_model)
     db_session.add(new_team_stats_tag)
