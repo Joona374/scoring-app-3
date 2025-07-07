@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Response, Depends
 from sqlalchemy.orm import Session
-import pandas as pd
 from io import BytesIO
 from openpyxl import load_workbook
 from collections import defaultdict
