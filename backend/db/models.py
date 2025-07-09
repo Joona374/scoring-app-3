@@ -65,6 +65,10 @@ class Player(Base):
     team: Mapped["Team"] = relationship(back_populates="players", foreign_keys=[team_id])
 
     in_rosters: Mapped[List["GameInRoster"]] = relationship(back_populates="player", foreign_keys="GameInRoster.player_id")
+    shooter_in: Mapped[List["PlayerStatsTag"]] = relationship(back_populates="shooter", foreign_keys="PlayerStatsTag.shooter_id")
+    on_ice_for: Mapped[List["PlayerStatsTagOnIce"]] = relationship(back_populates="player", foreign_keys="PlayerStatsTagOnIce.player_id")
+    participating_on: Mapped[List["PlayerStatsTagParticipating"]] = relationship(back_populates="player", foreign_keys="PlayerStatsTagParticipating.player_id")
+    
 
 
 class ShotResultTypes(Enum):
@@ -84,13 +88,17 @@ class ShotResult(Base):
     __tablename__ = "shot_results"
 
     value: Mapped[ShotResultTypes] = mapped_column(SQLEnum(ShotResultTypes), nullable=False, unique=True)
-    tags: Mapped[List["Tag"]] = relationship(back_populates="shot_result", foreign_keys="Tag.shot_result_id")
+    tags: Mapped[List["PlayerStatsTag"]] = relationship(back_populates="shot_result", foreign_keys="PlayerStatsTag.shot_result_id")
 
 class ShotTypeTypes(Enum):
-    WRIST_SHOT = "Wrist Shot"
-    SLAP_SHOT = "Slap Shot"
-    SNAP_SHOT = "Snap Shot"
-    ONE_TIMER = "One-Timer"
+    CARRY_SHOT = "Kuljetuksesta"
+    CAN_SHOT = "Catch and release"
+    ONE_TIMER = "Onetimer"
+    LOWHIGH_SHOT = "Pystysyötöstä"
+    TAKEAWAY_SHOT = "Riistosta"
+    REBOUND_SHOT = "Rebound"
+    DEFLECTION_SHOT = "Ohjaus"
+
 
     @classmethod
     def from_string(cls, str_value: str):
@@ -103,21 +111,21 @@ class ShotType(Base):
     __tablename__ = "shot_types"
 
     value: Mapped[ShotTypeTypes] = mapped_column(SQLEnum(ShotTypeTypes), nullable=False, unique=True)
-    tags: Mapped[List["Tag"]] = relationship(back_populates="shot_type", foreign_keys="Tag.shot_type_id")
+    tags: Mapped[List["PlayerStatsTag"]] = relationship(back_populates="shot_type", foreign_keys="PlayerStatsTag.shot_type_id")
 
-class Tag(Base):
-    __tablename__ = "tags"
+# class Tag(Base):
+#     __tablename__ = "tags"
 
-    ice_x: Mapped[int] = mapped_column(nullable=False)
-    ice_y: Mapped[int] = mapped_column(nullable=False)
+#     ice_x: Mapped[int] = mapped_column(nullable=False)
+#     ice_y: Mapped[int] = mapped_column(nullable=False)
 
-    # SHOT RESULT
-    shot_result_id: Mapped[int] = mapped_column(ForeignKey("shot_results.id"), nullable=False)
-    shot_result: Mapped["ShotResult"] = relationship(back_populates="tags", foreign_keys=[shot_result_id])
+#     # SHOT RESULT
+#     shot_result_id: Mapped[int] = mapped_column(ForeignKey("shot_results.id"), nullable=False)
+#     shot_result: Mapped["ShotResult"] = relationship(back_populates="tags", foreign_keys=[shot_result_id])
 
-    # SHOT TYPE
-    shot_type_id: Mapped[int] = mapped_column(ForeignKey("shot_types.id"))
-    shot_type: Mapped["ShotType"] = relationship(back_populates="tags", foreign_keys=[shot_type_id])
+#     # SHOT TYPE
+#     shot_type_id: Mapped[int] = mapped_column(ForeignKey("shot_types.id"))
+#     shot_type: Mapped["ShotType"] = relationship(back_populates="tags", foreign_keys=[shot_type_id])
 
 class Game(Base):
     __tablename__ = "games"
@@ -127,6 +135,7 @@ class Game(Base):
     home: Mapped[bool] = mapped_column(nullable=False)
     in_rosters: Mapped[List["GameInRoster"]] = relationship(back_populates="game", foreign_keys="GameInRoster.game_id")
     team_stats_tags: Mapped[List["TeamStatsTag"]] = relationship(back_populates="game", foreign_keys="TeamStatsTag.game_id")
+    player_stats_tags: Mapped[List["PlayerStatsTag"]] = relationship(back_populates="game", foreign_keys="PlayerStatsTag.game_id")
 
 
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=False)
@@ -197,3 +206,48 @@ class TeamStatsTag(Base):
         repr_string = repr_string[:-2] + ")\n"
 
         return repr_string
+    
+
+class PlayerStatsTag(Base):
+    __tablename__ = "player_stats_tags"
+
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), nullable=False)
+    game: Mapped["Game"] = relationship(back_populates="player_stats_tags", foreign_keys=[game_id])
+
+    ice_x: Mapped[int] = mapped_column(nullable=False)
+    ice_y: Mapped[int] = mapped_column(nullable=False)
+
+    # SHOT RESULT
+    shot_result_id: Mapped[int] = mapped_column(ForeignKey("shot_results.id"), nullable=False)
+    shot_result: Mapped["ShotResult"] = relationship(back_populates="tags", foreign_keys=[shot_result_id])
+
+    # SHOT TYPE
+    shot_type_id: Mapped[int] = mapped_column(ForeignKey("shot_types.id"))
+    shot_type: Mapped["ShotType"] = relationship(back_populates="tags", foreign_keys=[shot_type_id])
+
+    shooter_id: Mapped[int] = mapped_column(ForeignKey("players.id"), nullable=True)
+    shooter: Mapped["Player"] = relationship(back_populates="shooter_in", foreign_keys=[shooter_id])
+
+    crossice: Mapped[bool] = mapped_column(nullable=True)
+
+    players_on_ice: Mapped[List["PlayerStatsTagOnIce"]] = relationship(back_populates="tag", foreign_keys="PlayerStatsTagOnIce.tag_id")
+    players_participating: Mapped[List["PlayerStatsTagParticipating"]] = relationship(back_populates="tag", foreign_keys="PlayerStatsTagParticipating.tag_id")
+
+
+class PlayerStatsTagOnIce(Base):
+    __tablename__ = "player_stats_tag_on_ice"
+
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), nullable=False)
+    player: Mapped["Player"] = relationship(back_populates="on_ice_for", foreign_keys=[player_id])
+
+    tag_id: Mapped[int] = mapped_column(ForeignKey("player_stats_tags.id"), nullable=False)
+    tag: Mapped["PlayerStatsTag"] = relationship(back_populates="players_on_ice", foreign_keys=[tag_id])
+
+class PlayerStatsTagParticipating(Base):
+    __tablename__ = "player_stats_tag_participating"
+
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), nullable=False)
+    player: Mapped["Player"] = relationship(back_populates="participating_on", foreign_keys=[player_id])
+
+    tag_id: Mapped[int] = mapped_column(ForeignKey("player_stats_tags.id"), nullable=False)
+    tag: Mapped["PlayerStatsTag"] = relationship(back_populates="players_participating", foreign_keys=[tag_id])
