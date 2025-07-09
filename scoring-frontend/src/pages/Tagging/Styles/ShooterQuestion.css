@@ -1,0 +1,24 @@
+.shooter-question-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.shooter-left-column {
+    background-color: inherit;
+    display: flex;
+    flex-direction: column;
+    flex: 2;
+}
+
+.shooter-right-column {
+    background-color: inherit;
+    display: flex;
+    flex-direction: column;
+    flex: 3;
+}
+
+.shooter-f-row {
+    display: flex;
+    flex-direction: row;
+    padding: 3px;
+}

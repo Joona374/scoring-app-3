@@ -1,0 +1,150 @@
+{
+    "questions": [
+        {
+            "id": 1,
+            "type": "SHOT LOCATION",
+            "key": "shot_location",
+            "text": "<SHOT_LOCATION>",
+            "next_question_id": 2,
+            "last_question": false
+        },
+
+    {
+            "id": 2,
+            "type": "NET LOCATION",
+            "key": "net_location",
+            "text": "<NET_LOCATION>",
+            "next_question_id": 3,
+            "last_question": false
+        },
+
+        {
+            "id": 3,
+            "type": "TEXT",
+            "key": "shot_result",
+            "text": "What was the shot result?",
+            "options": [
+                {
+                    "answer": "Maali +",
+                    "answer_text": "Maali +",
+                    "next_question_id": 4,
+                    "last_question": false
+                },
+                {
+                    "answer": "Maali -",
+                    "answer_text": "Maali -",
+                    "next_question_id": 5,
+                    "last_question": false
+                },
+                {
+                    "answer": "MP +",
+                    "answer_text": "MP +",
+                    "next_question_id": 4,
+                    "last_question": false
+                },
+                {
+                    "answer": "MP -",
+                    "answer_text": "MP -",
+                    "next_question_id": 5,
+                    "last_question": false
+                }
+            ],
+            "next_question_id": null,
+            "last_question": null
+        },
+
+        {
+            "id": 4,
+            "type": "SHOOTER",
+            "key": "shooter",
+            "text": "<SHOOTER>",
+            "next_question_id": 5,
+            "last_question": false
+        },
+
+        {
+            "id": 5,
+            "type": "TEXT",
+            "key": "shot_type",
+            "text": "What was the shot type?",
+            "options": [
+                {
+                    "answer": "Kuljetuksesta",
+                    "answer_text": "Kuljetuksesta",
+                    "next_question_id": 6,
+                    "last_question": false
+                },
+                {
+                    "answer": "Catch and release",
+                    "answer_text": "Catch and release",
+                    "next_question_id": 6,
+                    "last_question": false
+                },
+                {
+                    "answer": "Onetimer",
+                    "answer_text": "Onetimer",
+                    "next_question_id": 6,
+                    "last_question": false
+                },
+                {
+                    "answer": "Pystysyötöstä",
+                    "answer_text": "Pystysyötöstä",
+                    "next_question_id": 7,
+                    "last_question": false
+                },
+                {
+                    "answer": "Riistosta",
+                    "answer_text": "Riistosta",
+                    "next_question_id": 7,
+                    "last_question": false
+                },
+                {
+                    "answer": "Rebound",
+                    "answer_text": "Rebound",
+                    "next_question_id": 7,
+                    "last_question": false
+                },
+                {
+                    "answer": "Ohjaus",
+                    "answer_text": "Ohjaus",
+                    "next_question_id": 7,
+                    "last_question": false
+                }
+            ],
+            "next_question_id": null,
+            "last_question": false
+        },
+
+        {
+            "id": 6,
+            "type": "TEXT",
+            "key": "crossice",
+            "text": "Was it a cross-ice play?",
+            "options": [
+                {
+                    "answer": true,
+                    "answer_text": "Kyllä",
+                    "next_question_id": 7,
+                    "last_question": false
+                },
+                {
+                    "answer": false,
+                    "answer_text": "Ei",
+                    "next_question_id": 7,
+                    "last_question": false
+                }
+            ],
+            "next_question_id": 7,
+            "last_question": false
+        },
+
+        {
+            "id": 7,
+            "type": "PARTICIPANTS",
+            "key": "participants",
+            "text": "<PARTICIPANTS>",
+            "next_question_id": null,
+            "last_question": true
+        }
+    ]
+}

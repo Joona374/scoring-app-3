@@ -2,13 +2,15 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
-import Dashboard from "./pages/Dashboard/Dashboard";
+import TeamDashboard from "./pages/Dashboard/Dashboard";
 import ProtectRoute from "./routing/ProtectedRoute";
 import Navbar from "./components/navbar/Navbar";
 import CreateTeam from "./pages/CreateTeam/CreateTeam";
 import CreatePlayer from "./pages/CreatePlayer/CreatePlayer";
 import Tagging from "./pages/Tagging/Tagging";
 import AdminPage from "./pages/Admin/AdminPage";
+import CreateGame from "./pages/CreateGame/CreateGame";
+import ExcelTest from "./pages/ExcelTest/ExcelTest";
 
 function App() {
   return (
@@ -26,11 +28,10 @@ function App() {
             path="/dashboard"
             element={
               <ProtectRoute>
-                <Dashboard />
+                <TeamDashboard />
               </ProtectRoute>
             }
           />
-          {/* TODO: PROTECT THESE ROUTER */}
           <Route
             path="/create-team"
             element={
@@ -52,6 +53,22 @@ function App() {
             element={
               <ProtectRoute>
                 <Tagging />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/create-game"
+            element={
+              <ProtectRoute>
+                <CreateGame />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/excel-test"
+            element={
+              <ProtectRoute>
+                <ExcelTest />
               </ProtectRoute>
             }
           />

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import random
 import string
 
-from db.pydantic_schemas import TeamCreate
+from db.pydantic_schemas import TeamCreate, TeamCreateResponse, PlayerResponse, TeamResponse
 from db.db_manager import get_db_session
 from db.models import Team, User, RegCode
 from utils import get_current_user_id
@@ -23,7 +23,7 @@ def generate_random_code() -> str:
 @router.post("/create")
 def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     # Pull the required data from the request body
-    team_name = team_data.name
+    team_name = team_data.name.strip()
     
     # Find the user who want to create a team
     user = db_session.query(User).filter(User.id == current_user_id).first()
@@ -63,4 +63,29 @@ def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_sess
     db_session.commit()
     db_session.refresh(new_team)
 
-    return {"message": "Team created successfully", "team_name": team_name, "creator_id": current_user_id, "code_for_team": new_code.code}
+    team_created_response = TeamCreateResponse(team_name=new_team.name, code_for_team=new_team.code[0].code)
+
+    return team_created_response
+
+
+@router.get("/me")
+def get_my_team(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    team: Team = user.team
+
+    teams_players = []
+    for player in team.players:
+        player_response = PlayerResponse(
+            id=player.id,
+            first_name=player.first_name,
+            last_name=player.last_name,
+            position=player.position.name
+            )
+        teams_players.append(player_response)
+    
+    team_response = TeamResponse(
+        team_name=team.name,
+        join_code=team.code[0].code,
+        players=teams_players)
+    
+    return team_response

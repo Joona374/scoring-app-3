@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from dotenv import load_dotenv
 import os
 from sqlalchemy.exc import OperationalError
+import logging
 
 load_dotenv()
 
@@ -10,7 +11,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL is None:
 	raise ValueError("DATABASE_URL environment variable is not set.")
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL,echo=False)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

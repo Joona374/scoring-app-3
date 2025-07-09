@@ -1,5 +1,5 @@
 import { Question } from "../pages/Tagging/question";
-import { createContext, useEffect, useState } from "react";
+import { createContext, use, useEffect, useState } from "react";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -11,6 +11,9 @@ export const TaggingProvider = ({ children }) => {
   const [questionObjects, setQuestionObjects] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [firstQuestionId, setFirstQuestionId] = useState(null);
+  const [playersInRoster, setPlayersInRoster] = useState([]);
+  const [currentGameId, setCurrentGameId] = useState();
+  const [gamesForTeam, setGamesForTEam] = useState([]);
 
   const advanceQuestion = (last_question, next_question_id, newTag) => {
     try {
@@ -33,9 +36,10 @@ export const TaggingProvider = ({ children }) => {
 
   const postTag = async (newTag, rollbackTags) => {
     const token = sessionStorage.getItem("jwt_token");
+    newTag.game_id = currentGameId;
 
     try {
-      const res = await fetch(`${BACKEND_URL}/tagging/add-tag`, {
+      const res = await fetch(`${BACKEND_URL}/tagging/add-players-tag`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,6 +55,7 @@ export const TaggingProvider = ({ children }) => {
         return;
       }
       const data = await res.json();
+      console.log("data for tag: ", data);
     } catch (error) {
       setTaggedEvents(rollbackTags);
       console.warn("Rolled tagged event back to:", rollbackTags);
@@ -102,6 +107,12 @@ export const TaggingProvider = ({ children }) => {
         firstQuestionId,
         setFirstQuestionId,
         advanceQuestion,
+        playersInRoster,
+        setPlayersInRoster,
+        currentGameId,
+        setCurrentGameId,
+        gamesForTeam,
+        setGamesForTEam,
       }}
     >
       {children}

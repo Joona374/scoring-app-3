@@ -38,7 +38,13 @@ export default function Navbar() {
               <Link to="/create-player">Create a Player</Link>
             </li>
             <li>
+              <Link to="/create-game">Create a Game</Link>
+            </li>
+            <li>
               <Link to="/tagging">Tagging</Link>
+            </li>
+            <li>
+              <Link to="/excel-test">Excel Test</Link>
             </li>
             <li>
               <Link to="/admin">Admin</Link>

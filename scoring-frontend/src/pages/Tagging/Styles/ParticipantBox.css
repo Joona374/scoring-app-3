@@ -1,0 +1,21 @@
+.participant-box {
+    width: 30%;
+    padding: 8px 16px;
+    margin: 5px;
+    border-radius: 6px;
+    border: 1px solid #007b00;
+    background-color: #666;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+
+}
+
+.on-ice {
+    background-color: #6a6;
+}
+
+.participated {
+    background-color: #0f0;
+}

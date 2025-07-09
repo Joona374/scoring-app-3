@@ -1,0 +1,32 @@
+.grid-question-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+
+.grid-question-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1rem;
+}
+
+.grid-options {
+    display: grid;
+    gap: 1rem;
+    flex-grow: 1;
+    grid-template-columns: 1fr 1fr;
+}
+
+.single-grid-option {
+    grid-template-columns: 1fr;
+}
+
+
+.grid-option-button {
+    cursor: pointer;
+    user-select:  none;
+}

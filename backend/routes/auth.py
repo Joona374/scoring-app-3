@@ -73,7 +73,7 @@ def login(login_data: UserLogin, db_session: Session = Depends(get_db_session)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Either username or password is incorrect") # We dont want to tell which one for safety, right?
 
     user_data = {"sub": str(found_user.id)}
-    access_token = create_jwt(user_data, 60)
+    access_token = create_jwt(user_data, 180)
     return LoginResponse(
         username=found_user.username,
         user_id=found_user.id,

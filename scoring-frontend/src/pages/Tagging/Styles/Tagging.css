@@ -5,11 +5,11 @@
     height: 100%;
 }
 
-.left-column {
+.tagging-area-column {
     flex: 2;
 }
 
-.right-column {
+.tagging-summary-column {
     background-color: #002c29;
     flex: 1;
     border-left: 3px solid #fff;
