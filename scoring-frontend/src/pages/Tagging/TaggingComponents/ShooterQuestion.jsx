@@ -18,8 +18,6 @@ export default function ShooterQuestion() {
     (q) => q.id === currentQuestionId
   );
 
-  console.log(currentQuestion);
-
   return (
     <>
       <p>Shooter question</p>

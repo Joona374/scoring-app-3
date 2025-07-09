@@ -8,6 +8,8 @@ import CreateGame from "../CreateGame/CreateGame";
 import "./Styles/TaggingArea.css";
 import GamePicker from "./GamePicker";
 import ContinueGamePicker from "./ContinueGamePicker";
+import NetQuestion from "./TaggingComponents/NetQuestion";
+import ParticapntsQuestion from "./TaggingComponents/ParticipantsQuestion";
 
 export default function TaggingArea() {
   // Import the "public" variables from context
@@ -30,8 +32,6 @@ export default function TaggingArea() {
 
   const [view, setView] = useState("picker"); // Options: 'picker', 'create'
 
-  console.log("setCurrentGameId type:", typeof setCurrentGameId);
-
   // This function gets the roster for this game form db
   const getRosterFromDb = async (gameId) => {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -53,7 +53,6 @@ export default function TaggingArea() {
       }
 
       const data = await res.json();
-      console.log(data);
       setPlayersInRoster(data);
     } catch (err) {
       console.log(err);
@@ -77,7 +76,6 @@ export default function TaggingArea() {
         }
 
         const data = await res.json();
-        console.log(data);
         setGamesForTEam(data);
       } catch (err) {
         console.log(err);
@@ -129,10 +127,14 @@ export default function TaggingArea() {
     switch (currentQuestion.type) {
       case "SHOT LOCATION":
         return <ShotLocationQuestion />;
+      case "NET LOCATION":
+        return <NetQuestion />;
       case "TEXT":
         return <GridChoiceQuestion />;
       case "SHOOTER":
         return <ShooterQuestion />;
+      case "PARTICIPANTS":
+        return <ParticapntsQuestion />;
       default:
         return <p>Unknow question type</p>;
     }

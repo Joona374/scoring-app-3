@@ -36,7 +36,7 @@ export default function GridChoiceQuestion() {
               onClick={() => handleAnswerClick(option)}
               key={index}
             >
-              {option.answer}
+              {option.answer_text}
             </button>
           );
         })}

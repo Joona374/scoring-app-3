@@ -25,11 +25,9 @@ export default function RosterSelector({
         return spot;
       });
       setPlayersInRoster(newPlayersInRoster);
-      console.log("new: ", newPlayersInRoster);
 
       if (rosterSpotIndex < 24) {
         const nextSpot = playersInRoster[rosterSpotIndex + 1];
-        console.log("Next:", nextSpot.line, nextSpot.position);
         setSelectingPosition(`${nextSpot.line}-${nextSpot.position}`);
       }
     } else {

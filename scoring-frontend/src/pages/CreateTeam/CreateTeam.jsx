@@ -9,8 +9,6 @@ export default function CreateTeam() {
   const handleSubmit = async (event) => {
     setErrorMsg("");
     event.preventDefault();
-    console.log("Submit");
-    console.log(teamName);
 
     const token = sessionStorage.getItem("jwt_token");
 

@@ -6,7 +6,6 @@ import RosterSelector from "./RosterSelector";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function CreateGame({ setCurrentGameId, onCancel }) {
-  console.log("CreateGame received setCurrentGameId:", typeof setCurrentGameId);
   const generateEmptyPlayersInRoster = () => {
     let emptyPlayersInRoster = [];
     for (let i = 1; i <= 5; i++) {

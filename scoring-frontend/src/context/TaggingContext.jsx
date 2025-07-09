@@ -15,8 +15,6 @@ export const TaggingProvider = ({ children }) => {
   const [currentGameId, setCurrentGameId] = useState();
   const [gamesForTeam, setGamesForTEam] = useState([]);
 
-  console.log("In provider - setCurrentGameId type:", typeof setCurrentGameId);
-
   const advanceQuestion = (last_question, next_question_id, newTag) => {
     try {
       if (last_question === true) {
@@ -41,7 +39,7 @@ export const TaggingProvider = ({ children }) => {
     newTag.game_id = currentGameId;
 
     try {
-      const res = await fetch(`${BACKEND_URL}/tagging/add-team-tag`, {
+      const res = await fetch(`${BACKEND_URL}/tagging/add-players-tag`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -83,7 +81,6 @@ export const TaggingProvider = ({ children }) => {
           (element) => new Question(element)
         );
         setQuestionObjects(questionObjs);
-        console.log(questionObjs);
         if (questionObjs.length > 0) {
           // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
           setCurrentQuestionId(questionObjs[0].id);
