@@ -71,6 +71,8 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
     else:
         shooter_id = None
 
+    print(received_tag["strengths"])
+
     try:
         new_tag = PlayerStatsTag(
             ice_x=shot_location["x"],
@@ -79,6 +81,7 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
             shot_type=shot_type_ref,
             game_id=received_tag["game_id"],
             crossice=cross_ice,
+            strengths=received_tag["strengths"],
             shooter_id=shooter_id
         )
         db_session.add(new_tag)

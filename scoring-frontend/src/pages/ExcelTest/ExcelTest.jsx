@@ -12,6 +12,22 @@ export default function ExcelTest() {
     aElement.click();
   };
 
+  const downloadPlusMinus = async () => {
+    console.log("This should plusminus");
+    const token = sessionStorage.getItem("jwt_token");
+    const res = await fetch(`${BACKEND_URL}/excel/plusminus`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const fileBlob = await res.blob();
+    const tempUrl = URL.createObjectURL(fileBlob);
+    const aElement = document.createElement("a");
+    aElement.href = tempUrl;
+    aElement.download = "stats.xlsx";
+    aElement.click();
+  };
+
   const downloadTeamStats = async () => {
     console.log("This should dl");
     const token = sessionStorage.getItem("jwt_token");
@@ -36,6 +52,7 @@ export default function ExcelTest() {
     <div>
       <button onClick={downloadExcel}>Download test</button>
       <button onClick={downloadTeamStats}>Download team stats</button>
+      <button onClick={downloadPlusMinus}>Download plusminus</button>
     </div>
   );
 }

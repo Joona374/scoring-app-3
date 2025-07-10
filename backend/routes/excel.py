@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from utils import get_current_user_id
 from db.db_manager import get_db_session
-from db.models import TeamStatsTag, User, Game
+from db.models import TeamStatsTag, User, Game, PlayerStatsTag, ShotResult, ShotResultTypes, PlayerStatsTagOnIce, PlayerStatsTagParticipating
 
 router = APIRouter(
     prefix="/excel",
@@ -39,6 +39,8 @@ async def download_excel():
         headers={"Content-Disposition": "attachment; filename=stats.xlsx"}
     )
 
+
+########################## FOR TEAM STATS ##########################
 def get_result_column_shifter(scoring_chance: TeamStatsTag):
     if scoring_chance.play_result == "Maali +":
         return 0
@@ -199,6 +201,7 @@ def calculate_numbers_for_cells(all_tags):
 
 @router.get("/teamstats")
 async def get_teamstats_excel(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+
     user = db_session.query(User).filter(User.id == current_user_id).first()
 
     # Get all the tag wit db query
@@ -242,3 +245,244 @@ async def get_teamstats_excel(db_session: Session = Depends(get_db_session), cur
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=stats.xlsx"}
     )
+########################## FOR TEAM STATS ##########################
+
+
+########################## FOR PLAYER +/- ##########################
+def build_game_data_structure(game: Game):
+    data_structure = {
+        "game_id": game.id,
+        "opponent": game.opponent,
+        "home": game.home,
+        "date": game.date,
+        "roster": {}}
+    game_roster = data_structure["roster"]
+
+    for roster_spot in game.in_rosters:
+        player = roster_spot.player
+        player_dict = {
+            "name": f"{player.last_name.upper()} {player.first_name}",
+            "position": player.position.name,
+            "stats": {
+                "ES-PG+": 0,   # ES-PG+ = Even strengthParticipated Goal +
+                "ES-PG-": 0,
+                "ES-PC+": 0,   
+                "ES-PC-": 0,   # PC- = Partcipated chance -
+                "ES-OIG+": 0,  
+                "ES-OIG-": 0,  # OIG- = On ice Goal -
+                "ES-OIC+": 0, 
+                "ES-OIC-": 0,
+                "PP-PG+": 0,   # PP-PG+ = Powerplay
+                "PP-PG-": 0,
+                "PP-PC+": 0,   
+                "PP-PC-": 0,   
+                "PP-OIG+": 0,  
+                "PP-OIG-": 0,  
+                "PP-OIC+": 0, 
+                "PP-OIC-": 0,
+                "PK-PG+": 0,   # PK-PG+ = Penaltykill
+                "PK-PG-": 0,
+                "PK-PC+": 0,   
+                "PK-PC-": 0,
+                "PK-OIG+": 0,  
+                "PK-OIG-": 0,  
+                "PK-OIC+": 0, 
+                "PK-OIC-": 0
+            }
+        }
+        game_roster[player.id] = player_dict
+
+    return data_structure
+
+def convert_roster_to_lists(roster: dict) -> dict:
+    listed_roster = {
+        "forwards": [],
+        "defenders": []
+    }
+
+    for player_dict in roster.values():
+        if player_dict["position"] == "FORWARD":
+            listed_roster["forwards"].append(player_dict)
+        elif player_dict["position"] == "DEFENDER":
+            listed_roster["defenders"].append(player_dict)
+
+    for group in listed_roster.values():
+        group.sort(key=lambda player: player["name"])
+
+    return listed_roster
+
+
+def get_games_data(teams_games: list[Game], db_session: Session):
+    """
+    Aggregates and processes game data for a list of games, including player statistics and participation details.
+    Args:
+        teams_games (list[Game]): List of Game objects to process.
+        db_session (Session): SQLAlchemy database session for querying related data.
+    Returns:
+        list[dict]: A list of dictionaries, each representing processed data for a game, including roster statistics and metadata.
+    Raises:
+        KeyError: If expected keys are missing in the roster or tag mappings.
+        AttributeError: If expected attributes are missing from queried objects.
+    Notes:
+        - The function collects player statistics tags, on-ice links, and participating links for the provided games.
+        - It maps shot result types to custom string representations (e.g., "G+", "C-").
+        - Player statistics are aggregated per game and per player, distinguishing between on-ice and participating roles.
+        - The resulting list is sorted by game date in descending order.
+    """
+    data_collector = []
+    game_ids = [game.id for game in teams_games]
+
+    player_stats_tags = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()
+    PSTs_by_game_id = defaultdict(list)
+    for tag in player_stats_tags:
+        PSTs_by_game_id[tag.game_id].append(tag)
+
+    on_ice_links = db_session.query(PlayerStatsTagOnIce).join(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()  
+    OILs_by_PST_id = defaultdict(list) # list of OnIce links with PlayerStatsTag id as key
+    for on_ice_link in on_ice_links:
+        OILs_by_PST_id[on_ice_link.tag_id].append(on_ice_link)
+
+    participating_links = db_session.query(PlayerStatsTagParticipating).join(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()
+    PLs_by_PST_id = defaultdict(list)
+    for partic_link in participating_links:
+        PLs_by_PST_id[partic_link.tag_id].append(partic_link)
+
+    tag_type_mapping = {
+                ShotResultTypes.GOAL_FOR: "G+",
+                ShotResultTypes.GOAL_AGAINST: "G-",
+                ShotResultTypes.CHANCE_FOR: "C+",
+                ShotResultTypes.CHANCE_AGAINST: "C-",
+                }
+
+    for game in teams_games:
+        game_data = build_game_data_structure(game)
+        tags = PSTs_by_game_id[game.id]
+        for tag in tags:
+            strengths = tag.strengths
+            if strengths not in ["ES", "PP", "PK"]:
+                continue
+
+            result_part = tag_type_mapping[tag.shot_result.value]
+            
+            tags_on_ice = OILs_by_PST_id[tag.id]
+            OI_player_ids = [tag.player.id for tag in tags_on_ice]
+            for id in OI_player_ids:
+                game_data["roster"][id]["stats"][f"{strengths}-OI{result_part}"] += 1
+
+            tags_participating = PLs_by_PST_id[tag.id]
+            P_player_ids = [tag.player.id for tag in tags_participating]
+            for id in P_player_ids:
+                game_data["roster"][id]["stats"][f"{strengths}-P{result_part}"] += 1
+
+
+        game_data["roster"] = convert_roster_to_lists(game_data["roster"])
+
+        data_collector.append(game_data)
+    
+    type(data_collector[0]["date"])
+    data_collector.sort(key=lambda game: game["date"], reverse=True)
+    return data_collector
+
+
+@router.get("/plusminus")
+async def get_teamstats_excel(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    team = user.team
+    teams_games = team.games
+
+    data_for_games = get_games_data(teams_games, db_session)
+    print(data_for_games)
+
+    # Load the excel file and template sheet
+    workbook = load_workbook("excels/plus_minus_template.xlsx")
+    template_sheet = workbook.worksheets[0]
+
+    stat_column_mapping = {
+            "OIG+": "A",  
+            "OIG-": "B",  # OIG- = On ice Goal -
+            "OIC+": "D", 
+            "OIC-": "E",
+            "PG+": "H",   # PG+ = Participated Goal +
+            "PG-": "I",
+            "PC+": "K",   
+            "PC-": "L",   # PC- = Partcipated chance -
+
+
+            "ES-OIG+": "A",  
+            "ES-OIG-": "B",  # OIG- = On ice Goal -
+            "ES-OIC+": "D", 
+            "ES-OIC-": "E",
+            "ES-PG+": "H",   # ES-PG+ = Even strengthParticipated Goal +
+            "ES-PG-": "I",
+            "ES-PC+": "K",   
+            "ES-PC-": "L",   # PC- = Partcipated chance -
+
+            "PP-OIG+": "O",  
+            "PP-OIG-": "P",  
+            "PP-OIC+": "R", 
+            "PP-OIC-": "S",
+             "PP-PG+": "V",   # PP-PG+ = Powerplay
+            "PP-PG-": "W",
+            "PP-PC+": "Y",   
+            "PP-PC-": "Z",   
+   
+            "PK-OIG+": "AC",  
+            "PK-OIG-": "AD",  
+            "PK-OIC+": "AF", 
+            "PK-OIC-": "AG",
+            "PK-PG+": "AJ",   # PK-PG+ = 
+            "PK-PG-": "AK",
+            "PK-PC+": "AM",   
+            "PK-PC-": "AN"
+    }
+    name_colums = ["G", "U", "AI","AW"]
+
+    for game in data_for_games:
+        game_sheet = workbook.copy_worksheet(template_sheet)
+        game_sheet.title = f"{game["opponent"]} {game["date"]}"
+
+        for i, defender in enumerate(game["roster"]["defenders"]):
+            row = 4 + i
+            for name_col in name_colums:
+                game_sheet[f"{name_col}{row}"] = defender["name"]
+            for key, value in defender["stats"].items():
+                column = stat_column_mapping[key]
+                game_sheet[f"{column}{row}"] = value
+
+        for i, forward in enumerate(game["roster"]["forwards"]):
+            row = 18 + i
+            for name_col in name_colums:
+                game_sheet[f"{name_col}{row}"] = forward["name"]
+            for key, value in forward["stats"].items():
+                column = stat_column_mapping[key]
+                game_sheet[f"{column}{row}"] = value
+
+            
+
+    # # Write sheets for individual games
+    # for _, tags_list in games_with_stats_dict.items():
+    #     game_object = tags_list[0].game
+    #     game_sheet = workbook.copy_worksheet(team_stats_sheet)
+    #     game_sheet.title = f"{game_object.opponent} {game_object.date}"
+    #     cell_values_for_game = calculate_numbers_for_cells(tags_list)
+    #     for cell, value in cell_values_for_game.items():
+    #         game_sheet[cell] = int(value)
+
+    # Delete template sheet
+    workbook.remove(workbook.worksheets[0])
+
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+
+    return Response(
+        content=output.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=stats.xlsx"}
+    )
+
+
+
+
+########################## FOR PLAYER +/- ##########################
