@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from io import BytesIO
 from openpyxl import load_workbook
 from collections import defaultdict
+import copy
 
 from utils import get_current_user_id
 from db.db_manager import get_db_session
@@ -314,22 +315,24 @@ def convert_roster_to_lists(roster: dict) -> dict:
 
 def get_games_data(teams_games: list[Game], db_session: Session):
     """
-    Aggregates and processes game data for a list of games, including player statistics and participation details.
+    Aggregates and processes game and player statistics data for a list of games.
+    For each game in the provided list, this function:
+    - Collects player statistics tags, on-ice links, and participating links from the database.
+    - Maps and aggregates statistics for each player, both per-game and as a total across all games.
+    - Handles statistics for different strengths (ES, PP, PK) and result types (goal for/against, chance for/against).
+    - Converts roster dictionaries to lists for output compatibility.
+    - Sorts the collected game data by date in descending order.
     Args:
         teams_games (list[Game]): List of Game objects to process.
         db_session (Session): SQLAlchemy database session for querying related data.
     Returns:
-        list[dict]: A list of dictionaries, each representing processed data for a game, including roster statistics and metadata.
-    Raises:
-        KeyError: If expected keys are missing in the roster or tag mappings.
-        AttributeError: If expected attributes are missing from queried objects.
-    Notes:
-        - The function collects player statistics tags, on-ice links, and participating links for the provided games.
-        - It maps shot result types to custom string representations (e.g., "G+", "C-").
-        - Player statistics are aggregated per game and per player, distinguishing between on-ice and participating roles.
-        - The resulting list is sorted by game date in descending order.
+        tuple:
+            - data_collector (list[dict]): List of processed game data dictionaries, one per game.
+            - listed_total_data (list[dict]): Aggregated player statistics across all games as a list of dictionaries.
     """
+
     data_collector = []
+    total_stats = {}
     game_ids = [game.id for game in teams_games]
 
     player_stats_tags = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()
@@ -354,8 +357,19 @@ def get_games_data(teams_games: list[Game], db_session: Session):
                 ShotResultTypes.CHANCE_AGAINST: "C-",
                 }
 
+
+
     for game in teams_games:
         game_data = build_game_data_structure(game)
+        for id, data in game_data["roster"].items():
+            if id not in total_stats:
+                total_data = copy.deepcopy(data)
+                total_data["GP"] = 1
+                total_stats[id] = total_data
+            else:
+                total_stats[id]["GP"] += 1
+
+
         tags = PSTs_by_game_id[game.id]
         for tag in tags:
             strengths = tag.strengths
@@ -368,11 +382,13 @@ def get_games_data(teams_games: list[Game], db_session: Session):
             OI_player_ids = [tag.player.id for tag in tags_on_ice]
             for id in OI_player_ids:
                 game_data["roster"][id]["stats"][f"{strengths}-OI{result_part}"] += 1
+                total_stats[id]["stats"][f"{strengths}-OI{result_part}"] += 1
 
             tags_participating = PLs_by_PST_id[tag.id]
             P_player_ids = [tag.player.id for tag in tags_participating]
             for id in P_player_ids:
                 game_data["roster"][id]["stats"][f"{strengths}-P{result_part}"] += 1
+                total_stats[id]["stats"][f"{strengths}-P{result_part}"] += 1
 
 
         game_data["roster"] = convert_roster_to_lists(game_data["roster"])
@@ -381,18 +397,23 @@ def get_games_data(teams_games: list[Game], db_session: Session):
     
     type(data_collector[0]["date"])
     data_collector.sort(key=lambda game: game["date"], reverse=True)
-    return data_collector
+    listed_total_data = convert_roster_to_lists(total_stats)
+    return data_collector, listed_total_data
 
 
 @router.get("/plusminus")
-async def get_teamstats_excel(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+async def get_plusminus_excel(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
 
     user = db_session.query(User).filter(User.id == current_user_id).first()
     team = user.team
     teams_games = team.games
 
-    data_for_games = get_games_data(teams_games, db_session)
+    data_for_games, total_stats = get_games_data(teams_games, db_session)
+    print("")
     print(data_for_games)
+    print("")
+    print(total_stats)
+    print("")
 
     # Load the excel file and template sheet
     workbook = load_workbook("excels/plus_minus_template.xlsx")
@@ -438,6 +459,47 @@ async def get_teamstats_excel(db_session: Session = Depends(get_db_session), cur
     }
     name_colums = ["G", "U", "AI","AW"]
 
+    total_sheet = workbook.copy_worksheet(template_sheet)
+    total_sheet.title = "TOTAL"
+    for i, defender in enumerate(total_stats["defenders"]):
+        row = 4 + i
+        for name_col in name_colums:
+            total_sheet[f"{name_col}{row}"] = defender["name"]
+        for key, value in defender["stats"].items():
+            column = stat_column_mapping[key]
+            total_sheet[f"{column}{row}"] = value
+
+    for i, forward in enumerate(total_stats["forwards"]):
+        row = 18 + i
+        for name_col in name_colums:
+            total_sheet[f"{name_col}{row}"] = forward["name"]
+        for key, value in forward["stats"].items():
+            column = stat_column_mapping[key]
+            total_sheet[f"{column}{row}"] = value
+
+
+    total_avg_sheet = workbook.copy_worksheet(template_sheet)
+    total_avg_sheet.title = "TOTAL AVG"
+    for i, defender in enumerate(total_stats["defenders"]):
+        row = 4 + i
+        games_played = defender["GP"]
+        for name_col in name_colums:
+            total_avg_sheet[f"{name_col}{row}"] = defender["name"]
+        for key, value in defender["stats"].items():
+            column = stat_column_mapping[key]
+            total_avg_sheet[f"{column}{row}"] = value/games_played
+
+    for i, forward in enumerate(total_stats["forwards"]):
+        games_played = forward["GP"]
+        row = 18 + i
+        for name_col in name_colums:
+            total_avg_sheet[f"{name_col}{row}"] = forward["name"]
+        for key, value in forward["stats"].items():
+            column = stat_column_mapping[key]
+            total_avg_sheet[f"{column}{row}"] = value/games_played
+
+
+
     for game in data_for_games:
         game_sheet = workbook.copy_worksheet(template_sheet)
         game_sheet.title = f"{game["opponent"]} {game["date"]}"
@@ -459,16 +521,6 @@ async def get_teamstats_excel(db_session: Session = Depends(get_db_session), cur
                 game_sheet[f"{column}{row}"] = value
 
             
-
-    # # Write sheets for individual games
-    # for _, tags_list in games_with_stats_dict.items():
-    #     game_object = tags_list[0].game
-    #     game_sheet = workbook.copy_worksheet(team_stats_sheet)
-    #     game_sheet.title = f"{game_object.opponent} {game_object.date}"
-    #     cell_values_for_game = calculate_numbers_for_cells(tags_list)
-    #     for cell, value in cell_values_for_game.items():
-    #         game_sheet[cell] = int(value)
-
     # Delete template sheet
     workbook.remove(workbook.worksheets[0])
 
