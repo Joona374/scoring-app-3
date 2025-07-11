@@ -6,11 +6,11 @@ import TeamDashboard from "./pages/Dashboard/Dashboard";
 import ProtectRoute from "./routing/ProtectedRoute";
 import Navbar from "./components/navbar/Navbar";
 import CreateTeam from "./pages/CreateTeam/CreateTeam";
-import CreatePlayer from "./pages/CreatePlayer/CreatePlayer";
 import Tagging from "./pages/Tagging/Tagging";
 import AdminPage from "./pages/Admin/AdminPage";
 import CreateGame from "./pages/CreateGame/CreateGame";
 import ExcelTest from "./pages/ExcelTest/ExcelTest";
+import RosterManagement from "./pages/RosterManagement/RosterManagement";
 
 function App() {
   return (
@@ -41,10 +41,10 @@ function App() {
             }
           />
           <Route
-            path="/create-player"
+            path="/roster-management"
             element={
               <ProtectRoute>
-                <CreatePlayer />
+                <RosterManagement />
               </ProtectRoute>
             }
           />

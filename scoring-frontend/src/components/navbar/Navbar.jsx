@@ -38,17 +38,15 @@ export default function Navbar() {
                 <Link to="/create-team">Luo joukkue</Link>
               </li>
               <li>
-                <Link to="/create-player">Luo pelaaja</Link>
-              </li>
-              <li>
-                <Link to="/create-game">Luo ottelu</Link>
-              </li>
-              <li>
-                <Link to="/tagging">Merkintä</Link>
+                <Link to="/tagging">Tilastoi</Link>
               </li>
               <li>
                 <Link to="/excel-test">Excel-testi</Link>
               </li>
+              <li>
+                <Link to="/roster-management">Kokoonpanon hallinta</Link>
+              </li>
+
               <li>
                 <Link to="/admin">Admin</Link>
               </li>

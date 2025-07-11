@@ -3,7 +3,7 @@ import "../../components/FormStyles.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-export default function CreatePlayer() {
+export default function CreatePlayer({ players, setPlayers }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [position, setPosition] = useState("");
@@ -48,6 +48,15 @@ export default function CreatePlayer() {
       console.log(data);
       setStatusMessage("Pelaaja luotu onnistuneesti!");
       setIsSuccess(true);
+      const playerObject = {
+        id: data.player_id,
+        first_name: firstName,
+        last_name: lastName,
+        position: position,
+      };
+      const newPlayers = [...players, playerObject];
+      setPlayers(newPlayers);
+
       setFirstName("");
       setLastName("");
       setPosition("");
@@ -60,8 +69,9 @@ export default function CreatePlayer() {
 
   return (
     <div className="auth-page">
-      <h1>Luo pelaaja</h1>
       <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="form-title">Lisää uusi pelaaja</div>
+
         <label htmlFor="first-name">Etunimi</label>
         <input
           type="text"

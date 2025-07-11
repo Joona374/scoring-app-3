@@ -70,6 +70,11 @@ class PlayerCreate(BaseModel):
     last_name: str
     position: Positions
 
+class PlayerUpdate(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    position: Optional[Positions]
+
 class PlayerResponse(BaseModel):
     id: int
     first_name: str
