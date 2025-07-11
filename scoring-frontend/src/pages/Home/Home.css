@@ -1,23 +1,67 @@
-
-
-.home-button {
-  padding: 10px 20px;
-  width: 150px;
-  height: 40px;
-  font-size: 15px;
-  text-align: center;
-  background-color: #2a9d8f;
-  color: white;
-  text-decoration: none;
-  border: none;
-  border-radius: 5px;
-  margin: 10px;
-  display: inline-block;
-    vertical-align: top;
-
-}
-
-.home-buttons {
+.home-hero-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8rem 2rem;
+  min-height: calc(100vh - 60px);
+  text-align: center;
+  color: var(--text-color);
+  background: radial-gradient(
+    circle at center center,
+    rgba(255, 255, 255, 0.05),
+    var(--bg-color)
+  );
+}
+
+.home-hero-container h1 {
+  font-size: 3.2rem;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.home-hero-container p {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  max-width: 700px;
+  margin-bottom: 3rem;
+}
+
+.home-hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hero-button {
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  min-width: 150px;
+  text-align: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.hero-button.primary {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+}
+
+.hero-button.secondary {
+  background: none;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+}
+
+.hero-button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+.hero-button:active {
+  transform: scale(0.98);
 }

@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import "./Register.css";
+import "../../components/FormStyles.css";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../auth/AuthContext";
 
@@ -91,57 +91,50 @@ export default function Register() {
   };
 
   return (
-    <div className="register-page">
-      <h1>Register</h1>
-
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="username">Username</label>
+    <div className="auth-page">
+      <h1>Luo käyttäjä</h1>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <label htmlFor="username">Käyttäjänimi</label>
         <input
           required
           type="text"
           id="username"
-          placeholder="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">Sähköposti</label>
         <input
           required
           type="email"
           id="email"
-          placeholder="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">Salasana</label>
         <input
           required
           type="password"
           id="password"
-          placeholder="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <label htmlFor="confirm">Confirm Password</label>
+        <label htmlFor="confirm">Vahvista salasana</label>
         <input
           required
           type="password"
           id="confirm"
-          placeholder="confirm password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
         />
-        <label htmlFor="code">Regiesteration Code</label>
+        <label htmlFor="code">Rekisteröitymiskoodi</label>
         <input
           type="text"
           id="code"
-          placeholder="123ABC"
-          minLength="6"
-          maxLength="6"
           value={code}
+          maxLength={6}
           onChange={(e) => setCode(e.target.value)}
         />
-        <button type="submit">Register</button>
+        <button type="submit">Rekisteröidy</button>
       </form>
       {errorMsg && <p className="error">{errorMsg}</p>}
     </div>

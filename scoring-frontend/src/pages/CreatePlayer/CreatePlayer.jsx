@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../../components/FormStyles.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -6,12 +7,18 @@ export default function CreatePlayer() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [position, setPosition] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Create player");
-    console.log(firstName, lastName, position);
-    if (position === "") return;
+    setStatusMessage("");
+
+    if (position === "") {
+      setStatusMessage("Valitse pelipaikka.");
+      setIsSuccess(false);
+      return;
+    }
 
     const token = sessionStorage.getItem("jwt_token");
 
@@ -31,46 +38,56 @@ export default function CreatePlayer() {
 
       if (!response.ok) {
         const errorBody = await response.json();
-        console.log("Error creating player");
         console.error(errorBody);
+        setStatusMessage(errorBody.detail || "Pelaajan luominen epäonnistui.");
+        setIsSuccess(false);
+        return;
       }
 
       const data = await response.json();
       console.log(data);
-      alert("Player created successfully");
+      setStatusMessage("Pelaaja luotu onnistuneesti!");
+      setIsSuccess(true);
+      setFirstName("");
+      setLastName("");
+      setPosition("");
     } catch (err) {
-      console.log("Error creating player");
-      console.log(err);
-      return;
+      console.error(err);
+      setStatusMessage("Virhe palvelinyhteydessä.");
+      setIsSuccess(false);
     }
   };
 
   return (
-    <div>
-      <h1>Create Player</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="first-name">First Name</label>
+    <div className="auth-page">
+      <h1>Luo pelaaja</h1>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <label htmlFor="first-name">Etunimi</label>
         <input
           type="text"
           id="first-name"
-          placeholder="First name"
+          placeholder="Etunimi"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
+          required
         />
-        <label htmlFor="last-name">Last Name</label>
+
+        <label htmlFor="last-name">Sukunimi</label>
         <input
           type="text"
           id="last-name"
-          placeholder="Last name"
+          placeholder="Sukunimi"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
+          required
         />
-        <label htmlFor="position">Position</label>
+
+        <label htmlFor="position">Pelipaikka</label>
         <select
-          name="position"
           id="position"
           value={position}
           onChange={(e) => setPosition(e.target.value)}
+          required
         >
           <option value="" disabled>
             -- Valitse pelipaikka --
@@ -79,8 +96,13 @@ export default function CreatePlayer() {
           <option value="Puolustaja">Puolustaja</option>
           <option value="Maalivahti">Maalivahti</option>
         </select>
-        <button>Create Player</button>
+
+        <button type="submit">Luo pelaaja</button>
       </form>
+
+      {statusMessage && (
+        <p className={isSuccess ? "success" : "error"}>{statusMessage}</p>
+      )}
     </div>
   );
 }

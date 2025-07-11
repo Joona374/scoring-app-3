@@ -1,164 +1,212 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
   <meta charset="UTF-8" />
-  <title>Line Drawer Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rosteri</title>
+  <link rel="stylesheet" href="scoring-frontend/src/styles/index.css" />
+  <link rel="stylesheet" href="scoring-frontend/src/components/FormStyles.css" />
   <style>
     body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+    }
+
+    .roster-page {
       display: flex;
-      font-family: sans-serif;
-        margin: 0;
-    padding: 0;
+      flex-direction: row;
+      margin: 0 auto;
+      height: 100vh;
+      padding: 1rem;
     }
-    #container {
-      position: relative;
+
+    .player-editor {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
     }
-    #myImage {
-      width: 100%;
-      height: auto;
-        max-width: 100%;
-        max-height: 100vh;
-      display: block;
+
+    .separator {
+      width: 1px;
+      background-color: #444;
+      margin: 0 1rem;
     }
-    #canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      
+
+    .player-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      min-height: 0; /* allow inner flex children to overflow */
     }
-    .handle {
-      width: 12px;
-      height: 12px;
-      background: red;
-      border-radius: 50%;
-      position: absolute;
+
+    .player-section {
+      margin-bottom: 2rem;
+    }
+
+    .player-section h2 {
+      font-size: 1.2rem;
+      border-bottom: 1px solid #444;
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.75rem;
+      color: var(--muted-text);
+    }
+
+    .player-item {
+      padding: 0.5rem;
+      border-radius: var(--radius);
       cursor: pointer;
-      transform: translate(-50%, -50%);
-      z-index: 10;
+      transition: background-color 0.2s ease;
     }
-    #sidebar {
-      width: 300px;
-      padding: 10px;
-      background: #f0f0f0;
-      font-size: 14px;
+
+    .player-item:hover {
+      background-color: #333;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+      max-width: 100%;
+      height: 100%;
+    }
+
+    .add-player-btn {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .add-player-btn:hover {
+      background-color: #991b1b;
+    }
+
+    .form-title {
+      font-size: 1.5rem;
+      margin: 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #444;
+      color: var(--muted-text);
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .delete-button {
+      background-color: #991b1b;
+    }
+
+    .delete-button:hover {
+      background-color: #7f1d1d;
+    }
+
+    .player-sections-scroll {
+      flex-grow: 1;
       overflow-y: auto;
+      margin-top: 1rem;
     }
-    .coord-line {
-      margin-bottom: 10px;
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .roster-page {
+        flex-direction: column;
+      }
+
+      .separator {
+        display: none;
+      }
+
+      .player-list {
+        max-height: unset;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="container">
-    <img id="myImage" src="scoring-frontend/src/assets/kaukalo.png" />
-    <canvas id="canvas"></canvas>
+  <div class="roster-page">
+    
+    <!-- Left Side: Player Editor -->
+    <div class="player-editor">
+      <div class="auth-form">
+        <div class="form-title">Muokkaa pelaajaa</div>
+
+        <label for="first-name">Etunimi</label>
+        <input type="text" id="first-name" placeholder="Etunimi" />
+
+        <label for="last-name">Sukunimi</label>
+        <input type="text" id="last-name" placeholder="Sukunimi" />
+
+        <label for="position">Pelipaikka</label>
+        <select id="position">
+          <option value="" disabled selected>-- Valitse pelipaikka --</option>
+          <option value="Hyökkääjä">Hyökkääjä</option>
+          <option value="Puolustaja">Puolustaja</option>
+          <option value="Maalivahti">Maalivahti</option>
+        </select>
+
+        <div class="action-buttons">
+          <button class="auth-form button" id="save-btn">Tallenna</button>
+          <button class="auth-form button delete-button" id="delete-btn">Poista</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vertical Separator -->
+    <div class="separator"></div>
+
+    <!-- Right Side: Player List -->
+    <div class="player-list">
+      <button class="add-player-btn">+ Lisää uusi pelaaja</button>
+      <div class="player-sections-scroll">
+        <div class="player-section">
+          <h2>Hyökkääjät</h2>
+          <div class="player-item">Joona Rahm</div>
+          <div class="player-item">Erkki Esimerkki</div>
+          <div class="player-item">Kalle Kiekko</div>
+          <div class="player-item">Sami Salama</div>
+          <div class="player-item">Timo Tikkanen</div>
+          <div class="player-item">Jere Jetti</div>
+          <div class="player-item">Elias Eetu</div>
+          <div class="player-item">Roope Raita</div>
+        </div>
+
+        <div class="player-section">
+          <h2>Puolustajat</h2>
+          <div class="player-item">Laura Lehtonen</div>
+          <div class="player-item">Mikko Muurinen</div>
+          <div class="player-item">Henri Haka</div>
+          <div class="player-item">Otto Ojanen</div>
+          <div class="player-item">Lauri Laituri</div>
+        </div>
+
+        <div class="player-section">
+          <h2>Maalivahdit</h2>
+          <div class="player-item">Mikko Maalivahti</div>
+          <div class="player-item">Ville Veskari</div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div id="sidebar">
-    <h3>Line Coordinates (0–100)</h3>
-    <div id="coords"></div>
-  </div>
-
-  <script>
-    const img = document.getElementById('myImage');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const container = document.getElementById('container');
-    const coordsDiv = document.getElementById('coords');
-
-    let lines = [];
-    let currentLine = [];
-    let draggingHandle = null;
-
-    function updateCanvasSize() {
-      canvas.width = img.clientWidth;
-      canvas.height = img.clientHeight;
-      drawLines();
-    }
-
-    function imgOffset() {
-      const rect = img.getBoundingClientRect();
-      return { left: rect.left + window.scrollX, top: rect.top + window.scrollY };
-    }
-
-    function drawLines() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      document.querySelectorAll('.handle').forEach(h => h.remove());
-      coordsDiv.innerHTML = '';
-
-      lines.forEach((line, idx) => {
-        const [p1, p2] = line;
-
-        // Draw line
-        ctx.beginPath();
-        ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
-        ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Draw handles
-        [p1, p2].forEach((p, i) => {
-          const handle = document.createElement('div');
-          handle.className = 'handle';
-          handle.style.left = `${p.x * canvas.width}px`;
-          handle.style.top = `${p.y * canvas.height}px`;
-          handle.dataset.line = idx;
-          handle.dataset.point = i;
-          container.appendChild(handle);
-
-          handle.addEventListener('mousedown', e => {
-            draggingHandle = { lineIdx: idx, pointIdx: i };
-          });
-        });
-
-        // Display coordinates
-        const relCoords = line.map(p => ({
-          x: (p.x * 100).toFixed(1),
-          y: (p.y * 100).toFixed(1)
-        }));
-        coordsDiv.innerHTML += `
-          <div class="coord-line">
-            Line ${idx + 1}: (${relCoords[0].x}, ${relCoords[0].y}) → (${relCoords[1].x}, ${relCoords[1].y})
-          </div>
-        `;
-      });
-    }
-
-    canvas.addEventListener('click', e => {
-        console.log('Canvas clicked');
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / canvas.width;
-      const y = (e.clientY - rect.top) / canvas.height;
-
-      currentLine.push({ x, y });
-
-      if (currentLine.length === 2) {
-        lines.push([...currentLine]);
-        currentLine = [];
-        drawLines();
-      }
-    });
-
-    window.addEventListener('mousemove', e => {
-      if (draggingHandle) {
-        const rect = canvas.getBoundingClientRect();
-        const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / canvas.width));
-        const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / canvas.height));
-
-        lines[draggingHandle.lineIdx][draggingHandle.pointIdx] = { x, y };
-        drawLines();
-      }
-    });
-
-    window.addEventListener('mouseup', () => {
-      draggingHandle = null;
-    });
-
-    window.addEventListener('resize', updateCanvasSize);
-    img.addEventListener('load', updateCanvasSize);
-
-    updateCanvasSize();
-  </script>
 </body>
 </html>

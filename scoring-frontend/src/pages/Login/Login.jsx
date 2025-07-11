@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../auth/AuthContext";
+import "../../components/FormStyles.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -39,30 +40,28 @@ export default function Login() {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="user">Username of Email</label>
+    <div className="auth-page">
+      <h1>Kirjaudu sisään</h1>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <label htmlFor="user">Käyttäjätunnus tai sähköposti</label>
         <input
           required
           type="text"
-          placeholder="User"
           id="user"
           value={user}
           onChange={(e) => setUser(e.target.value)}
         />
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">Salasana</label>
         <input
           required
           type="password"
-          placeholder="Password"
           id="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit">Login</button>
+        <button type="submit">Kirjaudu</button>
       </form>
-      {errorMsg && <p>{errorMsg}</p>}
+      {errorMsg && <p className="error">{errorMsg}</p>}
     </div>
   );
 }

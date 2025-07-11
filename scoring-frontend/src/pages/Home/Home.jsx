@@ -1,35 +1,39 @@
 import { Link } from "react-router-dom";
-import "./Home.css";
 import { useContext } from "react";
 import AuthContext from "../../auth/AuthContext";
+import "./Home.css";
 
 export default function Home() {
   const { isLoggedIn, logout } = useContext(AuthContext);
+
   return (
-    <div>
-      {!isLoggedIn ? (
-        <>
-          <h1>Welcome coach!</h1>
-          <div className="home-buttons">
-            <Link to="/login" className="home-button">
-              Login
+    <div className="home-hero-container">
+      <h1>Seuraa. Analysoi. Voita.</h1>
+      <p>
+        Moderni valmennustyökalu, joka auttaa muuttamaan datan paremmiksi
+        päätöksiksi – helposti ja nopeasti.
+      </p>
+      <div className="home-hero-buttons">
+        {!isLoggedIn ? (
+          <>
+            <Link to="/register" className="hero-button primary">
+              Luo käyttäjä
             </Link>
-            <Link to="/register" className="home-button">
-              Register
+            <Link to="/login" className="hero-button secondary">
+              Kirjaudu sisään
             </Link>
-          </div>
-        </>
-      ) : (
-        <>
-          <h1>Welcome Back!</h1>
-          <Link to="/dashboard" className="home-button">
-            Dashboard
-          </Link>
-          <button onClick={logout} className="home-button">
-            Logout
-          </button>
-        </>
-      )}
+          </>
+        ) : (
+          <>
+            <Link to="/dashboard" className="hero-button primary">
+              Siirry sovellukseen
+            </Link>
+            <button onClick={logout} className="hero-button secondary">
+              Kirjaudu ulos
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

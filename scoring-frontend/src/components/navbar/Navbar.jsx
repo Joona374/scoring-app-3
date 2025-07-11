@@ -8,50 +8,54 @@ export default function Navbar() {
 
   return (
     <nav>
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        {!isLoggedIn ? (
-          <>
-            {" "}
-            <li>
-              <Link to="/register">Register</Link>
-            </li>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-            {/* TODO: PROTECT THIS IN PROD */}
-            <li>
-              <Link to="/admin">Admin</Link>
-            </li>
-          </>
-        ) : (
-          <>
-            <li>
-              <Link to="/dashboard">Dashboard</Link>
-            </li>
-            <li>
-              <Link to="/create-team">Create a Team</Link>
-            </li>
-            <li>
-              <Link to="/create-player">Create a Player</Link>
-            </li>
-            <li>
-              <Link to="/create-game">Create a Game</Link>
-            </li>
-            <li>
-              <Link to="/tagging">Tagging</Link>
-            </li>
-            <li>
-              <Link to="/excel-test">Excel Test</Link>
-            </li>
-            <li>
-              <Link to="/admin">Admin</Link>
-            </li>
-          </>
-        )}
-      </ul>
+      <div className="navbar-left">
+        <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
+          ScoringApp 3.0
+        </Link>
+      </div>
+
+      <div className="navbar-right">
+        <ul>
+          {!isLoggedIn ? (
+            <>
+              <li>
+                <Link to="/login">Kirjaudu</Link>
+              </li>
+              <li>
+                <Link to="/register">Rekisteröidy</Link>
+              </li>
+
+              <li>
+                <Link to="/admin">Admin</Link>
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <Link to="/dashboard">Dashboard</Link>
+              </li>
+              <li>
+                <Link to="/create-team">Luo joukkue</Link>
+              </li>
+              <li>
+                <Link to="/create-player">Luo pelaaja</Link>
+              </li>
+              <li>
+                <Link to="/create-game">Luo ottelu</Link>
+              </li>
+              <li>
+                <Link to="/tagging">Merkintä</Link>
+              </li>
+              <li>
+                <Link to="/excel-test">Excel-testi</Link>
+              </li>
+              <li>
+                <Link to="/admin">Admin</Link>
+              </li>
+            </>
+          )}
+        </ul>
+      </div>
     </nav>
   );
 }
