@@ -312,7 +312,6 @@ def convert_roster_to_lists(roster: dict) -> dict:
 
     return listed_roster
 
-
 def get_games_data(teams_games: list[Game], db_session: Session):
     """
     Aggregates and processes game and player statistics data for a list of games.
@@ -399,7 +398,6 @@ def get_games_data(teams_games: list[Game], db_session: Session):
     data_collector.sort(key=lambda game: game["date"], reverse=True)
     listed_total_data = convert_roster_to_lists(total_stats)
     return data_collector, listed_total_data
-
 
 @router.get("/plusminus")
 async def get_plusminus_excel(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
@@ -534,7 +532,11 @@ async def get_plusminus_excel(db_session: Session = Depends(get_db_session), cur
         headers={"Content-Disposition": "attachment; filename=stats.xlsx"}
     )
 
-
-
-
 ########################## FOR PLAYER +/- ##########################
+
+##########################   FOR SCORING  ##########################
+
+
+
+
+##########################   FOR SCORING  ##########################

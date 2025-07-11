@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Line Drawer Tool</title>
+  <style>
+    body {
+      display: flex;
+      font-family: sans-serif;
+        margin: 0;
+    padding: 0;
+    }
+    #container {
+      position: relative;
+      flex: 1;
+    }
+    #myImage {
+      width: 100%;
+      height: auto;
+        max-width: 100%;
+        max-height: 100vh;
+      display: block;
+    }
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      
+    }
+    .handle {
+      width: 12px;
+      height: 12px;
+      background: red;
+      border-radius: 50%;
+      position: absolute;
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+    #sidebar {
+      width: 300px;
+      padding: 10px;
+      background: #f0f0f0;
+      font-size: 14px;
+      overflow-y: auto;
+    }
+    .coord-line {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <img id="myImage" src="scoring-frontend/src/assets/kaukalo.png" />
+    <canvas id="canvas"></canvas>
+  </div>
+  <div id="sidebar">
+    <h3>Line Coordinates (0–100)</h3>
+    <div id="coords"></div>
+  </div>
+
+  <script>
+    const img = document.getElementById('myImage');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('container');
+    const coordsDiv = document.getElementById('coords');
+
+    let lines = [];
+    let currentLine = [];
+    let draggingHandle = null;
+
+    function updateCanvasSize() {
+      canvas.width = img.clientWidth;
+      canvas.height = img.clientHeight;
+      drawLines();
+    }
+
+    function imgOffset() {
+      const rect = img.getBoundingClientRect();
+      return { left: rect.left + window.scrollX, top: rect.top + window.scrollY };
+    }
+
+    function drawLines() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.querySelectorAll('.handle').forEach(h => h.remove());
+      coordsDiv.innerHTML = '';
+
+      lines.forEach((line, idx) => {
+        const [p1, p2] = line;
+
+        // Draw line
+        ctx.beginPath();
+        ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+        ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw handles
+        [p1, p2].forEach((p, i) => {
+          const handle = document.createElement('div');
+          handle.className = 'handle';
+          handle.style.left = `${p.x * canvas.width}px`;
+          handle.style.top = `${p.y * canvas.height}px`;
+          handle.dataset.line = idx;
+          handle.dataset.point = i;
+          container.appendChild(handle);
+
+          handle.addEventListener('mousedown', e => {
+            draggingHandle = { lineIdx: idx, pointIdx: i };
+          });
+        });
+
+        // Display coordinates
+        const relCoords = line.map(p => ({
+          x: (p.x * 100).toFixed(1),
+          y: (p.y * 100).toFixed(1)
+        }));
+        coordsDiv.innerHTML += `
+          <div class="coord-line">
+            Line ${idx + 1}: (${relCoords[0].x}, ${relCoords[0].y}) → (${relCoords[1].x}, ${relCoords[1].y})
+          </div>
+        `;
+      });
+    }
+
+    canvas.addEventListener('click', e => {
+        console.log('Canvas clicked');
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / canvas.width;
+      const y = (e.clientY - rect.top) / canvas.height;
+
+      currentLine.push({ x, y });
+
+      if (currentLine.length === 2) {
+        lines.push([...currentLine]);
+        currentLine = [];
+        drawLines();
+      }
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (draggingHandle) {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / canvas.width));
+        const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / canvas.height));
+
+        lines[draggingHandle.lineIdx][draggingHandle.pointIdx] = { x, y };
+        drawLines();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      draggingHandle = null;
+    });
+
+    window.addEventListener('resize', updateCanvasSize);
+    img.addEventListener('load', updateCanvasSize);
+
+    updateCanvasSize();
+  </script>
+</body>
+</html>

@@ -113,6 +113,30 @@ class ShotType(Base):
     value: Mapped[ShotTypeTypes] = mapped_column(SQLEnum(ShotTypeTypes), nullable=False, unique=True)
     tags: Mapped[List["PlayerStatsTag"]] = relationship(back_populates="shot_type", foreign_keys="PlayerStatsTag.shot_type_id")
 
+class ShotAreaTypes(Enum):
+    ZONE_1 = "ZONE_1"
+    ZONE_2_MIDDLE = "ZONE_2_MIDDLE"
+    ZONE_2_SIDE = "ZONE_2_SIDE"
+    HIGH_SLOT = "HIGH_SLOT"
+    BLUELINE = "BLUELINE"
+    ZONE_4 = "ZONE_4"
+    OUTSIDE_FAR = "OUTSIDE_FAR"
+    OUTSIDE_CLOSE = "OUTSIDE_CLOSE"
+    MISC = "MISC" 
+
+    @classmethod
+    def from_string(cls, str_value: str):
+        for item in cls:
+            if item.value == str_value:
+                return item
+        raise ValueError(f"No {cls.__name__} with value '{str_value}'")
+
+
+class ShotArea(Base):
+    __tablename__ = "shot_areas"
+
+    value: Mapped[ShotAreaTypes] = mapped_column(SQLEnum(ShotAreaTypes), nullable=False, unique=True)
+    tags: Mapped[List["PlayerStatsTag"]] = relationship(back_populates="shot_area", foreign_keys="PlayerStatsTag.shot_area_id")
 
 # GAMES
 class Game(Base):
@@ -205,6 +229,15 @@ class PlayerStatsTag(Base):
 
     ice_x: Mapped[int] = mapped_column(nullable=False)
     ice_y: Mapped[int] = mapped_column(nullable=False)
+
+    shot_area_id: Mapped[int] = mapped_column(ForeignKey("shot_areas.id"), nullable=False)
+    shot_area: Mapped["ShotArea"] = relationship(back_populates="tags", foreign_keys=[shot_area_id])
+
+    net_x: Mapped[int] = mapped_column(nullable=False)
+    net_y: Mapped[int] = mapped_column(nullable=False)
+
+    net_height: Mapped[str] = mapped_column(String(40), nullable=False)
+    net_width: Mapped[str] = mapped_column(String(40), nullable=False)
 
     # SHOT RESULT
     shot_result_id: Mapped[int] = mapped_column(ForeignKey("shot_results.id"), nullable=False)

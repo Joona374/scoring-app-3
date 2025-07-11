@@ -2,7 +2,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 import json
 from db.pydantic_schemas import AddTag, TagSchema, GameInRosterResponse, PlayerResponse, TeamStatsTagResponse
-from db.models import User, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating
+from db.models import User, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, ShotArea, ShotAreaTypes
 from db.db_manager import get_db_session
 from sqlalchemy.orm import Session
 from utils import get_current_user_id
@@ -46,12 +46,23 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
 
 
     shot_location = received_tag["location"]
+    shot_zone = received_tag["shotZone"]
+    net_location = received_tag["net"]
+
+    shot_height, shot_width = received_tag["netZone"].split("-")
+
     if not ((0 <= shot_location["x"] <= 100) and (0 <= shot_location["y"] <= 100)):
         print(f"Invalid shot location: {shot_location}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad coordinates")
 
     shot_result_enum = ShotResultTypes.from_string(received_tag["shot_result"])
     shot_result_ref = db_session.query(ShotResult).filter(ShotResult.value == shot_result_enum).first()
+    if not shot_result_ref:
+        print(f"Invalid shot zone: {shot_zone}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot result")
+
+    shot_area_enum = ShotAreaTypes.from_string(shot_zone)
+    shot_area_ref = db_session.query(ShotArea).filter(ShotArea.value == shot_area_enum).first()
     if not shot_result_ref:
         print(f"Invalid shot result: {received_tag['shot_result']}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot result")
@@ -75,14 +86,20 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
 
     try:
         new_tag = PlayerStatsTag(
+            shot_result=shot_result_ref,
             ice_x=shot_location["x"],
             ice_y=shot_location["y"],
-            shot_result=shot_result_ref,
+            shot_area=shot_area_ref,
+            net_x = net_location["x"],
+            net_y = net_location["y"],
+            net_height=shot_height,
+            net_width=shot_width,
             shot_type=shot_type_ref,
             game_id=received_tag["game_id"],
             crossice=cross_ice,
             strengths=received_tag["strengths"],
-            shooter_id=shooter_id
+            shooter_id=shooter_id,
+
         )
         db_session.add(new_tag)
         db_session.flush()

@@ -1,9 +1,18 @@
 .kaukalo-image-container {
-    width: 100%;
-    background-color: red;
+  width: 100%;
+  position: relative;
 }
 
 .kaukalo-image {
-    width: 100%;
-    display: block;
+  width: 100%;
+  display: block;
+}
+
+.kaukalo-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto; /* <== allows canvas to catch mouse events */
+  background-color: transparent;
+  transition: opacity 0.3s ease-in-out;
 }
