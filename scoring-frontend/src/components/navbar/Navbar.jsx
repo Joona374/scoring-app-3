@@ -35,13 +35,10 @@ export default function Navbar() {
                 <Link to="/dashboard">Dashboard</Link>
               </li>
               <li>
-                <Link to="/create-team">Luo joukkue</Link>
-              </li>
-              <li>
                 <Link to="/tagging">Tilastoi</Link>
               </li>
               <li>
-                <Link to="/excel-test">Excel-testi</Link>
+                <Link to="/excel-exporter">Excel-vienti</Link>
               </li>
               <li>
                 <Link to="/roster-management">Kokoonpanon hallinta</Link>

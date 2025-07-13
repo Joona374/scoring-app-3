@@ -1,0 +1,37 @@
+.two-column-layout {
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+  height: 100%;
+  padding: 1rem;
+}
+
+.left-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.right-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.separator {
+  width: 1px;
+  background-color: #444;
+  margin: 0 1rem;
+}

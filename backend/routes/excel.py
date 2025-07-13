@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, Depends
+from fastapi import APIRouter, Response, Depends, Query
 from sqlalchemy.orm import Session
 from io import BytesIO
 from openpyxl import load_workbook
@@ -400,11 +400,21 @@ def get_games_data(teams_games: list[Game], db_session: Session):
     return data_collector, listed_total_data
 
 @router.get("/plusminus")
-async def get_plusminus_excel(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
 
     user = db_session.query(User).filter(User.id == current_user_id).first()
     team = user.team
+
     teams_games = team.games
+    if game_ids:
+        split_ids = [int(game_id) for game_id in game_ids.split(",")]
+        teams_games = []
+        for game in team.games:
+            if game.id in split_ids:
+                teams_games.append(game)
+    else:
+        teams_games = team.games
+    
 
     data_for_games, total_stats = get_games_data(teams_games, db_session)
     print("")

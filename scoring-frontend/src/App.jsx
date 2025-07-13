@@ -9,7 +9,7 @@ import CreateTeam from "./pages/CreateTeam/CreateTeam";
 import Tagging from "./pages/Tagging/Tagging";
 import AdminPage from "./pages/Admin/AdminPage";
 import CreateGame from "./pages/CreateGame/CreateGame";
-import ExcelTest from "./pages/ExcelTest/ExcelTest";
+import ExcelExporter from "./pages/ExcelExporter/ExcelExporter";
 import RosterManagement from "./pages/RosterManagement/RosterManagement";
 
 function App() {
@@ -65,10 +65,10 @@ function App() {
             }
           />
           <Route
-            path="/excel-test"
+            path="/excel-exporter"
             element={
               <ProtectRoute>
-                <ExcelTest />
+                <ExcelExporter />
               </ProtectRoute>
             }
           />

@@ -1,0 +1,45 @@
+.export-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.selector-title {
+  font-size: 1.3rem;
+  color: var(--muted-text);
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.export-card {
+  background-color: var(--card-bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.export-card:hover {
+  border-color: var(--accent-color);
+  background-color: #262626;
+}
+
+.export-card.selected {
+  border-color: var(--accent-color);
+  background-color: #1f1f1f;
+}
+
+.export-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+.export-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted-text);
+}
