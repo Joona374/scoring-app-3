@@ -10,7 +10,6 @@ export default function ExcelExporter() {
   const [games, setGames] = useState([]);
 
   const downloadExcel = async () => {
-    console.log("This should dl");
     const res = await fetch(`${BACKEND_URL}/excel/download-test`);
     const fileBlob = await res.blob();
     const tempUrl = URL.createObjectURL(fileBlob);
@@ -23,7 +22,6 @@ export default function ExcelExporter() {
   const downloadPlusMinus = async () => {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    console.log("This should plusminus");
     const token = sessionStorage.getItem("jwt_token");
     const res = await fetch(`${BACKEND_URL}/excel/plusminus`, {
       headers: {
@@ -39,7 +37,6 @@ export default function ExcelExporter() {
   };
 
   const downloadTeamStats = async () => {
-    console.log("This should dl");
     const token = sessionStorage.getItem("jwt_token");
     try {
       const res = await fetch(`${BACKEND_URL}/excel/teamstats`, {
@@ -73,7 +70,6 @@ export default function ExcelExporter() {
       }
 
       const data = await response.json();
-      console.log(data);
       setGames(data);
     } catch (err) {
       console.error(err);

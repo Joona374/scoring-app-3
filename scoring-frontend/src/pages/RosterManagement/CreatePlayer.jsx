@@ -6,6 +6,8 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export default function CreatePlayer({ players, setPlayers }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [jerseyNumber, setJerseyNumber] = useState("");
+
   const [position, setPosition] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -32,6 +34,7 @@ export default function CreatePlayer({ players, setPlayers }) {
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
+          jersey_number: jerseyNumber,
           position,
         }),
       });
@@ -53,12 +56,14 @@ export default function CreatePlayer({ players, setPlayers }) {
         first_name: firstName,
         last_name: lastName,
         position: position,
+        jersey_number: jerseyNumber,
       };
       const newPlayers = [...players, playerObject];
       setPlayers(newPlayers);
 
       setFirstName("");
       setLastName("");
+      setJerseyNumber(null);
       setPosition("");
     } catch (err) {
       console.error(err);
@@ -90,6 +95,18 @@ export default function CreatePlayer({ players, setPlayers }) {
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
           required
+        />
+
+        <label htmlFor="last-name">Pelinumero</label>
+        <input
+          type="number"
+          id="number"
+          placeholder="Pelinumero"
+          value={jerseyNumber}
+          onChange={(e) => setJerseyNumber(e.target.value)}
+          required
+          min={0}
+          max={99}
         />
 
         <label htmlFor="position">Pelipaikka</label>

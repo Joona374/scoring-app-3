@@ -4,14 +4,16 @@ import { TaggingContext } from "../../context/TaggingContext";
 import ShotLocationQuestion from "./TaggingComponents/ShotLocationQuestion";
 import GridChoiceQuestion from "./TaggingComponents/GridChoiceQuestion";
 import ShooterQuestion from "./TaggingComponents/ShooterQuestion";
-import CreateGame from "../CreateGame/CreateGame";
 import "./Styles/TaggingArea.css";
-import GamePicker from "./GamePicker";
-import ContinueGamePicker from "./ContinueGamePicker";
 import NetQuestion from "./TaggingComponents/NetQuestion";
 import ParticapntsQuestion from "./TaggingComponents/ParticipantsQuestion";
+import TaggingSummary from "./TaggingSummary";
 
-export default function TaggingArea() {
+import { Question } from "./question";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+export default function TeamStatsMode() {
   // Import the "public" variables from context
   const {
     currentTag,
@@ -28,7 +30,39 @@ export default function TaggingArea() {
     setCurrentGameId,
     gamesForTeam,
     setGamesForTEam,
+    setFirstQuestionId,
   } = useContext(TaggingContext);
+
+  useEffect(() => {
+    async function fetchQuestions() {
+      const token = sessionStorage.getItem("jwt_token");
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/tagging/questions/team`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const questionsJson = await res.json();
+        console.log(questionsJson);
+        const questionObjs = questionsJson.questions.map(
+          (element) => new Question(element)
+        );
+        setQuestionObjects(questionObjs);
+        if (questionObjs.length > 0) {
+          // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
+          setCurrentQuestionId(questionObjs[0].id);
+          setFirstQuestionId(questionObjs[0].id);
+        }
+      } catch (err) {
+        console.error("Error fetching questions from backend:", err);
+      }
+    }
+    fetchQuestions();
+  }, []);
 
   // This function gets the roster for this game form db
   const getRosterFromDb = async (gameId) => {
@@ -86,5 +120,12 @@ export default function TaggingArea() {
     }
   };
 
-  return <div className="question-container">{renderQuestionComponent()}</div>;
+  return (
+    <div className="tagging-page">
+      <div className="tagging-area-column">{renderQuestionComponent()} </div>
+      <div className="tagging-summary-column">
+        <TaggingSummary></TaggingSummary>
+      </div>
+    </div>
+  );
 }

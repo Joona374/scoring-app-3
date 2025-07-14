@@ -59,7 +59,9 @@ class Player(Base):
 
     first_name: Mapped[str] = mapped_column(String(64), nullable=False)
     last_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    jersey_number: Mapped[int] = mapped_column(nullable=False)
     position: Mapped[Positions] = mapped_column(SQLEnum(Positions), nullable=False)
+
 
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=True)
     team: Mapped["Team"] = relationship(back_populates="players", foreign_keys=[team_id])

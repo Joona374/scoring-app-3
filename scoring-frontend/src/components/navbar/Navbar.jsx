@@ -35,7 +35,7 @@ export default function Navbar() {
                 <Link to="/dashboard">Dashboard</Link>
               </li>
               <li>
-                <Link to="/tagging">Tilastoi</Link>
+                <Link to="/tagging">Tilastointi</Link>
               </li>
               <li>
                 <Link to="/excel-exporter">Excel-vienti</Link>

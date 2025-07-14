@@ -1,21 +1,44 @@
 .participant-box {
-    width: 30%;
+    flex: 1;
     padding: 8px 16px;
     margin: 5px;
-    border-radius: 6px;
-    border: 1px solid #007b00;
-    background-color: #666;
-    color: #ffffff;
+    border-radius: var(--radius);
+    border: 2px solid #444;
+    background-color: #666; /* lighter neutral gray */
+    color: #fff;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: bold;
-
+    transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.10);
 }
 
-.on-ice {
-    background-color: #6a6;
+.participant-box.on-ice.green {
+    background-color: rgb(71, 108, 71); /* light green */
+    border-color: #8cb48d;
 }
 
-.participated {
-    background-color: #0f0;
+.participant-box.participated.green {
+    background-color: #0c0; /* medium green */
+    border-color: #4caf50;
 }
+
+.participant-box.on-ice.red {
+    background-color: #924c4c; /* light red */
+    border-color: #b91c1c;
+}
+
+.participant-box.participated.red {
+    background-color: #ff0000; /* medium red */
+    border-color: #b91c1c;
+}
+
+.participant-box:focus,
+.participant-box:hover {
+    outline: none;
+    box-shadow: 0 2px 8px rgba(185, 28, 28, 0.18);
+    transform: translateY(-1px) scale(1.03);
+}
+
+
+

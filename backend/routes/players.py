@@ -15,6 +15,7 @@ router = APIRouter(
 def create_a_player(player_data: PlayerCreate, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     player_first_name = player_data.first_name
     player_last_name = player_data.last_name
+    player_jersey_number = player_data.jersey_number
     player_position = player_data.position
 
     print(f"Player: {player_first_name} {player_last_name} is {player_position}")
@@ -26,6 +27,7 @@ def create_a_player(player_data: PlayerCreate, db_session: Session = Depends(get
     new_player = Player(
         first_name=player_first_name,
         last_name=player_last_name,
+        jersey_number=player_jersey_number,
         position=player_position,
         team=user.team
     )
@@ -54,6 +56,8 @@ def update_player(player_id: int, player_data: PlayerUpdate, db_session: Session
         player.last_name = player_data.last_name
     if player_data.position:
         player.position = player_data.position
+    if player_data.jersey_number:
+        player.jersey_number = player_data.jersey_number
 
     db_session.commit()
     db_session.refresh(player)
@@ -62,6 +66,7 @@ def update_player(player_id: int, player_data: PlayerUpdate, db_session: Session
         id=player.id,
         first_name=player.first_name,
         last_name=player.last_name,
+        jersey_number=player.jersey_number,
         position=player.position
     )
 
@@ -97,6 +102,7 @@ def get_player_for_team(db_session: Session = Depends(get_db_session), current_u
             id=player.id,
             first_name=player.first_name,
             last_name=player.last_name,
+            jersey_number=player.jersey_number,
             position=player.position.name
         )
         response_players_list.append(player_response)

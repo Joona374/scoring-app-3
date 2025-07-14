@@ -26,6 +26,7 @@ export default function RosterManagement() {
 
         const data = await response.json();
         setPlayers(data);
+        console.log(data);
       } catch (err) {
         console.log("Error:", err);
       }

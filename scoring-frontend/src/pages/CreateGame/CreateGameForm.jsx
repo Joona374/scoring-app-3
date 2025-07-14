@@ -1,18 +1,22 @@
+import "../../components/FormStyles.css";
+
 export default function CreateGameForm({
   opponent,
   setOpponent,
   setGameDate,
   setHomeGame,
+  showRosterSelector,
   setShowRosterSelector,
   submitGame,
+  onCancel,
 }) {
   const changeHomeRadio = (new_value) => {
     setHomeGame(new_value === "home");
   };
 
   return (
-    <form onSubmit={submitGame}>
-      <label htmlFor="opponent-input">Opponent</label>
+    <form className="auth-form" onSubmit={submitGame}>
+      <label htmlFor="opponent-input">Vastustaja</label>
       <input
         id="opponent-input"
         value={opponent}
@@ -21,7 +25,7 @@ export default function CreateGameForm({
         placeholder="Opponent..."
       />
 
-      <label htmlFor="date-input">Date:</label>
+      <label htmlFor="date-input">Päivämäärä:</label>
       <input
         type="date"
         id="date-input"
@@ -29,7 +33,7 @@ export default function CreateGameForm({
       />
 
       <fieldset>
-        <legend>Game Location</legend>
+        <legend>Koti/Vieras</legend>
         <div className="radio-group">
           <div className="radio-option">
             {" "}
@@ -40,7 +44,7 @@ export default function CreateGameForm({
               value="home"
               onChange={(e) => changeHomeRadio(e.target.value)}
             />
-            <label htmlFor="home-input">Home</label>
+            <label htmlFor="home-input">Koti</label>
           </div>
           <div className="radio-option">
             <input
@@ -50,14 +54,21 @@ export default function CreateGameForm({
               value="away"
               onChange={(e) => changeHomeRadio(e.target.value)}
             />
-            <label htmlFor="away-input">Away</label>
+            <label htmlFor="away-input">Vieras</label>
           </div>
         </div>
       </fieldset>
-      <button type="button" onClick={() => setShowRosterSelector(true)}>
-        Pick roster
+      <button
+        type="button"
+        className={"secondary-button"}
+        onClick={() => setShowRosterSelector(!showRosterSelector)}
+      >
+        Valitse kokoonpano
       </button>
-      <button>Submit</button>
+      <button>Jatka</button>
+      <button onClick={onCancel} className={"cancel-button"}>
+        Peruuta
+      </button>
     </form>
   );
 }

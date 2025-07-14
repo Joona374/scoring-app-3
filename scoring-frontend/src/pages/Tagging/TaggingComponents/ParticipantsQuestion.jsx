@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { TaggingContext } from "../../../context/TaggingContext";
 import ParticipantBox from "./ParticipantBox";
 import "../Styles/ParticipantQuestion.css";
@@ -22,6 +22,21 @@ export default function ParticapntsQuestion() {
 
   const [onIces, setOnIces] = useState([]);
   const [participations, setParticipations] = useState([]);
+
+  // Add this useEffect:
+  useEffect(() => {
+    if (currentTag?.shooter) {
+      const shooterId = currentTag.shooter.id;
+
+      // Only add if not already set
+      setOnIces((prev) =>
+        prev.includes(shooterId) ? prev : [...prev, shooterId]
+      );
+      setParticipations((prev) =>
+        prev.includes(shooterId) ? prev : [...prev, shooterId]
+      );
+    }
+  }, [currentTag?.shooter]);
 
   const clickPlayer = (player) => {
     const playerId = player.id;
@@ -58,12 +73,12 @@ export default function ParticapntsQuestion() {
 
   return (
     <>
-      <p>Shooter question</p>
+      <h2>Osallistujat ja jäällä olleet</h2>
       <div className="participant-question-container">
         <div className="participant-left-column">
           {[1, 2, 3, 4].map((line) => {
             return (
-              <div key={`d-row-${line}`} className="participant-f-row">
+              <div key={`d-row-${line}`} className="participant-d-row">
                 {["LD", "RD"].map((position) => {
                   const playerForPosition = playersInRoster.find(
                     (posInRoster) =>
@@ -82,6 +97,7 @@ export default function ParticapntsQuestion() {
                         }}
                         participants={participations}
                         onIces={onIces}
+                        currentTag={currentTag}
                       ></ParticipantBox>
                     );
                   } else {
@@ -119,6 +135,7 @@ export default function ParticapntsQuestion() {
                         }}
                         participants={participations}
                         onIces={onIces}
+                        currentTag={currentTag}
                       ></ParticipantBox>
                     );
                   } else {
@@ -135,7 +152,39 @@ export default function ParticapntsQuestion() {
           })}
         </div>
       </div>
-      <button onClick={() => handleSubmit()}>Confirm</button>
+      <div className="participant-summary">
+        <h3>Jäällä</h3>
+        <ul>
+          {onIces.map((id) => {
+            const player = playersInRoster.find(
+              (p) => p.player.id === id
+            )?.player;
+            return player ? (
+              <li key={`on-ice-${id}`}>
+                {player.first_name} {player.last_name}
+              </li>
+            ) : null;
+          })}
+        </ul>
+
+        <h3>Osallisena</h3>
+        <ul>
+          {participations.map((id) => {
+            const player = playersInRoster.find(
+              (p) => p.player.id === id
+            )?.player;
+            return player ? (
+              <li key={`participated-${id}`}>
+                {player.first_name} {player.last_name}
+              </li>
+            ) : null;
+          })}
+        </ul>
+      </div>
+
+      <button className="confirm-button" onClick={handleSubmit}>
+        Vahvista
+      </button>
     </>
   );
 }

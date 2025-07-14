@@ -13,7 +13,15 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/questions")
+@router.get("/questions/team")
+def get_questions():
+    questions_json_path = Path("./tagging/team_stats_questions.json")
+    text = questions_json_path.read_text()
+    parsed_json = json.loads(text)
+
+    return parsed_json
+
+@router.get("/questions/player")
 def get_questions():
     questions_json_path = Path("./tagging/player_stats_questions.json")
     text = questions_json_path.read_text()
@@ -155,6 +163,7 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
                 id=player_object.id,
                 first_name=player_object.first_name,
                 last_name=player_object.last_name,
+                jersey_number=player_object.jersey_number,
                 position=player_object.position
             )
         )

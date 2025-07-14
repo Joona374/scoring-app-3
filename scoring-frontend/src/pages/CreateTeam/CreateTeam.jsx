@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../../components/FormStyles.css";
+import { useNavigate } from "react-router-dom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -8,6 +9,8 @@ export default function CreateTeam() {
   const [errorMsg, setErrorMsg] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [copied, setCopied] = useState(false);
+
+  const navigator = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -96,6 +99,9 @@ export default function CreateTeam() {
             </button>
           </div>
           {copied && <p className="copy-feedback">Kopioitu!</p>}
+          <button onClick={() => navigator("/dashboard")}>
+            Jatka joukkuesivulle
+          </button>
         </div>
       )}
     </div>

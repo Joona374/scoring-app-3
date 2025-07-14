@@ -259,6 +259,8 @@ export default function NetQuestion() {
       netZone: zoneHovering,
     };
 
+    console.log("NET ZONE: ", zoneHovering);
+
     advanceQuestion(last_question, next_question_id, newTag);
   };
 

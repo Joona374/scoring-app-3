@@ -11,12 +11,25 @@
     height: 100%;
     width: 100%;
     box-sizing: border-box;
-    padding: 1rem;
+    padding: 2rem 1.5rem;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    margin-bottom: 2rem;
+}
+
+.grid-question-text {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    color: var(--text-color);
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.12);
 }
 
 .grid-options {
     display: grid;
-    gap: 1rem;
+    gap: 1.2rem;
     flex-grow: 1;
     grid-template-columns: 1fr 1fr;
 }
@@ -28,5 +41,30 @@
 
 .grid-option-button {
     cursor: pointer;
-    user-select:  none;
+    user-select: none;
+    padding: 1rem 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    background: linear-gradient(90deg, var(--bg-color) 60%, var(--card-bg) 100%);
+    border: 2px solid var(--accent-color);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+    transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s;
+    outline: none;
+}
+
+.grid-option-button:hover,
+.grid-option-button:focus {
+    background: rgba(185, 28, 28, 0.18); /* subtle accent tint */
+    color: var(--text-color);
+    border-color: var(--accent-color);
+    transform: translateY(-1px) scale(1.01);
+}
+
+.grid-option-button:active {
+    background: rgba(185, 28, 28, 0.28);
+    color: var(--text-color);
+    border-color: var(--accent-color);
+    transform: scale(0.98);
 }

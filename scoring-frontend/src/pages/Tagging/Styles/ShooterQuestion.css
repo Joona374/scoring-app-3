@@ -1,19 +1,26 @@
 .shooter-question-container {
     display: flex;
     flex-direction: row;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    margin-bottom: 2rem;
+}
+
+.shooter-left-column,
+.shooter-right-column {
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
 }
 
 .shooter-left-column {
-    background-color: inherit;
-    display: flex;
-    flex-direction: column;
     flex: 2;
+    border-right: 2px solid #222;
 }
 
 .shooter-right-column {
-    background-color: inherit;
-    display: flex;
-    flex-direction: column;
     flex: 3;
 }
 
@@ -21,4 +28,12 @@
     display: flex;
     flex-direction: row;
     padding: 3px;
+}
+
+.shooter-question-container p {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
 }

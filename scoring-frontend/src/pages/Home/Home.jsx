@@ -26,7 +26,7 @@ export default function Home() {
         ) : (
           <>
             <Link to="/dashboard" className="hero-button primary">
-              Siirry sovellukseen
+              Siirry joukkuesivulle
             </Link>
             <button onClick={logout} className="hero-button secondary">
               Kirjaudu ulos

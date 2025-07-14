@@ -79,6 +79,7 @@ def get_my_team(db_session: Session = Depends(get_db_session), current_user_id: 
             id=player.id,
             first_name=player.first_name,
             last_name=player.last_name,
+            jersey_number=player.jersey_number,
             position=player.position.name
             )
         teams_players.append(player_response)

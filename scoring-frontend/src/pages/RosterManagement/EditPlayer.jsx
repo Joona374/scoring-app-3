@@ -6,6 +6,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export default function UpdatePlayer({ players, setPlayers, player }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [number, setNumber] = useState(null);
   const [position, setPosition] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
@@ -20,6 +21,7 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
   useEffect(() => {
     setFirstName(player.first_name);
     setLastName(player.last_name);
+    setNumber(player.jersey_number);
     if (["FORWARD", "DEFENDER", "GOALIE"].includes(player.position)) {
       setPosition(positionMapping[player.position]);
     } else setPosition(player.position);
@@ -91,6 +93,9 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
     if (lastName) {
       playerBody.last_name = lastName;
     }
+    if (number) {
+      player.jersey_number = number;
+    }
     if (position) {
       playerBody.position = position;
     }
@@ -134,6 +139,7 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
         id: data.id,
         first_name: firstName,
         last_name: lastName,
+        jersey_number: number,
         position: position,
       };
       console.log("UPDATED:", updatedPlayer);
@@ -171,6 +177,18 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
           placeholder="Sukunimi"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
+          required
+        />
+
+        <label htmlFor="number">Pelinumero</label>
+        <input
+          type="number"
+          min={0}
+          max={99}
+          id="number"
+          placeholder="Pelinumero"
+          value={number}
+          onChange={(e) => setNumber(e.target.value)}
           required
         />
 

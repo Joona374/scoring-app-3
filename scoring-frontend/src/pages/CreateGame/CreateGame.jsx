@@ -5,7 +5,7 @@ import RosterSelector from "./RosterSelector";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-export default function CreateGame({ setCurrentGameId, onCancel }) {
+export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
   const generateEmptyPlayersInRoster = () => {
     let emptyPlayersInRoster = [];
     for (let i = 1; i <= 5; i++) {
@@ -85,21 +85,28 @@ export default function CreateGame({ setCurrentGameId, onCancel }) {
       const data = await res.json();
       console.log("It went okay?", data);
       setCurrentGameId(data.game_id);
+      pickMode();
     } catch (error) {
       console.log("OH NO ERROR: ", error);
     }
   };
 
   return (
-    <>
-      <CreateGameForm
-        opponent={opponent}
-        setOpponent={setOpponent}
-        setGameDate={setGameDate}
-        setHomeGame={setHomeGame}
-        setShowRosterSelector={setShowRosterSelector}
-        submitGame={submitGame}
-      />
+    <div className="create-game-page">
+      <div className="create-game-form-wrapper">
+        <h1>Luo uusi peli</h1>
+
+        <CreateGameForm
+          opponent={opponent}
+          setOpponent={setOpponent}
+          setGameDate={setGameDate}
+          setHomeGame={setHomeGame}
+          showRosterSelector={showRosterSelector}
+          setShowRosterSelector={setShowRosterSelector}
+          submitGame={submitGame}
+          onCancel={onCancel}
+        />
+      </div>
       {showRosterSelector && (
         <RosterSelector
           setShowRosterSelector={setShowRosterSelector}
@@ -108,6 +115,6 @@ export default function CreateGame({ setCurrentGameId, onCancel }) {
           setPlayersInRoster={setPlayersInRoster}
         />
       )}
-    </>
+    </div>
   );
 }

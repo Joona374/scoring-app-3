@@ -259,7 +259,6 @@ export default function ShotLocationQuestion() {
       location: { x: percentageX, y: percentageY },
       shotZone: zoneHovering,
     };
-    console.log("THIs IS TAG IN SHOTLOCATION: ", newTag);
 
     advanceQuestion(last_question, next_question_id, newTag);
   };

@@ -1,3 +1,34 @@
+/* CreateGame.css */
+.create-game-page {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 1rem;
+  background-color: var(--bg-color);
+  height: 100%;
+  color: var(--text-color);
+
+}
+
+.create-game-form-wrapper {
+  width: 100%;
+  max-width: 300px;
+}
+
+.create-game-form-wrapper button {
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.create-game-page h1 {
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 .radio-group {
   display: flex;
   gap: 20px;
@@ -7,4 +38,34 @@
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+
+.auth-form fieldset {
+  border: 1px solid #444;
+  padding: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius);
+  background-color: #2e2e2e;
+}
+
+.auth-form legend {
+  padding: 0 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.create-game-form-wrapper .cancel-button {
+  margin: 1rem auto 0;
+
+  background-color: transparent;
+  padding: 0.5rem;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease
+}
+
+.create-game-form-wrapper .cancel-button:hover {
+  background-color: var(--bg-color);
 }

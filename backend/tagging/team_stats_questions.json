@@ -7,6 +7,7 @@
             "text": "Merkitse uusi maalipaikka?",
             "options": [
                 {
+                    "answer_text": "Merkitse uusi maalipaikka",
                     "answer": "Merkitse uusi maalipaikka",
                     "next_question_id": 1,
                     "last_question": false
@@ -24,23 +25,27 @@
             "text": "Oliko tilanne Maali +, Maali -, MP + vai MP -?",
             "options": [
                 {
+                    "answer_text": "Maali +",
                     "answer": "Maali +",
                     "next_question_id": 2,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Maali -",
                     "answer": "Maali -",
                     "next_question_id": 2,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "MP +",
                     "answer": "MP +",
                     "next_question_id": 2,
                     "last_question": false
                 },
                 {
+                    "answer_text": "MP -",
                     "answer": "MP -",
                     "next_question_id": 2,
                     "last_question": false
@@ -54,21 +59,24 @@
             "id": 2,
             "type": "TEXT",
             "key": "play_type",
-            "text": "Oliko tilanne 5vs5, YV / AV, vai jatkoaika?",
+            "text": "Oliko tilanne 5 vs 5, YV / AV, vai jatkoaika?",
             "options": [
                 {
+                    "answer_text": "5vs5",
                     "answer": "5vs5",
                     "next_question_id": 3,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "YV / AV",
                     "answer": "YV / AV",
                     "next_question_id": 18,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Jatkoaika",
                     "answer": "Jatkoaika",
                     "next_question_id": 27,
                     "last_question": false
@@ -86,33 +94,39 @@
             "text": "Minkälainen 5 vs 5 tilanne?",
             "options": [
                 {
+                    "answer_text": "SHP",
                     "answer": "SHP",
                     "next_question_id": 4,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Riisto / Menetys",
                     "answer": "Riisto / Menetys",
                     "next_question_id": 6,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "HAHP / PAPP",
                     "answer": "HAHP / PAPP",
                     "next_question_id": 11,
                     "last_question": false
 
                 },                {
+                    "answer_text": "Rebound",
                     "answer": "Rebound",
                     "next_question_id": 15,
                     "last_question": false
 
                 },                {
+                    "answer_text": "Aloitus",
                     "answer": "Aloitus",
                     "next_question_id": 16,
                     "last_question": false
 
                 },                {
+                    "answer_text": "Muu",
                     "answer": "Muu",
                     "next_question_id": 17,
                     "last_question": false
@@ -128,25 +142,29 @@
             "text": "Millainen suorahyökkäys",
             "options": [
                 {
+                    "answer_text": "Tasavoimainen",
                     "answer": "Tasavoimainen",
                     "next_question_id": 5,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Ylivoimainen",
                     "answer": "Ylivoimainen",
                     "next_question_id": 5,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Alivoimainen",
                     "answer": "Alivoimainen",
                     "next_question_id": 5,
                     "last_question": false
 
                 },
                                 {
-                    "answer": "Läpiajo",
+                    "answer_text": "Läpiajo",
+                                    "answer": "Läpiajo",
                     "next_question_id": 5,
                     "last_question": false
 
@@ -161,18 +179,21 @@
             "text": "Mistä suorahyökkäys lähti?",
             "options": [
                 {
+                    "answer_text": "PAHP",
                     "answer": "PAHP",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "KAHP",
                     "answer": "KAHP",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Kääntö",
                     "answer": "Kääntö",
                     "next_question_id": null,
                     "last_question": true
@@ -188,23 +209,27 @@
             "text": "Missä riisto / menetys tapahtui?",
             "options": [
                 {
+                    "answer_text": "HAPP/PAHP",
                     "answer": "HAPP/PAHP",
                     "next_question_id": 7,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "KAPP/KAHP",
                     "answer": "KAPP/KAHP",
                     "next_question_id": 8,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "PAPP/HAHP",
                     "answer": "PAPP/HAHP",
                     "next_question_id": 9,
                     "last_question": false
 
                 },                {
+                    "answer_text": "Jatkopaine",
                     "answer": "Jatkopaine",
                     "next_question_id": 10,
                     "last_question": false
@@ -220,18 +245,21 @@
             "text": "Riiston tarkenne?",
             "options": [
                 {
+                    "answer_text": "1. Paine",
                     "answer": "1. Paine",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "2. Paine",
                     "answer": "2. Paine",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "3. / Puolustajan Paine",
                     "answer": "3. / Puolustajan Paine",
                     "next_question_id": null,
                     "last_question": true
@@ -247,18 +275,21 @@
             "text": "Riiston tarkenne?",
             "options": [
                 {
+                    "answer_text": "Syöttö",
                     "answer": "Syöttö",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Kuljetus",
                     "answer": "Kuljetus",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Muu",
                     "answer": "Muu",
                     "next_question_id": null,
                     "last_question": true
@@ -274,18 +305,21 @@
             "text": "Riiston tarkenne?",
             "options": [
                 {
+                    "answer_text": "Pohja",
                     "answer": "Pohja",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Half Board",
                     "answer": "Half Board",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Viiva",
                     "answer": "Viiva",
                     "next_question_id": null,
                     "last_question": true
@@ -301,18 +335,21 @@
             "text": "Riiston tarkenne?",
             "options": [
                 {
+                    "answer_text": "1. Paine",
                     "answer": "1. Paine",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "2. Paine",
                     "answer": "2. Paine",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "3. / Puolustajan Paine",
                     "answer": "3. / Puolustajan Paine",
                     "next_question_id": null,
                     "last_question": true
@@ -328,18 +365,21 @@
             "text": "Millainen HAHP/PAPP tilanne?",
             "options": [
                 {
+                    "answer_text": "Täyttö",
                     "answer": "Täyttö",
                     "next_question_id": 12,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Alapeli",
                     "answer": "Alapeli",
                     "next_question_id": 13,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Yläpeli",
                     "answer": "Yläpeli",
                     "next_question_id": 14,
                     "last_question": false
@@ -355,18 +395,21 @@
             "text": "HAHP/PAPP täyttö tarkenne?",
             "options": [
                 {
+                    "answer_text": "Murtautuminen",
                     "answer": "Murtautuminen",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Syöttö 3",
                     "answer": "Syöttö 3",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Syöttö 4/5",
                     "answer": "Syöttö 4/5",
                     "next_question_id": null,
                     "last_question": true
@@ -381,18 +424,21 @@
             "text": "HAHP/PAPP alapeli tarkenne?",
             "options": [
                 {
+                    "answer_text": "Syöttö sisään",
                     "answer": "Syöttö sisään",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Murtautuminen sisään",
                     "answer": "Murtautuminen sisään",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Muu",
                     "answer": "Muu",
                     "next_question_id": null,
                     "last_question": true
@@ -407,12 +453,14 @@
             "text": "HAHP/PAPP yläpeli tarkenne?",
             "options": [
                 {
+                    "answer_text": "Suora",
                     "answer": "Suora",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Ohjaus",
                     "answer": "Ohjaus",
                     "next_question_id": null,
                     "last_question": true
@@ -428,18 +476,21 @@
             "text": "Millaisesta hyökkäyksestä rebound syntyi?",
             "options": [
                 {
+                    "answer_text": "SHP",
                     "answer": "SHP",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Riisto/Menetys",
                     "answer": "Riisto/Menetys",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "HAHP/PAPP",
                     "answer": "HAHP/PAPP",
                     "next_question_id": null,
                     "last_question": true
@@ -454,18 +505,21 @@
             "text": "Missä aloitus oli?",
             "options": [
                 {
+                    "answer_text": "Hyökkäysalue",
                     "answer": "Hyökkäysalue",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Keskialue",
                     "answer": "Keskialue",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Puolustusalue",
                     "answer": "Puolustusalue",
                     "next_question_id": null,
                     "last_question": true
@@ -481,18 +535,21 @@
             "text": "Muu, mikä?",
             "options": [
                 {
+                    "answer_text": "IM",
                     "answer": "IM",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "TM",
                     "answer": "TM",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "4v4",
                     "answer": "4v4",
                     "next_question_id": null,
                     "last_question": true
@@ -508,39 +565,46 @@
             "text": "Mistä YV / AV paikka syntyi?",
             "options": [
                 {
+                    "answer_text": "Aloitus / Haku / Vastaanotto",
                     "answer": "Aloitus / Haku / Vastaanotto",
                     "next_question_id": 19,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Laukaus / Ohjuri alhaalta",
                     "answer": "Laukaus / Ohjuri alhaalta",
                     "next_question_id": 20,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Laukaus viivalta",
                     "answer": "Laukaus viivalta",
                     "next_question_id": 22,
                     "last_question": false
 
                 },
                                 {
-                    "answer": "Paineenpurku / Riisto / Brokenplay",
+                    "answer_text": "Paineenpurku / Riisto / Brokenplay",
+                                    "answer": "Paineenpurku / Riisto / Brokenplay",
                     "next_question_id": 23,
                     "last_question": false
 
                 },                {
+                    "answer_text": "Muu",
                     "answer": "Muu",
                     "next_question_id": 24,
                     "last_question": false
 
                 },                {
+                    "answer_text": "5 vs 3",
                     "answer": "5 vs 3",
                     "next_question_id": 25,
                     "last_question": false
 
                 },                {
+                    "answer_text": " AV / YV",
                     "answer": " AV / YV",
                     "next_question_id": 26,
                     "last_question": false
@@ -556,18 +620,21 @@
             "text": "Aloitus vai haku?",
             "options": [
                 {
+                    "answer_text": "Aloitus Vasen",
                     "answer": "Aloitus Vasen",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Aloitus Oikea",
                     "answer": "Aloitus Oikea",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Haku / vastaanotto",
                     "answer": "Haku / vastaanotto",
                     "next_question_id": null,
                     "last_question": true
@@ -583,24 +650,28 @@
             "text": "Mistä syöttö tuli?",
             "options": [
                 {
+                    "answer_text": "Päädystä",
                     "answer": "Päädystä",
                     "next_question_id": 21,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Siiveltä",
                     "answer": "Siiveltä",
                     "next_question_id": 21,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Keskeltä",
                     "answer": "Keskeltä",
                     "next_question_id": 21,
                     "last_question": false
 
                 },
                 {
+                    "answer_text": "Viivasta",
                     "answer": "Viivasta",
                     "next_question_id": 21,
                     "last_question": false
@@ -616,24 +687,28 @@
             "text": "Laukaus / Ohjuri alhaalta tarkenne?",
             "options": [
                 {
+                    "answer_text": "Kesk. / Pääty.",
                     "answer": "Kesk. / Pääty.",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Vasen Siipi",
                     "answer": "Vasen Siipi",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Oikea siipi",
                     "answer": "Oikea siipi",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Viivasta",
                     "answer": "Viivasta",
                     "next_question_id": null,
                     "last_question": true
@@ -649,18 +724,21 @@
             "text": "Millainen maalipaikka viivavedosta syntyi?",
             "options": [
                 {
+                    "answer_text": "Suora",
                     "answer": "Suora",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Ohjuri",
                     "answer": "Ohjuri",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Rebound",
                     "answer": "Rebound",
                     "next_question_id": null,
                     "last_question": true
@@ -677,18 +755,21 @@
             "text": "Paineenpurku / Riisto / Brokenplay?",
             "options": [
                 {
+                    "answer_text": "Paine",
                     "answer": "Paine",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Riisto",
                     "answer": "Riisto",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Brokenplay",
                     "answer": "Brokenplay",
                     "next_question_id": null,
                     "last_question": true
@@ -704,18 +785,21 @@
             "text": "Kuljetus / Punnerrus / Rebound?",
             "options": [
                 {
+                    "answer_text": "Kuljetus YV",
                     "answer": "Kuljetus YV",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Punnerrus",
                     "answer": "Punnerrus",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Rebound",
                     "answer": "Rebound",
                     "next_question_id": null,
                     "last_question": true
@@ -731,18 +815,21 @@
             "text": "Millainen 5 vs 3 paikka?",
             "options": [
                 {
+                    "answer_text": "Suora",
                     "answer": "Suora",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Ohjuri",
                     "answer": "Ohjuri",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Rebound",
                     "answer": "Rebound",
                     "next_question_id": null,
                     "last_question": true
@@ -758,18 +845,21 @@
             "text": "Läpiajo / YV / TV??",
             "options": [
                 {
+                    "answer_text": "Läpiajo",
                     "answer": "Läpiajo",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "YV",
                     "answer": "YV",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "TV",
                     "answer": "TV",
                     "next_question_id": null,
                     "last_question": true
@@ -785,11 +875,13 @@
             "text": "Jatkoaika vai rankkari?",
             "options": [
                 {
+                    "answer_text": "3 vs 3",
                     "answer": "3 vs 3",
                     "next_question_id": 28,
                     "last_question": false
                 },
                 {
+                    "answer_text": "Rangaistus- / Voittolaukaus",
                     "answer": "Rangaistus- / Voittolaukaus",
                     "next_question_id": 29,
                     "last_question": false
@@ -804,18 +896,21 @@
             "text": "Millainen 3 vs 3 paikka?",
             "options": [
                 {
+                    "answer_text": "Aloitus",
                     "answer": "Aloitus",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Hallinta",
                     "answer": "Hallinta",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Riisto / Menetys",
                     "answer": "Riisto / Menetys",
                     "next_question_id": null,
                     "last_question": true
@@ -831,18 +926,21 @@
             "text": "Mikä ratkaisu rankkarissa?",
             "options": [
                 {
+                    "answer_text": "Laukaus",
                     "answer": "Laukaus",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Harhautus",
                     "answer": "Harhautus",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
+                    "answer_text": "Muu",
                     "answer": "Muu",
                     "next_question_id": null,
                     "last_question": true

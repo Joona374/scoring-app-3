@@ -3,7 +3,7 @@
   --accent-color: #b91c1c;
   --bg-color: #161519;
   --text-color: #eadfdf;
-  --card-bg: #221f1fa6;
+  --card-bg: #2c2828a6;
   --muted-text: #bebaba;
 
   --font-family: 'Segoe UI', sans-serif;
@@ -22,4 +22,61 @@ html, body, #root {
   margin: 0;
   background-color: var(--bg-color);
   color: var(--text-color);
+}
+
+.coming-soon-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  text-align: center;
+  padding: 2rem;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.coming-soon-h1 {
+  font-size: 5rem;
+  color: var(--accent-color);
+  text-shadow: 0 0 4px rgba(185, 28, 28, 0.6);
+  font-family: var(--font-family);
+  letter-spacing: 1px;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.coming-soon-wrapper button {
+  margin-top: 4rem;
+  padding: 0.4rem 1rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.coming-soon-wrapper button:hover {
+  background-color: #8e1515; /* slightly darker */
+}
+
+.coming-soon-wrapper button:active {
+  transform: scale(0.98);
+}
+
+/* Optional animation to fade in the screen */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Optional subtle attention effect */
+@keyframes pulse {
+  0% { text-shadow: 0 0 8px rgba(185, 28, 28, 0.6); }
+  50% { text-shadow: 0 0 16px rgba(185, 28, 28, 0.9); }
+  100% { text-shadow: 0 0 8px rgba(185, 28, 28, 0.6); }
 }

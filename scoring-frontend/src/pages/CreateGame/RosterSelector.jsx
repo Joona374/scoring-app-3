@@ -35,98 +35,160 @@ export default function RosterSelector({
     }
   };
 
+  const removePlayerFromRosterSpot = (rosterSpot) => {
+    const parts = rosterSpot.split("-");
+    const line = parseInt(parts[0]);
+    const position = parts[1];
+    console.log(line, position);
+    const newPlayersInRoster = playersInRoster.map((rosterSpot, idx) => {
+      if (rosterSpot.line === line && rosterSpot.position === position) {
+        console.log("Do this match ever?");
+        const editedRosterSpot = { ...rosterSpot, player: null };
+        return editedRosterSpot;
+      }
+      return rosterSpot;
+    });
+    console.log(newPlayersInRoster);
+    setPlayersInRoster(newPlayersInRoster);
+  };
+
   return (
-    <div className="roster-selector-wrapepr">
-      <h3>This is roster selector :ddD</h3>
+    <div className="roster-selector-wrapper">
       <div className="roster-selector">
         <div className="lineup">
-          <div className="left-roster-column">
-            {["1", "2", "3", "4"].map((num) => {
-              return (
-                <div className="positions-row" key={`${num}-DROW`}>
-                  {[`${num}-LD`, `${num}-RD`].map((position_id) => {
-                    const rosterSpot = playersInRoster.find(
-                      (spot) => `${spot.line}-${spot.position}` === position_id
-                    );
-
-                    const playerForThisBox = rosterSpot
-                      ? rosterSpot.player
-                      : null;
-                    return (
-                      <RosterBox
-                        id={position_id}
-                        key={position_id}
-                        player={playerForThisBox}
-                        selectingPosition={selectingPosition}
-                        setSelectingPosition={setSelectingPosition}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            })}
-
-            <div className="goalies-row">
-              {["1-G", "2-G"].map((position_id) => {
-                const rosterSpot = playersInRoster.find(
-                  (spot) => `${spot.line}-${spot.position}` === position_id
-                );
-                const playerForThisBox = rosterSpot ? rosterSpot.player : null;
+          <div className="skaters">
+            <div className="left-roster-column">
+              {["1", "2", "3", "4"].map((num) => {
                 return (
-                  <RosterBox
-                    id={position_id}
-                    key={position_id}
-                    player={playerForThisBox}
-                    selectingPosition={selectingPosition}
-                    setSelectingPosition={setSelectingPosition}
-                  />
+                  <div className="positions-row" key={`${num}-DROW`}>
+                    {[`${num}-LD`, `${num}-RD`].map((position_id) => {
+                      const rosterSpot = playersInRoster.find(
+                        (spot) =>
+                          `${spot.line}-${spot.position}` === position_id
+                      );
+
+                      const playerForThisBox = rosterSpot
+                        ? rosterSpot.player
+                        : null;
+                      return (
+                        <RosterBox
+                          id={position_id}
+                          key={position_id}
+                          player={playerForThisBox}
+                          selectingPosition={selectingPosition}
+                          setSelectingPosition={setSelectingPosition}
+                          removePlayerFromRosterspot={
+                            removePlayerFromRosterSpot
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="right-roster-column">
+              {["1", "2", "3", "4", "5"].map((num) => {
+                return (
+                  <div className="positions-row" key={`${num}-FROW`}>
+                    {[`${num}-LW`, `${num}-C`, `${num}-RW`].map(
+                      (position_id) => {
+                        const rosterSpot = playersInRoster.find(
+                          (spot) =>
+                            `${spot.line}-${spot.position}` === position_id
+                        );
+                        const playerForThisBox = rosterSpot
+                          ? rosterSpot.player
+                          : null;
+
+                        return (
+                          <RosterBox
+                            id={position_id}
+                            key={position_id}
+                            player={playerForThisBox}
+                            selectingPosition={selectingPosition}
+                            setSelectingPosition={setSelectingPosition}
+                            removePlayerFromRosterspot={
+                              removePlayerFromRosterSpot
+                            }
+                          />
+                        );
+                      }
+                    )}
+                  </div>
                 );
               })}
             </div>
           </div>
-          <div className="right-roster-column">
-            {["1", "2", "3", "4", "5"].map((num) => {
+          <div className="goalies-row">
+            {["1-G", "2-G"].map((position_id) => {
+              const rosterSpot = playersInRoster.find(
+                (spot) => `${spot.line}-${spot.position}` === position_id
+              );
+              const playerForThisBox = rosterSpot ? rosterSpot.player : null;
               return (
-                <div className="positions-row" key={`${num}-FROW`}>
-                  {[`${num}-LW`, `${num}-C`, `${num}-RW`].map((position_id) => {
-                    const rosterSpot = playersInRoster.find(
-                      (spot) => `${spot.line}-${spot.position}` === position_id
-                    );
-                    const playerForThisBox = rosterSpot
-                      ? rosterSpot.player
-                      : null;
-
-                    return (
-                      <RosterBox
-                        id={position_id}
-                        key={position_id}
-                        player={playerForThisBox}
-                        selectingPosition={selectingPosition}
-                        setSelectingPosition={setSelectingPosition}
-                      />
-                    );
-                  })}
-                </div>
+                <RosterBox
+                  id={position_id}
+                  key={position_id}
+                  player={playerForThisBox}
+                  selectingPosition={selectingPosition}
+                  setSelectingPosition={setSelectingPosition}
+                  removePlayerFromRosterspot={removePlayerFromRosterSpot}
+                />
               );
             })}
           </div>
         </div>
         <div className="player-list">
-          {players.map((player, index) => {
-            return (
-              <p
-                key={index}
-                onClick={(event) => handlePlayerListClick(event.target, index)}
-              >
-                {index + 1}. {player.first_name} {player.last_name}{" "}
-                {player.position}
-              </p>
-            );
-          })}
+          <details open>
+            <summary>Hyökkääjät</summary>
+            {players
+              .filter((p) => p.position === "FORWARD")
+              .map((player, index) => (
+                <p
+                  key={`F-${index}`}
+                  onClick={(event) =>
+                    handlePlayerListClick(event.target, players.indexOf(player))
+                  }
+                >
+                  #{player.jersey_number} {player.first_name} {player.last_name}
+                </p>
+              ))}
+          </details>
+
+          <details open>
+            <summary>Puolustajat</summary>
+            {players
+              .filter((p) => p.position === "DEFENDER")
+              .map((player, index) => (
+                <p
+                  key={`D-${index}`}
+                  onClick={(event) =>
+                    handlePlayerListClick(event.target, players.indexOf(player))
+                  }
+                >
+                  #{player.jersey_number} {player.first_name} {player.last_name}
+                </p>
+              ))}
+          </details>
+
+          <details open>
+            <summary>Maalivahdit</summary>
+            {players
+              .filter((p) => p.position === "GOALIE")
+              .map((player, index) => (
+                <p
+                  key={`G-${index}`}
+                  onClick={(event) =>
+                    handlePlayerListClick(event.target, players.indexOf(player))
+                  }
+                >
+                  #{player.jersey_number} {player.first_name} {player.last_name}
+                </p>
+              ))}
+          </details>
         </div>
       </div>
-
-      <button onClick={() => setShowRosterSelector(false)}>Hide</button>
     </div>
   );
 }

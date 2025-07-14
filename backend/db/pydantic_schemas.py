@@ -68,17 +68,20 @@ class PlayerCreate(BaseModel):
 
     first_name: str
     last_name: str
+    jersey_number: int
     position: Positions
 
 class PlayerUpdate(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
+    jersey_number: Optional[int]
     position: Optional[Positions]
 
 class PlayerResponse(BaseModel):
     id: int
     first_name: str
     last_name: str
+    jersey_number: int
     position: str  # This would be "FORWARD", "DEFENDER", etc.
 
 class TagSchema(BaseModel):

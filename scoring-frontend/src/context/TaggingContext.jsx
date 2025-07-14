@@ -14,6 +14,7 @@ export const TaggingProvider = ({ children }) => {
   const [playersInRoster, setPlayersInRoster] = useState([]);
   const [currentGameId, setCurrentGameId] = useState();
   const [gamesForTeam, setGamesForTEam] = useState([]);
+  const [currentTaggingMode, setCurrentTaggingMode] = useState("");
 
   const advanceQuestion = (last_question, next_question_id, newTag) => {
     try {
@@ -38,8 +39,17 @@ export const TaggingProvider = ({ children }) => {
     const token = sessionStorage.getItem("jwt_token");
     newTag.game_id = currentGameId;
 
+    let postingEndpoint;
+    if (currentTaggingMode === "team")
+      postingEndpoint = `${BACKEND_URL}/tagging/add-team-tag`;
+    else if (currentTaggingMode === "player")
+      postingEndpoint = `${BACKEND_URL}/tagging/add-players-tag`;
+    // TODO: IMPLEMENT THIS ENDPOINT TO BACKEND
+    else if (currentTaggingMode === "goaie")
+      postingEndpoint = `${BACKEND_URL}/tagging/add-goalies-tag`;
+
     try {
-      const res = await fetch(`${BACKEND_URL}/tagging/add-players-tag`, {
+      const res = await fetch(postingEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,36 +73,6 @@ export const TaggingProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    async function fetchQuestions() {
-      const token = sessionStorage.getItem("jwt_token");
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/tagging/questions`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const questionsJson = await res.json();
-        const questionObjs = questionsJson.questions.map(
-          (element) => new Question(element)
-        );
-        setQuestionObjects(questionObjs);
-        if (questionObjs.length > 0) {
-          // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
-          setCurrentQuestionId(questionObjs[0].id);
-          setFirstQuestionId(questionObjs[0].id);
-        }
-      } catch (err) {
-        console.error("Error fetching questions from backend:", err);
-      }
-    }
-    fetchQuestions();
-  }, []);
-
   return (
     <TaggingContext.Provider
       value={{
@@ -113,6 +93,8 @@ export const TaggingProvider = ({ children }) => {
         setCurrentGameId,
         gamesForTeam,
         setGamesForTEam,
+        currentTaggingMode,
+        setCurrentTaggingMode,
       }}
     >
       {children}

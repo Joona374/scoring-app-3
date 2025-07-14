@@ -5,6 +5,7 @@ export default function ParticipantBox({
   clickHandler,
   participants,
   onIces,
+  currentTag,
   setCurrentTag,
   prevTag,
   advanceQuestion,
@@ -22,12 +23,26 @@ export default function ParticipantBox({
     playersName = `${player.first_name} ${player.last_name}`;
   } else playersName = "--";
 
-  let className = "participant-box";
+  // Determine color scheme based on currentTag
+  let colorClass = "";
+  if (
+    currentTag &&
+    (currentTag.shot_result === "Maali +" || currentTag.shot_result === "MP +")
+  ) {
+    colorClass = "green";
+  } else if (
+    currentTag &&
+    (currentTag.shot_result === "Maali -" || currentTag.shot_result === "MP -")
+  ) {
+    colorClass = "red";
+  }
 
+  let className = "participant-box";
   if (player) {
     if (participants.includes(player.id))
-      className = "participant-box participated";
-    else if (onIces.includes(player.id)) className = "participant-box on-ice";
+      className = `participant-box participated ${colorClass}`;
+    else if (onIces.includes(player.id))
+      className = `participant-box on-ice ${colorClass}`;
   }
 
   return (
