@@ -1,9 +1,27 @@
 .kaukalo-image-container {
-    width: 100%;
-    background-color: red;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+
+.kaukalo-image-container:hover {
+  box-shadow: 0 4px 24px rgba(185, 28, 28, 0.12);
 }
 
 .kaukalo-image {
-    width: 100%;
-    display: block;
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+}
+
+.kaukalo-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  background-color: transparent;
+  border-radius: var(--radius);
+  transition: opacity 0.3s ease-in-out;
 }

@@ -1,19 +1,11 @@
 import { TaggingProvider } from "../../context/TaggingContext";
-import TaggingArea from "./TaggingArea";
-import TaggingSummary from "./TaggingSummary";
+import TaggingContent from "./TaggingContent";
 import "./Styles/Tagging.css";
 
 export default function Tagging() {
   return (
     <TaggingProvider>
-      <div className="tagging-page">
-        <div className="tagging-area-column">
-          <TaggingArea></TaggingArea>
-        </div>
-        <div className="tagging-summary-column">
-          <TaggingSummary></TaggingSummary>
-        </div>
-      </div>
+      <TaggingContent />
     </TaggingProvider>
   );
 }

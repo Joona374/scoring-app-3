@@ -5,3 +5,31 @@
     height: 100%;
 
 }
+
+.tagging-area-column {
+  position: relative; /* Enables absolute positioning inside */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+}
+
+.tagging-back-button {
+  position: absolute;
+  bottom: 0.3rem;
+  right: 0.1rem;
+
+  padding: 0.2rem 0.4rem;
+  font-size: 1rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.tagging-back-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}

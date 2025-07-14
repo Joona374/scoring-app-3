@@ -1,57 +1,84 @@
 import "./Navbar.css";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import AuthContext from "../../auth/AuthContext";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const { isLoggedIn } = useContext(AuthContext);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
 
   return (
     <nav>
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        {!isLoggedIn ? (
-          <>
-            {" "}
-            <li>
-              <Link to="/register">Register</Link>
-            </li>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-            {/* TODO: PROTECT THIS IN PROD */}
-            <li>
-              <Link to="/admin">Admin</Link>
-            </li>
-          </>
-        ) : (
-          <>
-            <li>
-              <Link to="/dashboard">Dashboard</Link>
-            </li>
-            <li>
-              <Link to="/create-team">Create a Team</Link>
-            </li>
-            <li>
-              <Link to="/create-player">Create a Player</Link>
-            </li>
-            <li>
-              <Link to="/create-game">Create a Game</Link>
-            </li>
-            <li>
-              <Link to="/tagging">Tagging</Link>
-            </li>
-            <li>
-              <Link to="/excel-test">Excel Test</Link>
-            </li>
-            <li>
-              <Link to="/admin">Admin</Link>
-            </li>
-          </>
-        )}
-      </ul>
+      <div className="navbar-left">
+        <Link
+          to="/"
+          onClick={() => setMenuOpen(false)}
+          style={{ color: "inherit", textDecoration: "none" }}
+        >
+          ScoringApp 3.0
+        </Link>
+      </div>
+
+      <div className="hamburger" onClick={toggleMenu}>
+        ☰
+      </div>
+
+      <div className={`navbar-right ${menuOpen ? "open" : ""}`}>
+        <ul>
+          {!isLoggedIn ? (
+            <>
+              <li>
+                <Link onClick={() => setMenuOpen(false)} to="/login">
+                  Kirjaudu
+                </Link>
+              </li>
+              <li>
+                <Link onClick={() => setMenuOpen(false)} to="/register">
+                  Rekisteröidy
+                </Link>
+              </li>
+              <li>
+                <Link onClick={() => setMenuOpen(false)} to="/admin">
+                  Admin
+                </Link>
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <Link onClick={() => setMenuOpen(false)} to="/dashboard">
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link onClick={() => setMenuOpen(false)} to="/tagging">
+                  Tilastointi
+                </Link>
+              </li>
+              <li>
+                <Link onClick={() => setMenuOpen(false)} to="/excel-exporter">
+                  Excel-vienti
+                </Link>
+              </li>
+              <li>
+                <Link
+                  onClick={() => setMenuOpen(false)}
+                  to="/roster-management"
+                >
+                  Kokoonpanon hallinta
+                </Link>
+              </li>
+              <li>
+                <Link onClick={() => setMenuOpen(false)} to="/admin">
+                  Admin
+                </Link>
+              </li>
+            </>
+          )}
+        </ul>
+      </div>
     </nav>
   );
 }

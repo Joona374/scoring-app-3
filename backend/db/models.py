@@ -9,6 +9,7 @@ class Base(DeclarativeBase):
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
 
+# USER
 class User(Base):
     __tablename__ = "users"
 
@@ -22,7 +23,6 @@ class User(Base):
     team: Mapped[Optional["Team"]] = relationship(back_populates="users", foreign_keys=[team_id])    
 
     created_teams: Mapped[List["Team"]] = relationship(back_populates="creator", foreign_keys="Team.creator_id")
-
 
 class Team(Base):
     __tablename__ = "teams"
@@ -48,18 +48,20 @@ class RegCode(Base):
     team_related: Mapped[Optional["Team"]] = relationship(back_populates="code", foreign_keys=[team_related_id])
 
 
+# PLAYER
 class Positions(Enum):
     FORWARD = "Hyökkääjä"
     DEFENDER = "Puolustaja"
     GOALIE = "Maalivahti"
    
-
 class Player(Base):
     __tablename__ = "players"
 
     first_name: Mapped[str] = mapped_column(String(64), nullable=False)
     last_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    jersey_number: Mapped[int] = mapped_column(nullable=False)
     position: Mapped[Positions] = mapped_column(SQLEnum(Positions), nullable=False)
+
 
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=True)
     team: Mapped["Team"] = relationship(back_populates="players", foreign_keys=[team_id])
@@ -70,7 +72,7 @@ class Player(Base):
     participating_on: Mapped[List["PlayerStatsTagParticipating"]] = relationship(back_populates="player", foreign_keys="PlayerStatsTagParticipating.player_id")
     
 
-
+# TYPES
 class ShotResultTypes(Enum):
     GOAL_FOR = "Maali +"
     GOAL_AGAINST = "Maali -"
@@ -113,20 +115,32 @@ class ShotType(Base):
     value: Mapped[ShotTypeTypes] = mapped_column(SQLEnum(ShotTypeTypes), nullable=False, unique=True)
     tags: Mapped[List["PlayerStatsTag"]] = relationship(back_populates="shot_type", foreign_keys="PlayerStatsTag.shot_type_id")
 
-# class Tag(Base):
-#     __tablename__ = "tags"
+class ShotAreaTypes(Enum):
+    ZONE_1 = "ZONE_1"
+    ZONE_2_MIDDLE = "ZONE_2_MIDDLE"
+    ZONE_2_SIDE = "ZONE_2_SIDE"
+    HIGH_SLOT = "HIGH_SLOT"
+    BLUELINE = "BLUELINE"
+    ZONE_4 = "ZONE_4"
+    OUTSIDE_FAR = "OUTSIDE_FAR"
+    OUTSIDE_CLOSE = "OUTSIDE_CLOSE"
+    MISC = "MISC" 
 
-#     ice_x: Mapped[int] = mapped_column(nullable=False)
-#     ice_y: Mapped[int] = mapped_column(nullable=False)
+    @classmethod
+    def from_string(cls, str_value: str):
+        for item in cls:
+            if item.value == str_value:
+                return item
+        raise ValueError(f"No {cls.__name__} with value '{str_value}'")
 
-#     # SHOT RESULT
-#     shot_result_id: Mapped[int] = mapped_column(ForeignKey("shot_results.id"), nullable=False)
-#     shot_result: Mapped["ShotResult"] = relationship(back_populates="tags", foreign_keys=[shot_result_id])
 
-#     # SHOT TYPE
-#     shot_type_id: Mapped[int] = mapped_column(ForeignKey("shot_types.id"))
-#     shot_type: Mapped["ShotType"] = relationship(back_populates="tags", foreign_keys=[shot_type_id])
+class ShotArea(Base):
+    __tablename__ = "shot_areas"
 
+    value: Mapped[ShotAreaTypes] = mapped_column(SQLEnum(ShotAreaTypes), nullable=False, unique=True)
+    tags: Mapped[List["PlayerStatsTag"]] = relationship(back_populates="shot_area", foreign_keys="PlayerStatsTag.shot_area_id")
+
+# GAMES
 class Game(Base):
     __tablename__ = "games"
 
@@ -153,6 +167,8 @@ class GameInRoster(Base):
     line: Mapped[int] = mapped_column(nullable=False)
     position: Mapped[str] = mapped_column(String(2), nullable=False)
 
+
+# STATS
 class TeamStatsTag(Base):
     __tablename__ = "team_stats_tags"
 
@@ -167,7 +183,7 @@ class TeamStatsTag(Base):
     takeaway_type: Mapped[str] = mapped_column(String(40), nullable=True)
     takeaway_happ_pahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
     takeaway_kapp_kahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    takeaway_kapp_kahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    takeaway_papp_hahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
     takeaway_jatkopaine_type: Mapped[str] = mapped_column(String(40), nullable=True)
     hahp_papp_type: Mapped[str] = mapped_column(String(40), nullable=True)
     hahp_papp_taytto_type: Mapped[str] = mapped_column(String(40), nullable=True)
@@ -207,7 +223,6 @@ class TeamStatsTag(Base):
 
         return repr_string
     
-
 class PlayerStatsTag(Base):
     __tablename__ = "player_stats_tags"
 
@@ -216,6 +231,15 @@ class PlayerStatsTag(Base):
 
     ice_x: Mapped[int] = mapped_column(nullable=False)
     ice_y: Mapped[int] = mapped_column(nullable=False)
+
+    shot_area_id: Mapped[int] = mapped_column(ForeignKey("shot_areas.id"), nullable=False)
+    shot_area: Mapped["ShotArea"] = relationship(back_populates="tags", foreign_keys=[shot_area_id])
+
+    net_x: Mapped[int] = mapped_column(nullable=False)
+    net_y: Mapped[int] = mapped_column(nullable=False)
+
+    net_height: Mapped[str] = mapped_column(String(40), nullable=False)
+    net_width: Mapped[str] = mapped_column(String(40), nullable=False)
 
     # SHOT RESULT
     shot_result_id: Mapped[int] = mapped_column(ForeignKey("shot_results.id"), nullable=False)
@@ -230,9 +254,10 @@ class PlayerStatsTag(Base):
 
     crossice: Mapped[bool] = mapped_column(nullable=True)
 
+    strengths: Mapped[str] = mapped_column(String(3))
+
     players_on_ice: Mapped[List["PlayerStatsTagOnIce"]] = relationship(back_populates="tag", foreign_keys="PlayerStatsTagOnIce.tag_id")
     players_participating: Mapped[List["PlayerStatsTagParticipating"]] = relationship(back_populates="tag", foreign_keys="PlayerStatsTagParticipating.tag_id")
-
 
 class PlayerStatsTagOnIce(Base):
     __tablename__ = "player_stats_tag_on_ice"

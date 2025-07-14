@@ -13,9 +13,9 @@ export default function GridChoiceQuestion() {
   const questionText = currentQuestion.text;
   const questionOptions = currentQuestion.options;
 
-  const handleAnswerClick = (option) => {
+  const handleAnswerClick = (option, event) => {
+    event.target.blur(); // Remove focus from the button
     const newTag = { ...currentTag, [questionKey]: option.answer };
-
     advanceQuestion(option.last_question, option.next_question_id, newTag);
   };
 
@@ -33,7 +33,7 @@ export default function GridChoiceQuestion() {
           return (
             <button
               className="grid-option-button"
-              onClick={() => handleAnswerClick(option)}
+              onClick={(e) => handleAnswerClick(option, e)}
               key={index}
             >
               {option.answer_text}

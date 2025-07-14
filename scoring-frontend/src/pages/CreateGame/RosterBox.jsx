@@ -3,16 +3,19 @@ export default function RosterBox({
   player,
   selectingPosition,
   setSelectingPosition,
+  removePlayerFromRosterspot,
 }) {
   const handleRosterBoxClick = (target) => {
     if (target.id !== selectingPosition) {
-      console.log("Selected:", target.id);
       setSelectingPosition(target.id);
     } else {
       setSelectingPosition("");
-      console.log("Already selected");
       target.className = "player-in-roster-box";
     }
+  };
+
+  const clickX = (rosterBoxId) => {
+    removePlayerFromRosterspot(rosterBoxId);
   };
 
   return (
@@ -24,6 +27,11 @@ export default function RosterBox({
       onClick={(event) => handleRosterBoxClick(event.target)}
     >
       {player ? `${player.first_name} ${player.last_name}` : id}
+      {player && (
+        <button className={"roster-box-x"} onClick={() => clickX(id)}>
+          X
+        </button>
+      )}
     </div>
   );
 }

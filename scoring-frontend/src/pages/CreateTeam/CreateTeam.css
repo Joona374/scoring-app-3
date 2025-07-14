@@ -1,0 +1,16 @@
+.continue-to-teampage-button {
+  background-color: transparent;
+  color: white;
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1rem;
+  transition: border 0.2s, color 0.2s;
+}
+
+.continue-to-teampage-button:hover {
+    border: 1px solid var(--accent-color);
+
+}

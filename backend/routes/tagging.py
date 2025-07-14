@@ -2,7 +2,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 import json
 from db.pydantic_schemas import AddTag, TagSchema, GameInRosterResponse, PlayerResponse, TeamStatsTagResponse
-from db.models import User, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating
+from db.models import User, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, ShotArea, ShotAreaTypes
 from db.db_manager import get_db_session
 from sqlalchemy.orm import Session
 from utils import get_current_user_id
@@ -13,7 +13,15 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/questions")
+@router.get("/questions/team")
+def get_questions():
+    questions_json_path = Path("./tagging/team_stats_questions.json")
+    text = questions_json_path.read_text()
+    parsed_json = json.loads(text)
+
+    return parsed_json
+
+@router.get("/questions/player")
 def get_questions():
     questions_json_path = Path("./tagging/player_stats_questions.json")
     text = questions_json_path.read_text()
@@ -46,12 +54,23 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
 
 
     shot_location = received_tag["location"]
+    shot_zone = received_tag["shotZone"]
+    net_location = received_tag["net"]
+
+    shot_height, shot_width = received_tag["netZone"].split("-")
+
     if not ((0 <= shot_location["x"] <= 100) and (0 <= shot_location["y"] <= 100)):
         print(f"Invalid shot location: {shot_location}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad coordinates")
 
     shot_result_enum = ShotResultTypes.from_string(received_tag["shot_result"])
     shot_result_ref = db_session.query(ShotResult).filter(ShotResult.value == shot_result_enum).first()
+    if not shot_result_ref:
+        print(f"Invalid shot zone: {shot_zone}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot result")
+
+    shot_area_enum = ShotAreaTypes.from_string(shot_zone)
+    shot_area_ref = db_session.query(ShotArea).filter(ShotArea.value == shot_area_enum).first()
     if not shot_result_ref:
         print(f"Invalid shot result: {received_tag['shot_result']}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot result")
@@ -71,15 +90,24 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
     else:
         shooter_id = None
 
+    print(received_tag["strengths"])
+
     try:
         new_tag = PlayerStatsTag(
+            shot_result=shot_result_ref,
             ice_x=shot_location["x"],
             ice_y=shot_location["y"],
-            shot_result=shot_result_ref,
+            shot_area=shot_area_ref,
+            net_x = net_location["x"],
+            net_y = net_location["y"],
+            net_height=shot_height,
+            net_width=shot_width,
             shot_type=shot_type_ref,
             game_id=received_tag["game_id"],
             crossice=cross_ice,
-            shooter_id=shooter_id
+            strengths=received_tag["strengths"],
+            shooter_id=shooter_id,
+
         )
         db_session.add(new_tag)
         db_session.flush()
@@ -135,9 +163,28 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
                 id=player_object.id,
                 first_name=player_object.first_name,
                 last_name=player_object.last_name,
+                jersey_number=player_object.jersey_number,
                 position=player_object.position
             )
         )
         players_in_roster.append(player_in_roster)
 
     return players_in_roster
+
+
+@router.delete("/delete/team-tag/{tag_id}")
+def update_player(tag_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    tag = db_session.query(TeamStatsTag).filter(TeamStatsTag.id == tag_id).first()
+    tag_game = tag.game
+
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    if user.team != tag_game.team:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to delete this tag")
+
+    db_session.delete(tag)
+    db_session.commit()
+
+    return {"message": "Tag deleted successfully", "success": True}

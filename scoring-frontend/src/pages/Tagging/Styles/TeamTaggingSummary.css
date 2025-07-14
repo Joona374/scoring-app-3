@@ -1,0 +1,93 @@
+.tagging-summary {
+  padding: 1rem;
+  overflow-y: auto;
+  height: 100%;
+  background-color: var(--bg-color);
+  width: 100%;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+
+}
+
+.summary-row {
+  border-bottom: 1px solid #333;
+  padding: 0.5rem 0;
+  cursor: pointer;
+}
+
+.summary-header {
+  display: flex;
+  gap: 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.4rem 0;
+  transition: background 0.2s;
+}
+
+.summary-header:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.summary-index {
+  width: 1.5rem;
+  flex-shrink: 0;
+}
+
+.summary-result {
+  width: 3.5rem;
+  flex-shrink: 0;
+  color: var(--accent-color);
+}
+
+.summary-type {
+  width: 3.5rem;
+  flex-shrink: 0;
+  color: var(--text-color);
+}
+
+
+.summary-header:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.summary-details {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted-text);
+  padding-left: 1rem;
+}
+
+.summary-actions {
+  margin-top: 0.5rem;
+}
+
+.summary-actions button {
+  margin-right: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: var(--radius);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.summary-actions button:hover {
+  background-color: #8e1515;
+}
+
+.tag-details-list {
+  margin: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--muted-text);
+
+  display: flex;
+  flex-direction: column;  /* 👈 Ensures vertical layout */
+  gap: 0.3rem;
+}
+
+.tag-details-list li {
+  margin-bottom: 0.3rem;
+}
