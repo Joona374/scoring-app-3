@@ -183,7 +183,7 @@ class TeamStatsTag(Base):
     takeaway_type: Mapped[str] = mapped_column(String(40), nullable=True)
     takeaway_happ_pahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
     takeaway_kapp_kahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
-    takeaway_kapp_kahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
+    takeaway_papp_hahp_type: Mapped[str] = mapped_column(String(40), nullable=True)
     takeaway_jatkopaine_type: Mapped[str] = mapped_column(String(40), nullable=True)
     hahp_papp_type: Mapped[str] = mapped_column(String(40), nullable=True)
     hahp_papp_taytto_type: Mapped[str] = mapped_column(String(40), nullable=True)

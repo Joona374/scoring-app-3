@@ -8,7 +8,7 @@ export default function ContinueGamePicker({
   return (
     <div className="game-picker-container">
       <div className="continue-game-container">
-        <h2>Continue a Game</h2>
+        <h2>Valitse peli</h2>
         <table className="game-table">
           <thead>
             <tr>

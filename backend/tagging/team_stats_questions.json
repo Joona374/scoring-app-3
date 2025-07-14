@@ -402,15 +402,15 @@
 
                 },
                 {
-                    "answer_text": "Syöttö 3",
-                    "answer": "Syöttö 3",
+                    "answer_text": "Syöttö 3:lle",
+                    "answer": "Syöttö 3:lle",
                     "next_question_id": null,
                     "last_question": true
 
                 },
                 {
-                    "answer_text": "Syöttö 4/5",
-                    "answer": "Syöttö 4/5",
+                    "answer_text": "Syöttö 4/5:lle",
+                    "answer": "Syöttö 4/5:lle",
                     "next_question_id": null,
                     "last_question": true
 

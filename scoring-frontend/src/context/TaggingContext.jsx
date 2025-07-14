@@ -10,28 +10,32 @@ export const TaggingProvider = ({ children }) => {
   const [taggedEvents, setTaggedEvents] = useState([]);
   const [questionObjects, setQuestionObjects] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
+  const [previousQuestionsQueue, setPreviousQuestionsQueue] = useState([]);
+  const [currentTaggingMode, setCurrentTaggingMode] = useState("");
   const [firstQuestionId, setFirstQuestionId] = useState(null);
   const [playersInRoster, setPlayersInRoster] = useState([]);
   const [currentGameId, setCurrentGameId] = useState();
   const [gamesForTeam, setGamesForTEam] = useState([]);
-  const [currentTaggingMode, setCurrentTaggingMode] = useState("");
 
   const advanceQuestion = (last_question, next_question_id, newTag) => {
     try {
       if (last_question === true) {
         const rollbackTags = [...taggedEvents];
-        const new_tagged_events = [...taggedEvents, newTag];
-        setTaggedEvents(new_tagged_events);
-        console.log("This is the latest tagged events: ", new_tagged_events);
         postTag(newTag, rollbackTags);
         setCurrentTag({});
         setCurrentQuestionId(firstQuestionId);
+        setPreviousQuestionsQueue([]);
       } else {
         setCurrentTag(newTag);
+        const newPreviousQuestionsQueue = [
+          ...previousQuestionsQueue,
+          currentQuestionId,
+        ];
+        setPreviousQuestionsQueue(newPreviousQuestionsQueue);
         setCurrentQuestionId(next_question_id);
       }
     } catch (error) {
-      console.log("error");
+      console.log("error", error);
     }
   };
 
@@ -65,12 +69,28 @@ export const TaggingProvider = ({ children }) => {
         return;
       }
       const data = await res.json();
-      console.log("data for tag: ", data);
+      const fullTag = { ...newTag, id: data.id }; // Merge ID into tag
+      setTaggedEvents((prev) => [...prev, fullTag]); // Safely append
+      console.log("Latest tag: ", fullTag);
     } catch (error) {
       setTaggedEvents(rollbackTags);
       console.warn("Rolled tagged event back to:", rollbackTags);
       alert("Attention! Error posting tag. Changes have been reverted.");
     }
+  };
+
+  const stepBackInTag = () => {
+    const previousQuestionId =
+      previousQuestionsQueue[previousQuestionsQueue.length - 1];
+    const previousQuestion = questionObjects.find(
+      (questionObject) => questionObject.id === previousQuestionId
+    );
+    const newTag = { ...currentTag };
+    delete newTag[previousQuestion.key];
+
+    setCurrentTag(newTag);
+    setCurrentQuestionId(previousQuestionId);
+    setPreviousQuestionsQueue(previousQuestionsQueue.slice(0, -1));
   };
 
   return (
@@ -95,6 +115,7 @@ export const TaggingProvider = ({ children }) => {
         setGamesForTEam,
         currentTaggingMode,
         setCurrentTaggingMode,
+        stepBackInTag,
       }}
     >
       {children}

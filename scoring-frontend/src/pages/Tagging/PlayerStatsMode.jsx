@@ -7,7 +7,7 @@ import ShooterQuestion from "./TaggingComponents/ShooterQuestion";
 import "./Styles/TaggingArea.css";
 import NetQuestion from "./TaggingComponents/NetQuestion";
 import ParticapntsQuestion from "./TaggingComponents/ParticipantsQuestion";
-import TaggingSummary from "./TaggingSummary";
+import TeamTaggingSummary from "./TeamTaggingSummary";
 
 import { Question } from "./question";
 
@@ -123,7 +123,7 @@ export default function PlayerStatsMode() {
     <div className="tagging-page">
       <div className="tagging-area-column">{renderQuestionComponent()} </div>
       <div className="tagging-summary-column">
-        <TaggingSummary></TaggingSummary>
+        <TeamTaggingSummary></TeamTaggingSummary>
       </div>
     </div>
   );

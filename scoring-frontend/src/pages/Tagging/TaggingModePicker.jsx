@@ -5,7 +5,7 @@ export default function TaggingModePicker({ setCurrentTaggingMode }) {
   return (
     <div className="tagging-mode-picker-wrapper">
       <div className="game-picker-card">
-        <h1>Valitse tilastointi moodi</h1>
+        <h1>Valitse tilastointi pohja</h1>
         <p>Luo uusi peli tai jatka olemassa olevaa.</p>
         <div className="button-group">
           <button onClick={() => setCurrentTaggingMode("team")}>

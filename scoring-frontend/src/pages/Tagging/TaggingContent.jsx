@@ -1,5 +1,4 @@
 import TaggingArea from "./TaggingArea";
-import TaggingSummary from "./TaggingSummary";
 import GamePicker from "./GamePicker";
 import CreateGame from "../CreateGame/CreateGame";
 import ContinueGamePicker from "./ContinueGamePicker";
@@ -98,15 +97,4 @@ export default function Tagging() {
       ></GoalieStatsMode>
     );
   }
-
-  return (
-    <div className="tagging-page">
-      <div className="tagging-area-column">
-        <TaggingArea></TaggingArea>
-      </div>
-      <div className="tagging-summary-column">
-        <TaggingSummary></TaggingSummary>
-      </div>
-    </div>
-  );
 }

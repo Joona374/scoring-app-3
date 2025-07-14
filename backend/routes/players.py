@@ -84,7 +84,7 @@ def update_player(player_id: int, db_session: Session = Depends(get_db_session),
     db_session.delete(player)
     db_session.commit()
 
-    return {"message": "Book deleted successfully", "success": True}
+    return {"message": "Player deleted successfully", "success": True}
 
 
 @router.get("/for-team")

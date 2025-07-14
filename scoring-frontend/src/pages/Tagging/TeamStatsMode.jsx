@@ -7,7 +7,7 @@ import ShooterQuestion from "./TaggingComponents/ShooterQuestion";
 import "./Styles/TaggingArea.css";
 import NetQuestion from "./TaggingComponents/NetQuestion";
 import ParticapntsQuestion from "./TaggingComponents/ParticipantsQuestion";
-import TaggingSummary from "./TaggingSummary";
+import TeamTaggingSummary from "./TeamTaggingSummary";
 
 import { Question } from "./question";
 
@@ -31,6 +31,7 @@ export default function TeamStatsMode() {
     gamesForTeam,
     setGamesForTEam,
     setFirstQuestionId,
+    stepBackInTag,
   } = useContext(TaggingContext);
 
   useEffect(() => {
@@ -47,7 +48,6 @@ export default function TeamStatsMode() {
         });
 
         const questionsJson = await res.json();
-        console.log(questionsJson);
         const questionObjs = questionsJson.questions.map(
           (element) => new Question(element)
         );
@@ -122,9 +122,14 @@ export default function TeamStatsMode() {
 
   return (
     <div className="tagging-page">
-      <div className="tagging-area-column">{renderQuestionComponent()} </div>
+      <div className="tagging-area-column">
+        {renderQuestionComponent()}{" "}
+        <button className={"tagging-back-button"} onClick={stepBackInTag}>
+          {"<="}
+        </button>{" "}
+      </div>
       <div className="tagging-summary-column">
-        <TaggingSummary></TaggingSummary>
+        <TeamTaggingSummary></TeamTaggingSummary>
       </div>
     </div>
   );

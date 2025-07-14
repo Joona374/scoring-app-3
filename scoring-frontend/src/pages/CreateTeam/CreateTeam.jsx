@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../../components/FormStyles.css";
+import "./CreateTeam.css";
 import { useNavigate } from "react-router-dom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -99,7 +100,10 @@ export default function CreateTeam() {
             </button>
           </div>
           {copied && <p className="copy-feedback">Kopioitu!</p>}
-          <button onClick={() => navigator("/dashboard")}>
+          <button
+            className={"continue-to-teampage-button"}
+            onClick={() => navigator("/dashboard")}
+          >
             Jatka joukkuesivulle
           </button>
         </div>

@@ -170,3 +170,21 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
         players_in_roster.append(player_in_roster)
 
     return players_in_roster
+
+
+@router.delete("/delete/team-tag/{tag_id}")
+def update_player(tag_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    tag = db_session.query(TeamStatsTag).filter(TeamStatsTag.id == tag_id).first()
+    tag_game = tag.game
+
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    if user.team != tag_game.team:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to delete this tag")
+
+    db_session.delete(tag)
+    db_session.commit()
+
+    return {"message": "Tag deleted successfully", "success": True}
