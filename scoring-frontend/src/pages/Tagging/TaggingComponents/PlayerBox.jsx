@@ -1,3 +1,5 @@
+import "../Styles/PlayerBox.css";
+
 export default function PlayerBox({
   name,
   pos,
@@ -13,31 +15,11 @@ export default function PlayerBox({
       advanceQuestion(false, question.next_question_id, new_tag);
     }
   };
-  let width;
-  if (pos === "FORWARD") {
-    width = "30%";
-  } else {
-    width = "46%";
-  }
+
+  const posClass = pos === "FORWARD" ? "forward" : "defense";
+
   return (
-    <button
-      style={{
-        padding: "8px 16px",
-        margin: "5px",
-        width: width,
-        borderRadius: "6px",
-        border: "1px solid #007bff",
-        background: "#007bff",
-        color: "#fff",
-        cursor: "pointer",
-        fontSize: "16px",
-        fontWeight: "bold",
-        transition: "background 0.2s",
-      }}
-      onClick={() => {
-        clicker();
-      }}
-    >
+    <button className={`player-box-btn ${posClass}`} onClick={clicker}>
       {name}
     </button>
   );

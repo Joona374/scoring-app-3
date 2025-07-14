@@ -20,7 +20,7 @@ export default function ShooterQuestion() {
 
   return (
     <>
-      <p>Shooter question</p>
+      <h2>Laukoja?</h2>
       <div className="shooter-question-container">
         <div className="shooter-left-column">
           {[1, 2, 3, 4].map((line) => {

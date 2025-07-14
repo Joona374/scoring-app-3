@@ -30,8 +30,6 @@ export default function TaggingArea() {
     setGamesForTEam,
   } = useContext(TaggingContext);
 
-  const [view, setView] = useState("picker"); // Options: 'picker', 'create'
-
   // This function gets the roster for this game form db
   const getRosterFromDb = async (gameId) => {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -58,32 +56,6 @@ export default function TaggingArea() {
       console.log(err);
     }
   };
-
-  useEffect(() => {
-    const getGames = async () => {
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-      const token = sessionStorage.getItem("jwt_token");
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/games/get-for-user`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          console.log(
-            "Getting a list of games to continue from the server failed."
-          );
-        }
-
-        const data = await res.json();
-        setGamesForTEam(data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    getGames();
-  }, []);
 
   useEffect(() => {
     if (currentGameId) getRosterFromDb(currentGameId);

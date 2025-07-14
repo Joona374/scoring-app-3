@@ -140,6 +140,48 @@
 
         {
             "id": 7,
+            "type": "TEXT",
+            "key": "strengths",
+            "text": "What was the gamesituation? (Oman joukkueen näkökulma)",
+            "options": [
+            {
+                    "answer": "ES",
+                    "answer_text": "Tasavoimainen",
+                    "next_question_id": 8,
+                    "last_question": false
+                },
+                {
+                    "answer": "PP",
+                    "answer_text": "Ylivoima",
+                    "next_question_id": 8,
+                    "last_question": false
+                },
+                {
+                    "answer": "PK",
+                    "answer_text": "Alivoima",
+                    "next_question_id": 8,
+                    "last_question": false
+                },
+                {
+                    "answer": "EN+",
+                    "answer_text": "Tyhjä maali +",
+                    "next_question_id": 8,
+                    "last_question": false
+                },
+                {
+                    "answer": "EN-",
+                    "answer_text": "Tyhjä maali vs",
+                    "next_question_id": 8,
+                    "last_question": false
+                }
+
+            ],
+            "next_question_id": 7,
+            "last_question": false
+        },
+
+        {
+            "id": 8,
             "type": "PARTICIPANTS",
             "key": "participants",
             "text": "<PARTICIPANTS>",

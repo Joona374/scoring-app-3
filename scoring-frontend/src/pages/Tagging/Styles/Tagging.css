@@ -3,15 +3,33 @@
     flex-direction: row;
     box-sizing: border-box;
     height: 100%;
+    background: var(--bg-color);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    overflow: hidden;
 }
 
 .tagging-area-column {
-    flex: 2;
+    flex: 5;
+    padding: 0;
+    background: linear-gradient(135deg, var(--bg-color) 0%, var(--card-bg) 100%);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    border-right: 2px solid #222;
 }
 
 .tagging-summary-column {
-    background-color: #002c29;
-    flex: 1;
-    border-left: 3px solid #fff;
-
+    background-color: var(--card-bg);
+    flex: 2;
+    border-left: 2px solid #444;
+    padding: 2rem 1.5rem;
+    min-width: 320px;
+    box-shadow: -2px 0 12px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
