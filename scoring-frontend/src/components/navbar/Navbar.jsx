@@ -1,10 +1,13 @@
 import "./Navbar.css";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import AuthContext from "../../auth/AuthContext";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const { isLoggedIn } = useContext(AuthContext);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
 
   return (
     <nav>
@@ -14,7 +17,11 @@ export default function Navbar() {
         </Link>
       </div>
 
-      <div className="navbar-right">
+      <div className="hamburger" onClick={toggleMenu}>
+        ☰
+      </div>
+
+      <div className={`navbar-right ${menuOpen ? "open" : ""}`}>
         <ul>
           {!isLoggedIn ? (
             <>
@@ -24,7 +31,6 @@ export default function Navbar() {
               <li>
                 <Link to="/register">Rekisteröidy</Link>
               </li>
-
               <li>
                 <Link to="/admin">Admin</Link>
               </li>
@@ -43,7 +49,6 @@ export default function Navbar() {
               <li>
                 <Link to="/roster-management">Kokoonpanon hallinta</Link>
               </li>
-
               <li>
                 <Link to="/admin">Admin</Link>
               </li>
