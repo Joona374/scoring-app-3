@@ -12,7 +12,11 @@ export default function Navbar() {
   return (
     <nav>
       <div className="navbar-left">
-        <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
+        <Link
+          to="/"
+          onClick={() => setMenuOpen(false)}
+          style={{ color: "inherit", textDecoration: "none" }}
+        >
           ScoringApp 3.0
         </Link>
       </div>
@@ -26,31 +30,50 @@ export default function Navbar() {
           {!isLoggedIn ? (
             <>
               <li>
-                <Link to="/login">Kirjaudu</Link>
+                <Link onClick={() => setMenuOpen(false)} to="/login">
+                  Kirjaudu
+                </Link>
               </li>
               <li>
-                <Link to="/register">Rekisteröidy</Link>
+                <Link onClick={() => setMenuOpen(false)} to="/register">
+                  Rekisteröidy
+                </Link>
               </li>
               <li>
-                <Link to="/admin">Admin</Link>
+                <Link onClick={() => setMenuOpen(false)} to="/admin">
+                  Admin
+                </Link>
               </li>
             </>
           ) : (
             <>
               <li>
-                <Link to="/dashboard">Dashboard</Link>
+                <Link onClick={() => setMenuOpen(false)} to="/dashboard">
+                  Dashboard
+                </Link>
               </li>
               <li>
-                <Link to="/tagging">Tilastointi</Link>
+                <Link onClick={() => setMenuOpen(false)} to="/tagging">
+                  Tilastointi
+                </Link>
               </li>
               <li>
-                <Link to="/excel-exporter">Excel-vienti</Link>
+                <Link onClick={() => setMenuOpen(false)} to="/excel-exporter">
+                  Excel-vienti
+                </Link>
               </li>
               <li>
-                <Link to="/roster-management">Kokoonpanon hallinta</Link>
+                <Link
+                  onClick={() => setMenuOpen(false)}
+                  to="/roster-management"
+                >
+                  Kokoonpanon hallinta
+                </Link>
               </li>
               <li>
-                <Link to="/admin">Admin</Link>
+                <Link onClick={() => setMenuOpen(false)} to="/admin">
+                  Admin
+                </Link>
               </li>
             </>
           )}
