@@ -10,7 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { login, setIsAdmin } = useContext(AuthContext);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -31,6 +31,10 @@ export default function Login() {
         login(data.jwt_token);
         sessionStorage.setItem("username", data.username);
         sessionStorage.setItem("user_id", data.user_id);
+        if (data.is_admin) {
+          sessionStorage.setItem("is_admin", data.is_admin);
+          setIsAdmin(true);
+        }
         navigate("/dashboard");
       }
     } catch (err) {

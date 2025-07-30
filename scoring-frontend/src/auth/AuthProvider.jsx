@@ -3,6 +3,7 @@ import AuthContext from "./AuthContext";
 
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const token = sessionStorage.getItem("jwt_token");
@@ -23,8 +24,10 @@ export function AuthProvider({ children }) {
 
   const authData = {
     isLoggedIn,
+    isAdmin,
     login,
     logout,
+    setIsAdmin,
   };
 
   return (

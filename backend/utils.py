@@ -1,16 +1,25 @@
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import os
+import random
+import string
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+
+from db.models import RegCode
 
 load_dotenv()
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = os.getenv("JWT_ALGORITHM")
 EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES"))
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -88,6 +97,16 @@ def decode_jwt(token: str) -> dict:
     
 
 def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
+    """
+    Retrieves the current user's ID from a JWT token.
+    Args:
+        token (str): The JWT token provided by the OAuth2 scheme.
+    Returns:
+        int: The user ID extracted from the token.
+    Raises:
+        HTTPException: If the token is invalid or the user ID cannot be retrieved.
+    """
+
     try:
         payload = decode_jwt(token)
         user_id = payload.get("sub")
@@ -96,3 +115,52 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
         return user_id
     except jwt.JWTError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+
+def generate_random_code() -> str:
+    """
+    Generates a random 6-character code consisting of uppercase letters and digits.
+    Returns:
+        str: A randomly generated 6-character string.
+    """
+
+    random_code = ""
+    for _ in range(6):
+        random_code += random.choice(string.ascii_uppercase + string.digits + string.digits)
+    return random_code
+
+def add_creator_code(admin: bool = False, identifier: str =  None) -> RegCode:
+    """
+    Generates a random 6-character creator code, adds it to the database, and returns the code.
+    Args:
+        admin (bool, optional): Indicates if the code is for an admin. Defaults to False.
+        identifier (str, optional): An optional identifier to associate with the code. Defaults to None.
+    Returns:
+        str: The generated creator code.
+    Side Effects:
+        - Adds a new RegCode entry to the database.
+        - Prints the seeded creator code to the console.
+    """
+
+    engine = create_engine(DATABASE_URL)
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    
+    random_code = generate_random_code()
+
+    new_code = RegCode(
+        code=random_code,
+        creation_code=True,
+        join_code=False,
+        team_related_id=None,
+        identifier=identifier,
+        admin_code=admin
+    )
+    
+    session.add(new_code)
+    session.commit()
+    session.refresh(new_code)
+    session.close()
+
+    print(f"Seeded creator code: {random_code}")
+    return new_code

@@ -15,5 +15,5 @@ return {"message": "Operation completed successfully"} # Direct return
 #### For errors:
 
 ```python
-raise HTTPException(status_code=400, detail="Specific error message") # Raise an HTTPException with a specific error message
+raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Error message")
 ```
