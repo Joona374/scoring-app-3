@@ -39,14 +39,12 @@ export default function CreateTeam() {
 
       const data = await response.json();
       setJoinCode(data.code_for_team); // store code
-      console.log("Set code to:", joinCode);
     } catch (err) {
       setErrorMsg(err.message);
     }
   };
 
   const copyToClipboard = () => {
-    console.log(navigator);
     navigator.clipboard.writeText(joinCode).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

@@ -1,0 +1,108 @@
+.date-selectors {
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.date-section {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+}
+
+.date-section label {
+  color: var(--accent-color);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.date-section input[type="date"] {
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--muted-text);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+
+.date-selectors button {
+  background: var(--accent-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 0.2rem;
+}
+
+.date-selectors button:hover {
+  background: #991b1b;
+}
+
+.game-location-radio {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+
+.game-location-radio label {
+  color: var(--text-color);
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.game-location-radio input[type="radio"] {
+  accent-color: var(--accent-color);
+  margin-right: 0.5em;
+}
+
+.plusminus-excel-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.selection-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.selection-controls button,
+.plusminus-excel-buttons > button {
+  background: var(--accent-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.plusminus-excel-buttons {
+  margin: auto 0 0 0;
+}
+
+.selection-controls button:hover,
+.plusminus-excel-buttons > button:hover {
+  background: #991b1b;
+}
