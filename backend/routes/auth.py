@@ -19,6 +19,8 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
     reg_code = db_session.query(RegCode).filter(RegCode.code == user_data.code).first()
     if not reg_code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Registration code invalid")
+    elif reg_code.used:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Registration code already used")
 
     existing_user = db_session.query(User).filter((User.username == user_data.username) | (User.email == user_data.email)).first()
     if existing_user:
@@ -43,7 +45,7 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
         new_user = User(
         username=user_data.username,
         email=user_data.email,
-        is_admin=False,
+        is_admin=reg_code.admin_code,
         password_hash=hashed_password,
         has_creation_privilege=True
         )
@@ -52,6 +54,8 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="The registeration code is neither of type CREATOR or JOIN. This is a problem at the server.")
 
     db_session.add(new_user)
+    if reg_code.creation_code:
+        reg_code.used = True
     db_session.commit()
     db_session.refresh(new_user)
 

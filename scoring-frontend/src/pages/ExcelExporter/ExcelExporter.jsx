@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import TwoColumnLayout from "../../components/TwoColumnLayout/TwoColumnLayout";
 import ExcelExportSelector from "./Components/ExcelExportSelector";
-import PlusMinus from "./Components/PlusMinus";
+import GamesSelector from "./Components/GamesSelector";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -99,20 +99,25 @@ export default function ExcelExporter() {
           </div>
 
           {selectedReport === "plusminus" ? (
-            <PlusMinus games={games}></PlusMinus>
+            <GamesSelector
+              games={games}
+              reportDownloadEndpoint="plusminus"
+            ></GamesSelector>
           ) : selectedReport === "team" ? (
-            <p>SHOW TEAM</p>
+            <GamesSelector
+              games={games}
+              reportDownloadEndpoint="teamstats"
+            ></GamesSelector>
+          ) : selectedReport === "games" ? (
+            <GamesSelector
+              games={games}
+              reportDownloadEndpoint="game-stats"
+            ></GamesSelector>
           ) : selectedReport === "goalies" ? (
             <p>SHOW GOALIES</p>
           ) : (
             <p></p>
           )}
-
-          {/* <div>
-            <button onClick={downloadExcel}>Download test</button>
-            <button onClick={downloadTeamStats}>Download team stats</button>
-            <button onClick={downloadPlusMinus}>Download plusminus</button>
-          </div> */}
         </>
       }
     ></TwoColumnLayout>

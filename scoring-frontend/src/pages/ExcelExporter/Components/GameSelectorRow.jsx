@@ -1,20 +1,21 @@
-import "./GameFilterSelector.css";
+import "./GameSelectorRow.css";
 
-export default function ({ game, gamesSelected, setGamesSelected }) {
+export default function GameSelectorRow({
+  game,
+  gamesSelected,
+  setGamesSelected,
+}) {
   const changeCheckbox = (gameId) => {
     if (gamesSelected.includes(gameId)) {
       const newGames = gamesSelected.filter((id) => id !== gameId);
-      console.log(newGames);
 
       setGamesSelected(newGames);
     } else {
       const newGames = [...gamesSelected, gameId];
-      console.log(newGames);
       setGamesSelected(newGames);
     }
   };
 
-  console.log("game in component", game);
   return (
     <tr className="game-row">
       <td>

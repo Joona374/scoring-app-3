@@ -14,10 +14,9 @@ const mockExportOptions = [
       "Yhdistetyt joukkueen tilastot pelien ajalta. Hyvä valmentajille kokonaiskuvan hahmottamiseen.",
   },
   {
-    id: "goalies",
-    title: "Maalivahtiraportti",
-    description:
-      "Kaikki torjunnat, päästetyt maalit ja laukaukset maalia kohti.",
+    id: "games",
+    title: "Peliraportit",
+    description: "TODO",
   },
   {
     id: "custom",

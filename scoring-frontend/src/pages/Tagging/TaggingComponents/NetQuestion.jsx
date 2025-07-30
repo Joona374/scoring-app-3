@@ -19,9 +19,8 @@ export default function NetQuestion() {
 
   const shotZones = [
     {
-      name: "Miss-left",
+      name: "Miss-Left",
       points: [
-        // Blueline
         [0, 0],
         [6, 0],
         [6, 100],
@@ -29,9 +28,8 @@ export default function NetQuestion() {
       ],
     },
     {
-      name: "Miss-right",
+      name: "Miss-Right",
       points: [
-        // Blueline
         [94, 0],
         [100, 0],
         [100, 100],
@@ -42,7 +40,6 @@ export default function NetQuestion() {
     {
       name: "Top-Left",
       points: [
-        // Blueline
         [6, 0],
         [35, 0],
         [35, 35],
@@ -53,7 +50,6 @@ export default function NetQuestion() {
     {
       name: "Top-Mid",
       points: [
-        // Blueline
         [35, 0],
         [65, 0],
         [65, 35],
@@ -64,7 +60,6 @@ export default function NetQuestion() {
     {
       name: "Top-Left",
       points: [
-        // Blueline
         [94, 0],
         [65, 0],
         [65, 35],
@@ -75,7 +70,6 @@ export default function NetQuestion() {
     {
       name: "Mid-Left",
       points: [
-        // Blueline
         [6, 35],
         [35, 35],
         [35, 70],
@@ -86,7 +80,6 @@ export default function NetQuestion() {
     {
       name: "Mid-Mid",
       points: [
-        // Blueline
         [35, 35],
         [65, 35],
         [65, 70],
@@ -97,7 +90,6 @@ export default function NetQuestion() {
     {
       name: "Mid-Left",
       points: [
-        // Blueline
         [94, 35],
         [65, 35],
         [65, 70],
@@ -107,7 +99,6 @@ export default function NetQuestion() {
     {
       name: "Bottom-Left",
       points: [
-        // Blueline
         [6, 70],
         [35, 70],
         [35, 100],
@@ -118,7 +109,6 @@ export default function NetQuestion() {
     {
       name: "Bottom-Mid",
       points: [
-        // Blueline
         [35, 70],
         [65, 70],
         [65, 100],
@@ -129,21 +119,10 @@ export default function NetQuestion() {
     {
       name: "Bottom-Left",
       points: [
-        // Blueline
         [94, 70],
         [65, 70],
         [65, 100],
         [94, 100],
-      ],
-    },
-
-    {
-      name: "Filler",
-      points: [
-        [0, 0],
-        [100, 0],
-        [100, 100],
-        [0, 100],
       ],
     },
   ];

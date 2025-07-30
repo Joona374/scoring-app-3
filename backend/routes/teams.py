@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-import random
-import string
 
 from db.pydantic_schemas import TeamCreate, TeamCreateResponse, PlayerResponse, TeamResponse
 from db.db_manager import get_db_session
 from db.models import Team, User, RegCode
-from utils import get_current_user_id
+from utils import get_current_user_id, generate_random_code
 
 router = APIRouter(
     prefix="/teams",
@@ -14,11 +12,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-def generate_random_code() -> str:
-    random_code = ""
-    for _ in range(6):
-        random_code += random.choice(string.ascii_uppercase + string.digits + string.digits)
-    return random_code
 
 @router.post("/create")
 def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):

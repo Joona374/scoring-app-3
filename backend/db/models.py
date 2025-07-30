@@ -41,8 +41,11 @@ class RegCode(Base):
     __tablename__ = "reg_codes"
 
     code: Mapped[str] = mapped_column(String(6), unique=True, nullable=False)
+    used: Mapped[bool] = mapped_column(default=False)
     creation_code: Mapped[bool] = mapped_column(default=False)
     join_code: Mapped[bool] = mapped_column(default=False)
+    identifier: Mapped[str] = mapped_column(String(128), nullable=True)
+    admin_code: Mapped[bool] = mapped_column(nullable=False, default=False)
 
     team_related_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=True)
     team_related: Mapped[Optional["Team"]] = relationship(back_populates="code", foreign_keys=[team_related_id])
@@ -258,6 +261,25 @@ class PlayerStatsTag(Base):
 
     players_on_ice: Mapped[List["PlayerStatsTagOnIce"]] = relationship(back_populates="tag", foreign_keys="PlayerStatsTagOnIce.tag_id")
     players_participating: Mapped[List["PlayerStatsTagParticipating"]] = relationship(back_populates="tag", foreign_keys="PlayerStatsTagParticipating.tag_id")
+
+    def __repr__(self):
+        datapoints = []
+        for key, value in vars(self).items():
+            if value != None and key != "_sa_instance_state":
+                if type(value) == str:
+                    datapoint = f"{key}='{value}'"
+                else:
+                    datapoint = f"{key}={value}"
+
+                datapoints.append(datapoint)
+
+        repr_string = "PlayerStasTag("
+        for datapoint in datapoints:
+            repr_string += f"{datapoint}, "
+        repr_string = repr_string[:-2] + ")\n"
+
+        return repr_string
+
 
 class PlayerStatsTagOnIce(Base):
     __tablename__ = "player_stats_tag_on_ice"

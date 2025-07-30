@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import "./PlusMinus.css";
-import GameFilterSelector from "./GameFilterSelector";
+import "./GamesSelector.css";
+import GameSelectorRow from "./GameSelectorRow";
 
-export default function PlusMinus({ games }) {
+export default function GamesSelector({ games, reportDownloadEndpoint }) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [homeAwayFilter, setHomeAwayFilter] = useState("");
@@ -12,19 +12,12 @@ export default function PlusMinus({ games }) {
   const [sortDirection, setSortDirection] = useState("");
 
   const applyFilters = (filter, value) => {
+    console.log(filter, value);
     const dateFilteredGames = applyDateFilter(filter, value);
+    console.log(dateFilteredGames);
     const homeFilteredGames = filterHome(dateFilteredGames, filter, value);
+    console.log(homeFilteredGames);
     setFilteredGames(homeFilteredGames);
-  };
-
-  const handleStartChange = (event) => {
-    const startDate = event.target.value;
-    apply("start", startDate);
-  };
-
-  const handleEndChange = (event) => {
-    const endDate = event.target.value;
-    applyDateFilter("end", endDate);
   };
 
   const applyDateFilter = (whichDate, dateString) => {
@@ -76,11 +69,15 @@ export default function PlusMinus({ games }) {
     if (filterToUse === "BOTH") return games;
     else if (filterToUse === "HOME") {
       const gamesToShow = games.filter((game) => game.home === true);
+      console.log(gamesToShow, 1);
       return gamesToShow;
     } else if (filterToUse === "AWAY") {
       const gamesToShow = games.filter((game) => game.home === false);
+      console.log(gamesToShow, 2);
       return gamesToShow;
     }
+
+    return games;
   };
 
   const selectAll = () => {
@@ -99,21 +96,72 @@ export default function PlusMinus({ games }) {
   };
 
   const handleSort = (column) => {
-    console.log("NEEDS TO BE IMPLEMENTED!!");
+    let direction;
+    if (column === sortColumn && sortDirection === "ASC") {
+      direction = "DESC";
+    } else direction = "ASC";
+    setSortDirection(direction);
+
+    sortByColumn(column, direction);
+
+    setSortColumn(column);
   };
 
-  const downloadPlusMinus = async () => {
+  const sortByColumn = (column, direction) => {
+    const newFilteredGames = [...filteredGames];
+    newFilteredGames.sort((a, b) => {
+      let sortedAttributeA;
+      let sortedAttributeB;
+      switch (column) {
+        case "date":
+          sortedAttributeA = new Date(a.date);
+          sortedAttributeB = new Date(b.date);
+          if (direction === "DESC") return sortedAttributeB - sortedAttributeA;
+          else if (direction === "ASC")
+            return sortedAttributeA - sortedAttributeB;
+          break;
+
+        case "opponent":
+          sortedAttributeA = a.opponent;
+          sortedAttributeB = b.opponent;
+          if (direction === "DESC")
+            return sortedAttributeB.localeCompare(sortedAttributeA);
+          else if (direction === "ASC")
+            return sortedAttributeA.localeCompare(sortedAttributeB);
+          break;
+
+        case "home":
+          sortedAttributeA = a.home;
+          sortedAttributeB = b.home;
+          if (direction === "DESC") return sortedAttributeB - sortedAttributeA;
+          else if (direction === "ASC")
+            return sortedAttributeA - sortedAttributeB;
+          break;
+
+        default:
+          console.error("ERROR IN SORTING BY COLUMN!");
+          break;
+      }
+      console.log(sortedAttributeA, sortedAttributeB);
+    });
+    console.log(newFilteredGames);
+    setFilteredGames(newFilteredGames);
+  };
+
+  const downloadReport = async () => {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    console.log("This should plusminus");
     const token = sessionStorage.getItem("jwt_token");
     const queryString = `game_ids=${gamesSelected.join(",")}`;
     console.log(queryString);
-    const res = await fetch(`${BACKEND_URL}/excel/plusminus?${queryString}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await fetch(
+      `${BACKEND_URL}/excel/${reportDownloadEndpoint}?${queryString}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     const fileBlob = await res.blob();
     const tempUrl = URL.createObjectURL(fileBlob);
     const aElement = document.createElement("a");
@@ -201,30 +249,66 @@ export default function PlusMinus({ games }) {
         <thead>
           {/* TODO: IMPLEMENT SORTING */}
           <tr>
-            <th onClick={() => handleSort("selected")}>Valittu</th>
-            <th onClick={() => handleSort("date")}>PVM.</th>
-            <th onClick={() => handleSort("opponent")}>Vs.</th>
-            <th onClick={() => handleSort("home")}>Koti/Vieras</th>
+            <th className="games-sorting-th">Valittu</th>
+            <th
+              className={
+                sortColumn === "date"
+                  ? "active-sort games-sorting-th "
+                  : "games-sorting-th "
+              }
+              onClick={() => handleSort("date")}
+            >
+              PVM{" "}
+              {sortColumn === "date" && (
+                <span>{sortDirection === "ASC" ? "▼" : "▲"}</span>
+              )}
+            </th>
+            <th
+              className={
+                sortColumn === "opponent"
+                  ? "active-sort games-sorting-th "
+                  : "games-sorting-th "
+              }
+              onClick={() => handleSort("opponent")}
+            >
+              Vs{" "}
+              {sortColumn === "opponent" && (
+                <span>{sortDirection === "ASC" ? "▼" : "▲"}</span>
+              )}
+            </th>
+            <th
+              className={
+                sortColumn === "home"
+                  ? "active-sort games-sorting-th "
+                  : "games-sorting-th "
+              }
+              onClick={() => handleSort("home")}
+            >
+              Koti/Vieras{" "}
+              {sortColumn === "home" && (
+                <span>{sortDirection === "ASC" ? "▲" : "▼"}</span>
+              )}
+            </th>
           </tr>
         </thead>
         <tbody>
           {filteredGames.map((game, idx) => {
             return (
-              <GameFilterSelector
+              <GameSelectorRow
                 game={game}
                 key={idx}
                 gamesSelected={gamesSelected}
                 setGamesSelected={setGamesSelected}
-              ></GameFilterSelector>
+              ></GameSelectorRow>
             );
           })}
         </tbody>
       </table>
-      <div className="plusminus-excel-buttons">
+      <div className="games-selector-excel-buttons">
         <div className="selection-controls">
           <button onClick={selectAll}>Valitse kaikki</button>
           <button onClick={resetSelection}>Nollaa valinta</button>
-          <button onClick={downloadPlusMinus}>Lataa raportti</button>
+          <button onClick={downloadReport}>Lataa raportti</button>
         </div>
       </div>
     </>

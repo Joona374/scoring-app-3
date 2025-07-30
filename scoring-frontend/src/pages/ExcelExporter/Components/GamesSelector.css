@@ -66,7 +66,7 @@
   margin-right: 0.5em;
 }
 
-.plusminus-excel-buttons {
+.game-selector-excel-buttons {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -87,7 +87,7 @@
 }
 
 .selection-controls button,
-.plusminus-excel-buttons > button {
+.game-selector-excel-buttons > button {
   background: var(--accent-color);
   color: var(--text-color);
   border: none;
@@ -98,11 +98,20 @@
   transition: background 0.2s;
 }
 
-.plusminus-excel-buttons {
+.game-selector-excel-buttons {
   margin: auto 0 0 0;
 }
 
 .selection-controls button:hover,
-.plusminus-excel-buttons > button:hover {
+.game-selector-excel-buttons > button:hover {
   background: #991b1b;
+}
+
+.games-sorting-th {
+    user-select: none;
+}
+
+.games-table .active-sort {
+  background-color: var(--card-bg);
+  font-weight: bold;
 }

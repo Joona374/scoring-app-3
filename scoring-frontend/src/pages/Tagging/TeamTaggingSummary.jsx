@@ -13,6 +13,11 @@ export default function TeamTaggingSummary() {
     console.log(taggedEvents);
   };
 
+  const editTag = async () => {
+    console.warn("TODO");
+    alert("Ominaisuus työn alla.");
+  };
+
   const deleteTeamTag = async (tag) => {
     const tagId = tag.id;
     const token = sessionStorage.getItem("jwt_token");
@@ -116,6 +121,7 @@ export default function TeamTaggingSummary() {
                 })}
               </ul>
               <div className="summary-actions">
+                {/* TODO editTag!! */}
                 <button onClick={() => editTag(index)}>Muokkaa</button>
                 <button onClick={() => deleteTeamTag(tag)}>Poista</button>
               </div>

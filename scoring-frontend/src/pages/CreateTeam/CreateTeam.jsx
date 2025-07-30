@@ -11,7 +11,7 @@ export default function CreateTeam() {
   const [joinCode, setJoinCode] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const navigator = useNavigate();
+  const reactNavigator = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -39,12 +39,14 @@ export default function CreateTeam() {
 
       const data = await response.json();
       setJoinCode(data.code_for_team); // store code
+      console.log("Set code to:", joinCode);
     } catch (err) {
       setErrorMsg(err.message);
     }
   };
 
   const copyToClipboard = () => {
+    console.log(navigator);
     navigator.clipboard.writeText(joinCode).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -102,7 +104,7 @@ export default function CreateTeam() {
           {copied && <p className="copy-feedback">Kopioitu!</p>}
           <button
             className={"continue-to-teampage-button"}
-            onClick={() => navigator("/dashboard")}
+            onClick={() => reactNavigator("/dashboard")}
           >
             Jatka joukkuesivulle
           </button>

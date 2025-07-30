@@ -4,7 +4,7 @@ import AuthContext from "../../auth/AuthContext";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, isAdmin } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
@@ -39,11 +39,6 @@ export default function Navbar() {
                   Rekisteröidy
                 </Link>
               </li>
-              <li>
-                <Link onClick={() => setMenuOpen(false)} to="/admin">
-                  Admin
-                </Link>
-              </li>
             </>
           ) : (
             <>
@@ -70,11 +65,13 @@ export default function Navbar() {
                   Kokoonpanon hallinta
                 </Link>
               </li>
-              <li>
-                <Link onClick={() => setMenuOpen(false)} to="/admin">
-                  Admin
-                </Link>
-              </li>
+              {isAdmin && (
+                <li>
+                  <Link onClick={() => setMenuOpen(false)} to="/admin">
+                    Admin
+                  </Link>
+                </li>
+              )}
             </>
           )}
         </ul>

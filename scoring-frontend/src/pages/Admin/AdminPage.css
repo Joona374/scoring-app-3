@@ -1,0 +1,16 @@
+.admin-wrapper {
+    display: flex;
+    flex-direction: row;
+    padding: 20px;
+    gap:   20px;
+}
+
+.reset-db-wrapper {
+    flex: 1;
+    background-color: var(--card-bg);
+}
+
+.create-code-wrapper {
+    display: flex;
+    flex: 1;
+}
