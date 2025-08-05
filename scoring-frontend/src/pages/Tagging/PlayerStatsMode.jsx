@@ -16,21 +16,14 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export default function PlayerStatsMode() {
   // Import the "public" variables from context
   const {
-    currentTag,
-    setCurrentTag,
-    taggedEvents,
-    setTaggedEvents,
     questionObjects,
     setQuestionObjects,
     currentQuestionId,
     setCurrentQuestionId,
-    playersInRoster,
     setPlayersInRoster,
     currentGameId,
-    setCurrentGameId,
-    gamesForTeam,
-    setGamesForTEam,
     setFirstQuestionId,
+    stepBackInTag,
   } = useContext(TaggingContext);
 
   useEffect(() => {
@@ -121,7 +114,12 @@ export default function PlayerStatsMode() {
 
   return (
     <div className="tagging-page">
-      <div className="tagging-area-column">{renderQuestionComponent()} </div>
+      <div className="tagging-area-column">
+        {renderQuestionComponent()}
+        <button className={"tagging-back-button"} onClick={stepBackInTag}>
+          {"<="}
+        </button>{" "}
+      </div>
       <div className="tagging-summary-column">
         <TeamTaggingSummary></TeamTaggingSummary>
       </div>
