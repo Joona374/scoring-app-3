@@ -11,7 +11,7 @@ export default function CreateTeam() {
   const [joinCode, setJoinCode] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const navigator = useNavigate();
+  const reactNavigator = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -102,7 +102,7 @@ export default function CreateTeam() {
           {copied && <p className="copy-feedback">Kopioitu!</p>}
           <button
             className={"continue-to-teampage-button"}
-            onClick={() => navigator("/dashboard")}
+            onClick={() => reactNavigator("/dashboard")}
           >
             Jatka joukkuesivulle
           </button>
