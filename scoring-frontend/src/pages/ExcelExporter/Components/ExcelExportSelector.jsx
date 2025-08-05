@@ -19,8 +19,8 @@ const mockExportOptions = [
     description: "TODO",
   },
   {
-    id: "custom",
-    title: "Mukautettu raportti",
+    id: "playersSummary",
+    title: "Pelaajien yhteenveto",
     description:
       "Valitse haluamasi tilastot ja muodosta räätälöity Excel-analyysi.",
   },

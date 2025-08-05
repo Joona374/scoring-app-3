@@ -113,6 +113,11 @@ export default function ExcelExporter() {
               games={games}
               reportDownloadEndpoint="game-stats"
             ></GamesSelector>
+          ) : selectedReport === "playersSummary" ? (
+            <GamesSelector
+              games={games}
+              reportDownloadEndpoint="player-stats"
+            ></GamesSelector>
           ) : selectedReport === "goalies" ? (
             <p>SHOW GOALIES</p>
           ) : (
