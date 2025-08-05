@@ -26,14 +26,14 @@ router = APIRouter(
 @router.post("/clean-db")
 def clean_db(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     user = db_session.query(User).filter(User.id == current_user_id).first()
-    if user.is_admin:
-        try:
-            creator_code = wipe_db()
-            return {"Message": "Wiped db!", "creator_code": creator_code}
-        except Exception as e:
-            return {"Message": "DB WIPING FAILED", "ERROR": e}
-    else:
+    if not user or not user.is_admin:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non admin user")
+    db_session.close()
+    try:
+        creator_code = wipe_db()
+        return {"Message": "Wiped db!", "creator_code": creator_code}
+    except Exception as e:
+        return {"Message": "DB WIPING FAILED", "ERROR": e}
 
 
 @router.post("/create-code")
@@ -44,8 +44,6 @@ def clean_db(code_data: CreateCode, db_session: Session = Depends(get_db_session
     
     # try:
     new_code = add_creator_code(admin=False, identifier=code_data.new_code_identifier)
-    print(new_code)
-    print(new_code.id)
     team_id = new_code.team_related_id
     team = db_session.query(Team).filter(Team.id == team_id).first()
     if team:
