@@ -830,7 +830,6 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
         game_sheet["C1"] = game["date"]
         game_sheet["G1"] = game["opponent"]
         game_sheet["T1"] = game["home"]
-        print(f"{game["opponent"]} {game["date"]} has {len(game["cell_values"])}")
 
         for cell, value in game["cell_values"].items():
             game_sheet[cell] = value
@@ -1009,11 +1008,9 @@ def collect_shooter_total_strengths(players_on_ice_tags: list[PlayerStatsTag], p
 def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], player_id: int) -> dict:
     game_cell_values = {}
     for tag in players_stats_tags:
-        print(tag)
         if tag.game_id not in game_cell_values:
             game_cell_values[tag.game_id] = {}
             game_cell_values[tag.game_id]["date"] = tag.game.date
-            print(tag.game.opponent)
             game_cell_values[tag.game_id]["A"] = f"{tag.game.date} vs {tag.game.opponent}"
             for col in ["C", "D", "G", "H", "J", "K", "M", "N", "P", "Q", "T", "U", "W", "X", "Z", "AA", "AC", "AD", "AG", "AH", "AJ", "AK", "AM", "AN", "AP", "AQ"]:
                 game_cell_values[tag.game_id][col] = 0
@@ -1115,7 +1112,6 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
             game_sheet[cell] = value
         
         for i, game in enumerate(player_data["per_game_stats"]):
-            print(game)
             row = 54 + i
             for col, value in game.items():
                 if col == "date":
