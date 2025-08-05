@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import TwoColumnLayout from "../../components/TwoColumnLayout/TwoColumnLayout";
 import ExcelExportSelector from "./Components/ExcelExportSelector";
 import GamesSelector from "./Components/GamesSelector";
-import GamesSelector from "./Components/GamesSelector";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -100,10 +99,6 @@ export default function ExcelExporter() {
           </div>
 
           {selectedReport === "plusminus" ? (
-            <GamesSelector
-              games={games}
-              reportDownloadEndpoint="plusminus"
-            ></GamesSelector>
             <GamesSelector
               games={games}
               reportDownloadEndpoint="plusminus"
