@@ -19,8 +19,8 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(128))
     has_creation_privilege: Mapped[bool] = mapped_column(default=False)
 
-    team_id: Mapped[Optional[int]] = mapped_column(ForeignKey("teams.id", name="fk_user_team"), default=None)
-    team: Mapped[Optional["Team"]] = relationship(back_populates="users", foreign_keys=[team_id])    
+    team_id: Mapped[Optional[int]] = mapped_column(ForeignKey("teams.id", name="fk_user_team", use_alter=True), default=None)    
+    team: Mapped[Optional["Team"]] = relationship(back_populates="users", foreign_keys=[team_id])
 
     created_teams: Mapped[List["Team"]] = relationship(back_populates="creator", foreign_keys="Team.creator_id")
 
