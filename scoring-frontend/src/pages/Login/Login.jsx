@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../auth/AuthContext";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import "../../components/FormStyles.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -11,9 +12,11 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
   const { login, setIsAdmin } = useContext(AuthContext);
+  const [isLoadingLogin, setIsLoadingLogin] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoadingLogin(true);
     setErrorMsg("");
     try {
       const res = await fetch(`${BACKEND_URL}/auth/login`, {
@@ -26,6 +29,7 @@ export default function Login() {
 
       if (!res.ok) {
         setErrorMsg(data.detail || "Login failed");
+        setIsLoadingLogin(false);
       } else {
         console.log("Login succesful:", data);
         login(data.jwt_token);
@@ -35,11 +39,15 @@ export default function Login() {
           sessionStorage.setItem("is_admin", data.is_admin);
           setIsAdmin(true);
         }
+        setIsLoadingLogin(false);
         navigate("/dashboard");
       }
     } catch (err) {
-      setErrorMsg("Something went wrong with login");
+      setErrorMsg(
+        "Jokin meni pieleen kirjautumisessa, yritä hieman myöhemmin uudelleen. Ongelmien jatkuessa ota yhteyttä ylläpitäjään.2"
+      );
       console.error("Login error:", err);
+      setIsLoadingLogin(false);
     }
   };
 
@@ -63,7 +71,9 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit">Kirjaudu</button>
+        <button type="submit" disabled={isLoadingLogin}>
+          {isLoadingLogin ? LoadingSpinner(18) : "Kirjaudu"}
+        </button>
       </form>
       {errorMsg && <p className="error">{errorMsg}</p>}
     </div>

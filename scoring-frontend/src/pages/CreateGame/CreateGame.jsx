@@ -35,6 +35,7 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
   const [playersInRoster, setPlayersInRoster] = useState(
     generateEmptyPlayersInRoster()
   );
+  const [isLoadingCreateGame, setIsLoadingCreateGame] = useState(false);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -61,6 +62,8 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
 
   const submitGame = async (event) => {
     event.preventDefault();
+    setIsLoadingCreateGame(true);
+
     const token = sessionStorage.getItem("jwt_token");
 
     try {
@@ -79,15 +82,18 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
       });
 
       if (!res.ok) {
-        console.log("OH NO ERROR INSIDE THE THING :D", res);
+        console.log("Failed to create game", res);
+        setIsLoadingCreateGame(false);
       }
 
       const data = await res.json();
       console.log("It went okay?", data);
       setCurrentGameId(data.game_id);
+      setIsLoadingCreateGame(false);
       pickMode();
     } catch (error) {
-      console.log("OH NO ERROR: ", error);
+      setIsLoadingCreateGame(false);
+      console.log("Failed to create game", error);
     }
   };
 
@@ -105,6 +111,8 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
           setShowRosterSelector={setShowRosterSelector}
           submitGame={submitGame}
           onCancel={onCancel}
+          isLoadingCreateGame={isLoadingCreateGame}
+          setIsLoadingCreateGame={setIsLoadingCreateGame}
         />
       </div>
       {showRosterSelector && (

@@ -89,6 +89,7 @@ def update_player(player_id: int, db_session: Session = Depends(get_db_session),
 
 @router.get("/for-team")
 def get_player_for_team(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    print(f"Current user id:", current_user_id)
     user = db_session.query(User).filter(User.id == current_user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found in db")

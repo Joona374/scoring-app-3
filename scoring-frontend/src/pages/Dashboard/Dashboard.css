@@ -1,3 +1,10 @@
+.dashboard-wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    
+}
+
 ul.dashboard-players {
     background-color: inherit;
     list-style-type: none;

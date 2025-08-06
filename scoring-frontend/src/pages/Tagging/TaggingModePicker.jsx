@@ -1,7 +1,9 @@
+import MutedButton from "../../components/MutedButton/MutedButton";
 import CreateGame from "../CreateGame/CreateGame";
 import "./Styles/GamePicker.css";
+MutedButton;
 
-export default function TaggingModePicker({ setCurrentTaggingMode }) {
+export default function TaggingModePicker({ setCurrentTaggingMode, onReturn }) {
   return (
     <div className="tagging-mode-picker-wrapper">
       <div className="game-picker-card">
@@ -19,6 +21,10 @@ export default function TaggingModePicker({ setCurrentTaggingMode }) {
           </button>
         </div>
       </div>
+      <MutedButton
+        text="Takaisin"
+        onClickMethod={() => onReturn()}
+      ></MutedButton>
     </div>
   );
 }

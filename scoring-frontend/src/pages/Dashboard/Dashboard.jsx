@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import "./Dashboard.css";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import LinkButton from "../../components/LinkButton/LinkButton";
 
 export default function TeamDashboard() {
   const [teamname, setTeamname] = useState("");
@@ -38,13 +40,14 @@ export default function TeamDashboard() {
   }, []);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
+    <div className="dashboard-wrapper">
       {teamname ? (
         <>
-          <h3>Welcome {teamname}</h3>
-          <h4>Join code: {joinCode}</h4>
-          <ul className="dashboard-players">
+          <h1 style={{ marginBottom: "1rem", fontSize: "3rem" }}>{teamname}</h1>
+          <h4 style={{ marginBottom: "1rem", fontSize: "1.2rem" }}>
+            Liittymiskoodi: {joinCode}
+          </h4>
+          {/* <ul className="dashboard-players">
             {players.map((player, index) => {
               return (
                 <li key={index}>
@@ -53,11 +56,20 @@ export default function TeamDashboard() {
                 </li>
               );
             })}
-          </ul>
+          </ul> */}
         </>
       ) : (
-        <h3>Loading...</h3>
+        LoadingSpinner(25)
       )}
+      {/* <LinkButton
+        text="Kokoonpanon hallinta"
+        path="/roster-management"
+      ></LinkButton> */}
+      <div className="coming-soon-wrapper">
+        <h1 style={{ fontSize: "3rem" }} className="coming-soon-h1">
+          Joukkuesivu tulossa pian!
+        </h1>
+      </div>
     </div>
   );
 }

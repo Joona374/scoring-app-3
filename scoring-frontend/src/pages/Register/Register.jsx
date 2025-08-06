@@ -1,7 +1,8 @@
-import { useState, useContext } from "react";
 import "../../components/FormStyles.css";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../auth/AuthContext";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -11,9 +12,10 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [code, setCode] = useState("");
+  const [isLoadingRegister, setIsLoadingRegister] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { login, setIsAdmin } = useContext(AuthContext);
 
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -34,6 +36,11 @@ export default function Register() {
         login(data.jwt_token);
         sessionStorage.setItem("username", data.username);
         sessionStorage.setItem("user_id", data.user_id);
+        if (data.is_admin) {
+          sessionStorage.setItem("is_admin", data.is_admin);
+          setIsAdmin(true);
+        }
+
         if (creator) {
           navigate("/create-team");
         } else {
@@ -48,15 +55,20 @@ export default function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoadingRegister(true);
     setErrorMsg("");
     if (password !== confirm) {
-      setErrorMsg("Passwords dont match");
+      setErrorMsg("Salasanat eivät täsmää");
+      setIsLoadingRegister(false);
+
       return;
     } else if (password.length < 8) {
-      setErrorMsg("Password must be at least 8 characters");
+      setErrorMsg("Salasanan on oltava vähintään 8 merkkiä pitkä");
+      setIsLoadingRegister(false);
       return;
     } else if (username.includes("@")) {
-      setErrorMsg("Username cannot contain '@' ");
+      setErrorMsg("Käyttäjänimi ei voi sisältää '@' ");
+      setIsLoadingRegister(false);
     }
 
     try {
@@ -69,24 +81,28 @@ export default function Register() {
       if (!res.ok) {
         // FastAPI will likely send JSON with detail
         const errBody = await res.json();
-        throw new Error(errBody || "Registration failed");
+        setIsLoadingRegister(false);
+        throw new Error(errBody || "Rekisteröinti epäonnistui");
       }
 
       const data = await res.json();
       console.log("Success:", data);
 
+      setIsLoadingRegister(false);
+
       const redirect_to_create = data.creator;
 
       if (redirect_to_create) {
-        alert("Registeration succesful! Create your team next.");
+        alert("Rekisteröinti onnistui! Luo seuraavaksi joukkue.");
       } else {
-        alert("Registeration succesful! Redirecting to team dashboard.");
+        alert("Rekisteröinti onnistui! Siirrytään joukkuesivulle.");
       }
 
       autoLogin(redirect_to_create);
     } catch (err) {
       console.error(err);
       setErrorMsg(err.message);
+      setIsLoadingRegister(false);
     }
   };
 
@@ -134,7 +150,10 @@ export default function Register() {
           maxLength={6}
           onChange={(e) => setCode(e.target.value)}
         />
-        <button type="submit">Rekisteröidy</button>
+
+        <button type="submit" disabled={isLoadingRegister}>
+          {isLoadingRegister ? LoadingSpinner(18) : "Rekisteröidy"}
+        </button>
       </form>
       {errorMsg && <p className="error">{errorMsg}</p>}
     </div>

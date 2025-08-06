@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import "../../components/FormStyles.css";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function UpdatePlayer({ players, setPlayers, player }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [number, setNumber] = useState(null);
+  const [number, setNumber] = useState(0);
   const [position, setPosition] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoadingPlayer, setIsLoadingPlayer] = useState(false);
+  const [isDeletingPlayer, setIsDeletingPlayer] = useState(false);
 
   const positionMapping = {
     FORWARD: "Hyökkääjä",
@@ -32,21 +35,29 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
   const handleDelete = async (event) => {
     event.preventDefault();
     setStatusMessage("");
+    setIsDeletingPlayer(true);
+
+    if (!playerId) {
+      console.error("No player ID selected");
+      setStatusMessage(
+        "Ei valittua pelaajaa / virhe pelaajan ID:n lukemisessa."
+      );
+      setIsSuccess(false);
+      setIsDeletingPlayer(false);
+      return;
+    }
 
     const confirmed = window.confirm(
       `Haluatko varmasti poistaa pelaajan ${firstName} ${lastName}? Pelaajan tilastot poistetaan pysyvästi.`
     );
-    if (!confirmed) return;
+    if (!confirmed) {
+      setIsDeletingPlayer(false);
+      return;
+    }
 
     const token = sessionStorage.getItem("jwt_token");
 
     try {
-      if (!playerId) {
-        console.error("No player ID selected");
-        setStatusMessage("Virhe pelaajan ID:n lukemisessa.");
-        setIsSuccess(false);
-      }
-
       const response = await fetch(
         `${BACKEND_URL}/players/delete/${playerId}`,
         {
@@ -65,6 +76,7 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
           errorBody.detail || "Pelaajan poistaminen epäonnistui."
         );
         setIsSuccess(false);
+        setIsDeletingPlayer(false);
         return;
       }
 
@@ -75,17 +87,43 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
 
       const newPlayers = players.filter((player) => player.id !== playerId);
       setPlayers(newPlayers);
+      setIsDeletingPlayer(false);
+      setFirstName("");
+      setLastName("");
+      setNumber(0);
+      setPosition("");
+      setPlayerId("");
+      return;
     } catch (err) {
       console.error(err);
       setStatusMessage("Virhe palvelinyhteydessä.");
       setIsSuccess(false);
+      setIsDeletingPlayer(false);
     }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoadingPlayer(true);
     setStatusMessage("");
 
+    if (!playerId) {
+      console.error("No player ID selected");
+      setStatusMessage(
+        "Ei valittua pelaajaa / virhe pelaajan ID:n lukemisessa."
+      );
+      setIsSuccess(false);
+      setIsLoadingPlayer(false);
+      return;
+    }
+
+    if (!firstName || !lastName || !number || !position) {
+      setStatusMessage("Kaikki kentät ovat pakollisia.");
+      setIsSuccess(false);
+      setIsLoadingPlayer(false);
+
+      return;
+    }
     const playerBody = {};
     if (firstName) {
       playerBody.first_name = firstName;
@@ -94,7 +132,7 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
       playerBody.last_name = lastName;
     }
     if (number) {
-      player.jersey_number = number;
+      playerBody.jersey_number = number;
     }
     if (position) {
       playerBody.position = position;
@@ -102,11 +140,14 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
 
     const token = sessionStorage.getItem("jwt_token");
 
+    console.log("Player body:", playerBody);
+
     try {
       if (!playerId) {
         console.error("No player ID selected");
         setStatusMessage("Virhe pelaajan ID:n lukemisessa.");
         setIsSuccess(false);
+        setIsLoadingPlayer(false);
       }
 
       const response = await fetch(
@@ -128,6 +169,8 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
           errorBody.detail || "Pelaajan päivittäminen epäonnistui."
         );
         setIsSuccess(false);
+        setIsLoadingPlayer(false);
+
         return;
       }
 
@@ -148,10 +191,12 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
         else return player;
       });
       setPlayers(newPlayers);
+      setIsLoadingPlayer(false);
     } catch (err) {
       console.error(err);
       setStatusMessage("Virhe palvelinyhteydessä.");
       setIsSuccess(false);
+      setIsLoadingPlayer(false);
     }
   };
 
@@ -213,14 +258,15 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
             id="save-btn"
             onClick={handleSubmit}
           >
-            Tallenna
+            {isLoadingPlayer ? LoadingSpinner(15) : "Tallenna"}
           </button>
+
           <button
             className="auth-form button delete-button"
             id="delete-btn"
             onClick={handleDelete}
           >
-            Poista
+            {isDeletingPlayer ? LoadingSpinner(15) : "Poista"}
           </button>
         </div>
       </form>

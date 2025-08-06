@@ -15,6 +15,9 @@
 .create-game-form-wrapper {
   width: 100%;
   max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .create-game-form-wrapper button {
@@ -56,16 +59,8 @@
   color: var(--text-color);
 }
 
-.create-game-form-wrapper .cancel-button {
-  margin: 1rem auto 0;
-
-  background-color: transparent;
-  padding: 0.5rem;
-  color: var(--text-color);
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease
+.create-game-form-wrapper .muted-button {
+  max-width: 200px;
+  margin-top: 1rem;
 }
 
-.create-game-form-wrapper .cancel-button:hover {
-  background-color: var(--bg-color);
-}
