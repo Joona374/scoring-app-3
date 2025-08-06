@@ -2,6 +2,7 @@ import { useState } from "react";
 import "../../components/FormStyles.css";
 import "./CreateTeam.css";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -10,11 +11,13 @@ export default function CreateTeam() {
   const [errorMsg, setErrorMsg] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
 
   const reactNavigator = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoadingTeam(true);
     setErrorMsg("");
     setJoinCode("");
     setCopied(false);
@@ -33,14 +36,17 @@ export default function CreateTeam() {
 
       if (!response.ok) {
         const errorBody = await response.json();
-        setErrorMsg(errorBody || "Team creation failed");
+        setErrorMsg(errorBody || "Joukkueen luonti epäonnistui");
+        setIsLoadingTeam(false);
         return;
       }
 
       const data = await response.json();
       setJoinCode(data.code_for_team); // store code
+      setIsLoadingTeam(false);
     } catch (err) {
       setErrorMsg(err.message);
+      setIsLoadingTeam(false);
     }
   };
 
@@ -69,7 +75,9 @@ export default function CreateTeam() {
           onChange={(e) => setTeamName(e.target.value)}
           required
         />
-        <button type="submit">Luo joukkue</button>
+        <button type="submit" disabled={isLoadingTeam}>
+          {isLoadingTeam ? LoadingSpinner(18) : "Luo joukkue"}
+        </button>
       </form>
 
       {errorMsg && (

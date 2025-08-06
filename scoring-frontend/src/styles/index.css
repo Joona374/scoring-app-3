@@ -46,27 +46,7 @@ html, body, #root {
   animation: pulse 2s infinite ease-in-out;
 }
 
-.coming-soon-wrapper button {
-  margin-top: 4rem;
-  padding: 0.4rem 1rem;
-  font-size: 1rem;
-  font-weight: bold;
-  color: var(--text-color);
-  background-color: var(--bg-color);
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
 
-.coming-soon-wrapper button:hover {
-  background-color: #8e1515; /* slightly darker */
-}
-
-.coming-soon-wrapper button:active {
-  transform: scale(0.98);
-}
 
 /* Optional animation to fade in the screen */
 @keyframes fadeIn {

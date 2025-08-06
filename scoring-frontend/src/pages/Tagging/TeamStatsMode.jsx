@@ -24,17 +24,35 @@ export default function TeamStatsMode() {
     setQuestionObjects,
     currentQuestionId,
     setCurrentQuestionId,
-    playersInRoster,
     setPlayersInRoster,
     currentGameId,
-    setCurrentGameId,
-    gamesForTeam,
-    setGamesForTEam,
+
     setFirstQuestionId,
     stepBackInTag,
   } = useContext(TaggingContext);
 
   useEffect(() => {
+    async function fetchTags() {
+      const token = sessionStorage.getItem("jwt_token");
+      const queryString = `${BACKEND_URL}/tagging/load/team-tags/${currentGameId}`;
+
+      try {
+        const res = await fetch(queryString, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          console.log("Error downloading tags for game:", currentGameId);
+        }
+
+        const data = await res.json();
+        console.log("Tags downloaded:", data);
+        setTaggedEvents(data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
     async function fetchQuestions() {
       const token = sessionStorage.getItem("jwt_token");
 
@@ -61,6 +79,7 @@ export default function TeamStatsMode() {
         console.error("Error fetching questions from backend:", err);
       }
     }
+    fetchTags();
     fetchQuestions();
   }, []);
 
@@ -78,10 +97,7 @@ export default function TeamStatsMode() {
       );
 
       if (!res.ok) {
-        console.log(
-          "no work getting roster for game (IS IT 1? Forgot to change?):",
-          gameId
-        );
+        console.log("");
       }
 
       const data = await res.json();

@@ -44,7 +44,7 @@ export default function Navbar() {
             <>
               <li>
                 <Link onClick={() => setMenuOpen(false)} to="/dashboard">
-                  Dashboard
+                  Joukkuesivu
                 </Link>
               </li>
               <li>

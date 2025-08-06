@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./GamesSelector.css";
 import GameSelectorRow from "./GameSelectorRow";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 
 export default function GamesSelector({ games, reportDownloadEndpoint }) {
   const [startDate, setStartDate] = useState("");
@@ -10,6 +11,7 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
   const [filteredGames, setFilteredGames] = useState([]);
   const [sortColumn, setSortColumn] = useState("");
   const [sortDirection, setSortDirection] = useState("");
+  const [isLoadingReport, setIsLoadingReport] = useState(false);
 
   const applyFilters = (filter, value) => {
     console.log(filter, value);
@@ -149,25 +151,34 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
   };
 
   const downloadReport = async () => {
+    setIsLoadingReport(true);
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    const token = sessionStorage.getItem("jwt_token");
-    const queryString = `game_ids=${gamesSelected.join(",")}`;
-    console.log(queryString);
-    const res = await fetch(
-      `${BACKEND_URL}/excel/${reportDownloadEndpoint}?${queryString}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    const fileBlob = await res.blob();
-    const tempUrl = URL.createObjectURL(fileBlob);
-    const aElement = document.createElement("a");
-    aElement.href = tempUrl;
-    aElement.download = "stats.xlsx";
-    aElement.click();
+    try {
+      const token = sessionStorage.getItem("jwt_token");
+      const queryString = `game_ids=${gamesSelected.join(",")}`;
+      console.log(queryString);
+      const res = await fetch(
+        `${BACKEND_URL}/excel/${reportDownloadEndpoint}?${queryString}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const fileBlob = await res.blob();
+      const tempUrl = URL.createObjectURL(fileBlob);
+      const aElement = document.createElement("a");
+      aElement.href = tempUrl;
+      aElement.download = "stats.xlsx";
+      aElement.click();
+      setIsLoadingReport(false);
+    } catch {
+      alert(
+        "Virhe raporttia ladatessa. Yritä uudelleen tai ota yhteyttä ylläpitoon."
+      );
+      setIsLoadingReport(false);
+    }
   };
 
   useEffect(() => {
@@ -308,7 +319,9 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
         <div className="selection-controls">
           <button onClick={selectAll}>Valitse kaikki</button>
           <button onClick={resetSelection}>Nollaa valinta</button>
-          <button onClick={downloadReport}>Lataa raportti</button>
+          <button onClick={downloadReport}>
+            {isLoadingReport ? LoadingSpinner(15) : "Lataa raportti"}
+          </button>
         </div>
       </div>
     </>

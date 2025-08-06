@@ -2,27 +2,25 @@ import "./ExcelExportSelector.css";
 
 const mockExportOptions = [
   {
-    id: "plusminus",
-    title: "Pelaajakohtainen +/- raportti",
-    description:
-      "Raportti yksittäisen pelaajan +/- maalipaikka tilastoista. Raportti erittelee: 1. omat ja vastustajan maalit ja maalipaikat. 2. Kentällä ja osallisena olemisen. 3. 5vs5, ylivoima ja alivoima tilastot.",
-  },
-  {
     id: "team",
-    title: "Joukkueraportti",
-    description:
-      "Yhdistetyt joukkueen tilastot pelien ajalta. Hyvä valmentajille kokonaiskuvan hahmottamiseen.",
+    title: "Joukkueen maalipaikkaraportti",
+    description: "",
   },
   {
-    id: "games",
-    title: "Peliraportit",
-    description: "TODO",
+    id: "plusminus",
+    title: "Pelaajien + / - raportti",
+    description: "",
   },
   {
     id: "playersSummary",
-    title: "Pelaajien yhteenveto",
-    description:
-      "Valitse haluamasi tilastot ja muodosta räätälöity Excel-analyysi.",
+    title: "Pelaajien maalipaikka yhteenveto",
+    description: "",
+  },
+
+  {
+    id: "games",
+    title: "Peliraportit",
+    description: "",
   },
 ];
 

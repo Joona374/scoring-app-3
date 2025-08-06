@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../../components/FormStyles.css";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -11,14 +12,17 @@ export default function CreatePlayer({ players, setPlayers }) {
   const [position, setPosition] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoadingPlayer, setIsLoadingPlayer] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setStatusMessage("");
+    setIsLoadingPlayer(true);
 
     if (position === "") {
       setStatusMessage("Valitse pelipaikka.");
       setIsSuccess(false);
+      setIsLoadingPlayer(false);
       return;
     }
 
@@ -44,6 +48,8 @@ export default function CreatePlayer({ players, setPlayers }) {
         console.error(errorBody);
         setStatusMessage(errorBody.detail || "Pelaajan luominen epäonnistui.");
         setIsSuccess(false);
+        setIsLoadingPlayer(false);
+
         return;
       }
 
@@ -63,12 +69,14 @@ export default function CreatePlayer({ players, setPlayers }) {
 
       setFirstName("");
       setLastName("");
-      setJerseyNumber(null);
+      setJerseyNumber("");
       setPosition("");
+      setIsLoadingPlayer(false);
     } catch (err) {
       console.error(err);
       setStatusMessage("Virhe palvelinyhteydessä.");
       setIsSuccess(false);
+      setIsLoadingPlayer(false);
     }
   };
 
@@ -124,7 +132,10 @@ export default function CreatePlayer({ players, setPlayers }) {
           <option value="Maalivahti">Maalivahti</option>
         </select>
 
-        <button type="submit">Luo pelaaja</button>
+        <button type="submit">
+          {" "}
+          {isLoadingPlayer ? LoadingSpinner(15) : "Luo Pelaaja"}
+        </button>
       </form>
 
       {statusMessage && (

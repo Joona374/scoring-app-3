@@ -199,8 +199,11 @@ export default function NetQuestion() {
       setHovering((prev) => {
         if (prev !== hoveredIndex) {
           drawZone(hoveredIndex); // Only redraw if changed
-          if (hoveredIndex) setZoneHovering(shotZones[hoveredIndex].name);
-          else setZoneHovering(null);
+          if (hoveredIndex !== null) {
+            setZoneHovering(shotZones[hoveredIndex].name);
+          } else {
+            setZoneHovering(null);
+          }
         }
         return hoveredIndex;
       });
@@ -237,8 +240,6 @@ export default function NetQuestion() {
       net: { x: percentageX, y: percentageY },
       netZone: zoneHovering,
     };
-
-    console.log("NET ZONE: ", zoneHovering);
 
     advanceQuestion(last_question, next_question_id, newTag);
   };
