@@ -1,7 +1,7 @@
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 import json
-from db.pydantic_schemas import AddTag, TagSchema, GameInRosterResponse, PlayerResponse, TeamStatsTagResponse
+from db.pydantic_schemas import AddTag, TagSchema, GameInRosterResponse, PlayerResponse, TeamStatsTagResponse, PlayerStatsTagResponse
 from db.models import User, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, ShotArea, ShotAreaTypes
 from db.db_manager import get_db_session
 from sqlalchemy.orm import Session
@@ -90,7 +90,6 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
     else:
         shooter_id = None
 
-    print(received_tag["strengths"])
 
     try:
         new_tag = PlayerStatsTag(
@@ -135,18 +134,53 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error recording the tag to db.")
 
 
-    return {"success": True}
+    return PlayerStatsTagResponse(id=new_tag.id, succes=True)
+
+@router.get("/load/team-tags/{game_id}")
+def load_team_tags(game_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    game = db_session.query(Game).filter(Game.id == game_id).first()
+    if user.team == game.team:
+        tags = game.team_stats_tags
+        return tags
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to access these tags")
+
+
+@router.get("/load/player-tags/{game_id}")
+def load_player_tags(game_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    game = db_session.query(Game).filter(Game.id == game_id).first()
+    if user.team == game.team:
+        tags = game.player_stats_tags
+        normalized_tags = []
+        for tag in tags:
+            normal_tag = {
+                "crossice": tag.crossice,
+                "game_id": tag.game_id,
+                "location": {"x": tag.ice_x, "y": tag.ice_y},
+                "net": {"x": tag.net_x, "y": tag.net_y},
+                "netZone": f"{tag.net_height}-{tag.net_width}",
+                "shotZone": tag.shot_area.value, 
+                "shot_result": tag.shot_result.value,
+                "shot_type": tag.shot_type.value,
+                "strengths": tag.strengths,
+                "id": tag.id
+            }
+            if tag.shooter:
+                normal_tag["shooter"] = {"id": tag.shooter.id, "first_name": tag.shooter.first_name, "last_name": tag.shooter.last_name, "jersey_number": tag.shooter.jersey_number, "position": tag.shooter.position}
+
+            normalized_tags.append(normal_tag)
+        return normalized_tags
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to access these tags")
+
 
 
 @router.get("/roster-for-game")
 def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    print(game_id)
     user = db_session.query(User).filter(User.id == current_user_id).first()
     game = db_session.query(Game).filter(Game.id == game_id).first()
-
-    print(user.team)
-    print("Is this same")
-    print(game.team)
 
     if user.team != game.team:
         # raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User has no rights to this game")
@@ -184,6 +218,26 @@ def update_player(tag_id: int, db_session: Session = Depends(get_db_session), cu
     if user.team != tag_game.team:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to delete this tag")
 
+    db_session.delete(tag)
+    db_session.commit()
+
+    return {"message": "Tag deleted successfully", "success": True}
+
+@router.delete("/delete/player-tag/{tag_id}")
+def update_player(tag_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    tag = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.id == tag_id).first()
+    tag_game = tag.game
+
+    print("tag_id: ", tag_id)
+
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    if user.team != tag_game.team:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to delete this tag")
+
+    # TODO DELETING TAG SHOULD CASCADE TO DELETE Other stuff also
     db_session.delete(tag)
     db_session.commit()
 

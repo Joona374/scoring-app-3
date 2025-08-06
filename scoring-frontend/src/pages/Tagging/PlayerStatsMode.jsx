@@ -8,14 +8,16 @@ import "./Styles/TaggingArea.css";
 import NetQuestion from "./TaggingComponents/NetQuestion";
 import ParticapntsQuestion from "./TaggingComponents/ParticipantsQuestion";
 import TeamTaggingSummary from "./TeamTaggingSummary";
+import PlayerTaggingSummary from "./PlayerTaggingSummary";
 
 import { Question } from "./question";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-export default function PlayerStatsMode() {
+export default function PlayerStatsMode({}) {
   // Import the "public" variables from context
   const {
+    setTaggedEvents,
     questionObjects,
     setQuestionObjects,
     currentQuestionId,
@@ -27,6 +29,27 @@ export default function PlayerStatsMode() {
   } = useContext(TaggingContext);
 
   useEffect(() => {
+    async function fetchTags() {
+      const token = sessionStorage.getItem("jwt_token");
+      const queryString = `${BACKEND_URL}/tagging/load/player-tags/${currentGameId}`;
+
+      try {
+        const res = await fetch(queryString, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          console.log("Error downloading tags for game:", currentGameId);
+        }
+
+        const data = await res.json();
+        console.log("Tags downloaded:", data);
+        setTaggedEvents(data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
     async function fetchQuestions() {
       const token = sessionStorage.getItem("jwt_token");
 
@@ -54,6 +77,7 @@ export default function PlayerStatsMode() {
       }
     }
     fetchQuestions();
+    fetchTags();
   }, []);
 
   // This function gets the roster for this game form db
@@ -121,7 +145,7 @@ export default function PlayerStatsMode() {
         </button>{" "}
       </div>
       <div className="tagging-summary-column">
-        <TeamTaggingSummary></TeamTaggingSummary>
+        <PlayerTaggingSummary></PlayerTaggingSummary>
       </div>
     </div>
   );

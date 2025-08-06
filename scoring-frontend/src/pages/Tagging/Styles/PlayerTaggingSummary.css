@@ -44,7 +44,7 @@
 }
 
 .summary-type {
-  width: 3.5rem;
+  width: 7rem;
   flex-shrink: 0;
   color: var(--text-color);
 }

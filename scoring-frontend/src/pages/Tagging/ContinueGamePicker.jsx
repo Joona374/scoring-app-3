@@ -1,9 +1,12 @@
 import "./Styles/ContinueGamePicker.css"; // assume styles in a separate file
+import BasicButton from "../../components/BasicButton/BasicButton";
+import MutedButton from "../../components/MutedButton/MutedButton";
 
 export default function ContinueGamePicker({
   pickMode,
   gamesForTeam,
   setCurrentGameId,
+  onReturn,
 }) {
   return (
     <div className="game-picker-container">
@@ -42,6 +45,10 @@ export default function ContinueGamePicker({
           </tbody>
         </table>
       </div>
+      <MutedButton
+        text="Takaisin"
+        onClickMethod={() => onReturn()}
+      ></MutedButton>
     </div>
   );
 }

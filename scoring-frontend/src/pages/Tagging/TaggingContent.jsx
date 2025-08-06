@@ -21,6 +21,8 @@ export default function Tagging() {
     setGamesForTEam,
     currentTaggingMode,
     setCurrentTaggingMode,
+    taggedEvents,
+    setTaggedEvents,
   } = useContext(TaggingContext);
   const [view, setView] = useState("picker"); // Options: 'picker', 'create'
 
@@ -75,12 +77,14 @@ export default function Tagging() {
           pickMode={() => setView("mode")}
           gamesForTeam={gamesForTeam}
           setCurrentGameId={setCurrentGameId}
+          onReturn={() => setView("picker")}
         ></ContinueGamePicker>
       );
     } else if (view === "mode") {
       return (
         <TaggingModePicker
           setCurrentTaggingMode={setCurrentTaggingMode}
+          onReturn={() => setView("picker")}
         ></TaggingModePicker>
       );
     }
@@ -89,7 +93,13 @@ export default function Tagging() {
   if (currentTaggingMode === "team") {
     return <TeamStatsMode></TeamStatsMode>;
   } else if (currentTaggingMode === "player") {
-    return <PlayerStatsMode></PlayerStatsMode>;
+    return (
+      <PlayerStatsMode
+        currentGameId={currentGameId}
+        setTaggedEvents={setTaggedEvents}
+        taggedEvents={taggedEvents}
+      ></PlayerStatsMode>
+    );
   } else if (currentTaggingMode === "goalie") {
     return (
       <GoalieStatsMode

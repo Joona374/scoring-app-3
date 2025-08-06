@@ -121,6 +121,10 @@ class TeamStatsTagResponse(BaseModel):
     succes: bool
     tag: dict
 
+class PlayerStatsTagResponse(BaseModel):
+    id: Optional[int]
+    succes: bool
+
 class CreateCode(BaseModel):
     new_code_identifier: str
 

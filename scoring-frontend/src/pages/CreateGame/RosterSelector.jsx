@@ -144,6 +144,7 @@ export default function RosterSelector({
             <summary>Hyökkääjät</summary>
             {players
               .filter((p) => p.position === "FORWARD")
+              .sort((a, b) => a.last_name.localeCompare(b.last_name))
               .map((player, index) => (
                 <p
                   key={`F-${index}`}
@@ -151,7 +152,7 @@ export default function RosterSelector({
                     handlePlayerListClick(event.target, players.indexOf(player))
                   }
                 >
-                  #{player.jersey_number} {player.first_name} {player.last_name}
+                  #{player.jersey_number} {player.last_name} {player.first_name}
                 </p>
               ))}
           </details>
@@ -160,6 +161,7 @@ export default function RosterSelector({
             <summary>Puolustajat</summary>
             {players
               .filter((p) => p.position === "DEFENDER")
+              .sort((a, b) => a.last_name.localeCompare(b.last_name))
               .map((player, index) => (
                 <p
                   key={`D-${index}`}
@@ -176,6 +178,7 @@ export default function RosterSelector({
             <summary>Maalivahdit</summary>
             {players
               .filter((p) => p.position === "GOALIE")
+              .sort((a, b) => a.last_name.localeCompare(b.last_name))
               .map((player, index) => (
                 <p
                   key={`G-${index}`}
