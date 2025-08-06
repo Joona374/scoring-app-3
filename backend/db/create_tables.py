@@ -64,13 +64,11 @@ def main():
         print(f"- {table.name}")
 
     new_reg_code = add_creator_code(admin=True, identifier="Initial User")
-    new_reg_code = add_creator_code(admin=True, identifier="Initial User")
 
     seed_tables()
 
     print("Tables created successfully.")
 
-    return new_reg_code.code
     return new_reg_code.code
 
 
