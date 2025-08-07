@@ -258,7 +258,7 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
             id="save-btn"
             onClick={handleSubmit}
           >
-            {isLoadingPlayer ? LoadingSpinner(15) : "Tallenna"}
+            {isLoadingPlayer ? LoadingSpinner(15) : "Muokkaa pelaajaa"}
           </button>
 
           <button
@@ -266,7 +266,7 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
             id="delete-btn"
             onClick={handleDelete}
           >
-            {isDeletingPlayer ? LoadingSpinner(15) : "Poista"}
+            {isDeletingPlayer ? LoadingSpinner(15) : "Poista pelaaja"}
           </button>
         </div>
       </form>

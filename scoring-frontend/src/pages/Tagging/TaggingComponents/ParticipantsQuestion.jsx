@@ -73,118 +73,122 @@ export default function ParticapntsQuestion() {
 
   return (
     <>
-      <h2>Osallistujat ja jäällä olleet</h2>
-      <div className="participant-question-container">
-        <div className="participant-left-column">
-          {[1, 2, 3, 4].map((line) => {
-            return (
-              <div key={`d-row-${line}`} className="participant-d-row">
-                {["LD", "RD"].map((position) => {
-                  const playerForPosition = playersInRoster.find(
-                    (posInRoster) =>
-                      posInRoster.line === line &&
-                      posInRoster.position === position
-                  );
+      <div className="participant-wrapper">
+        <h2 className="participant-question-text">
+          Osallistujat ja jäällä olleet
+        </h2>
+        <div className="participant-question-container">
+          <div className="participant-left-column">
+            {[1, 2, 3, 4].map((line) => {
+              return (
+                <div key={`d-row-${line}`} className="participant-d-row">
+                  {["LD", "RD"].map((position) => {
+                    const playerForPosition = playersInRoster.find(
+                      (posInRoster) =>
+                        posInRoster.line === line &&
+                        posInRoster.position === position
+                    );
 
-                  if (playerForPosition) {
-                    const thisPlayer = playerForPosition.player;
-                    return (
-                      <ParticipantBox
-                        key={`${line}-${position}`}
-                        player={thisPlayer}
-                        clickHandler={(player) => {
-                          clickPlayer(player);
-                        }}
-                        participants={participations}
-                        onIces={onIces}
-                        currentTag={currentTag}
-                      ></ParticipantBox>
+                    if (playerForPosition) {
+                      const thisPlayer = playerForPosition.player;
+                      return (
+                        <ParticipantBox
+                          key={`${line}-${position}`}
+                          player={thisPlayer}
+                          clickHandler={(player) => {
+                            clickPlayer(player);
+                          }}
+                          participants={participations}
+                          onIces={onIces}
+                          currentTag={currentTag}
+                        ></ParticipantBox>
+                      );
+                    } else {
+                      return (
+                        <ParticipantBox
+                          key={`${line}-${position}`}
+                          player={null}
+                        ></ParticipantBox>
+                      );
+                    }
+                  })}
+                </div>
+              );
+            })}
+          </div>
+          <div className="participant-right-column">
+            {[1, 2, 3, 4, 5].map((line) => {
+              return (
+                <div className="participant-f-row" key={`f-row-${line}`}>
+                  {["LW", "C", "RW"].map((position) => {
+                    const playerForPosition = playersInRoster.find(
+                      (posInRoster) =>
+                        posInRoster.line === line &&
+                        posInRoster.position === position
                     );
-                  } else {
-                    return (
-                      <ParticipantBox
-                        key={`${line}-${position}`}
-                        player={null}
-                      ></ParticipantBox>
-                    );
-                  }
-                })}
-              </div>
-            );
-          })}
+
+                    if (playerForPosition) {
+                      const thisPlayer = playerForPosition.player;
+                      return (
+                        <ParticipantBox
+                          key={`${line}-${position}`}
+                          player={thisPlayer}
+                          clickHandler={(player) => {
+                            clickPlayer(player);
+                          }}
+                          participants={participations}
+                          onIces={onIces}
+                          currentTag={currentTag}
+                        ></ParticipantBox>
+                      );
+                    } else {
+                      return (
+                        <ParticipantBox
+                          key={`${line}-${position}`}
+                          player={null}
+                        ></ParticipantBox>
+                      );
+                    }
+                  })}
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="participant-right-column">
-          {[1, 2, 3, 4, 5].map((line) => {
-            return (
-              <div className="participant-f-row" key={`f-row-${line}`}>
-                {["LW", "C", "RW"].map((position) => {
-                  const playerForPosition = playersInRoster.find(
-                    (posInRoster) =>
-                      posInRoster.line === line &&
-                      posInRoster.position === position
-                  );
+        <div className="participant-summary">
+          <h3>Jäällä</h3>
+          <ul>
+            {onIces.map((id) => {
+              const player = playersInRoster.find(
+                (p) => p.player.id === id
+              )?.player;
+              return player ? (
+                <li key={`on-ice-${id}`}>
+                  {player.first_name} {player.last_name}
+                </li>
+              ) : null;
+            })}
+          </ul>
 
-                  if (playerForPosition) {
-                    const thisPlayer = playerForPosition.player;
-                    return (
-                      <ParticipantBox
-                        key={`${line}-${position}`}
-                        player={thisPlayer}
-                        clickHandler={(player) => {
-                          clickPlayer(player);
-                        }}
-                        participants={participations}
-                        onIces={onIces}
-                        currentTag={currentTag}
-                      ></ParticipantBox>
-                    );
-                  } else {
-                    return (
-                      <ParticipantBox
-                        key={`${line}-${position}`}
-                        player={null}
-                      ></ParticipantBox>
-                    );
-                  }
-                })}
-              </div>
-            );
-          })}
+          <h3>Osallisena</h3>
+          <ul>
+            {participations.map((id) => {
+              const player = playersInRoster.find(
+                (p) => p.player.id === id
+              )?.player;
+              return player ? (
+                <li key={`participated-${id}`}>
+                  {player.first_name} {player.last_name}
+                </li>
+              ) : null;
+            })}
+          </ul>
         </div>
-      </div>
-      <div className="participant-summary">
-        <h3>Jäällä</h3>
-        <ul>
-          {onIces.map((id) => {
-            const player = playersInRoster.find(
-              (p) => p.player.id === id
-            )?.player;
-            return player ? (
-              <li key={`on-ice-${id}`}>
-                {player.first_name} {player.last_name}
-              </li>
-            ) : null;
-          })}
-        </ul>
 
-        <h3>Osallisena</h3>
-        <ul>
-          {participations.map((id) => {
-            const player = playersInRoster.find(
-              (p) => p.player.id === id
-            )?.player;
-            return player ? (
-              <li key={`participated-${id}`}>
-                {player.first_name} {player.last_name}
-              </li>
-            ) : null;
-          })}
-        </ul>
+        <button className="confirm-button" onClick={handleSubmit}>
+          Vahvista
+        </button>
       </div>
-
-      <button className="confirm-button" onClick={handleSubmit}>
-        Vahvista
-      </button>
     </>
   );
 }
