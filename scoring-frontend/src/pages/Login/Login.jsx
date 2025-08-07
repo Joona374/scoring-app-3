@@ -13,11 +13,17 @@ export default function Login() {
   const navigate = useNavigate();
   const { login, setIsAdmin } = useContext(AuthContext);
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
+  const [isSlowLogin, setIsSlowLogin] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoadingLogin(true);
+
+    const timer = setTimeout(() => {
+      setIsSlowLogin(true);
+    }, 4000);
     setErrorMsg("");
+
     try {
       const res = await fetch(`${BACKEND_URL}/auth/login`, {
         method: "POST",
@@ -30,6 +36,9 @@ export default function Login() {
       if (!res.ok) {
         setErrorMsg(data.detail || "Login failed");
         setIsLoadingLogin(false);
+        clearTimeout(timer);
+        setIsSlowLogin(false);
+        return;
       } else {
         console.log("Login succesful:", data);
         login(data.jwt_token);
@@ -40,6 +49,8 @@ export default function Login() {
           setIsAdmin(true);
         }
         setIsLoadingLogin(false);
+        clearTimeout(timer);
+        setIsSlowLogin(false);
         navigate("/dashboard");
       }
     } catch (err) {
@@ -48,6 +59,8 @@ export default function Login() {
       );
       console.error("Login error:", err);
       setIsLoadingLogin(false);
+      clearTimeout(timer);
+      setIsSlowLogin(false);
     }
   };
 
@@ -76,6 +89,15 @@ export default function Login() {
         </button>
       </form>
       {errorMsg && <p className="error">{errorMsg}</p>}
+      {isSlowLogin && (
+        <p className="error">
+          Kirjautuminen saattaa välillä kestää hieman kauemmin. <br />
+          Ole hyvä ja odota.
+          <br />
+          <br />
+          Kiitos kärsivällisyydestäsi!
+        </p>
+      )}
     </div>
   );
 }
