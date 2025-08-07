@@ -94,11 +94,10 @@
   color: var(--muted-text);
 }
 
-.action-buttons {
+.roster-action-buttons {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 1rem;
 }
 
 .delete-button {

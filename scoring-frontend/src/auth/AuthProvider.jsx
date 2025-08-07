@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setIsLoggedIn(false);
+    setIsAdmin(false);
     sessionStorage.clear();
   };
 
