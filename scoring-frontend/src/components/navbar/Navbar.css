@@ -52,6 +52,11 @@ a {
   transition: background-color 0.2s ease;
 }
 
+.active-link {
+  color: var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
+}
+
 a:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }

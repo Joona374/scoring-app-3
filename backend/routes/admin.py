@@ -23,15 +23,6 @@ router = APIRouter(
 #         return {"Message": "DB WIPING FAILED", "ERROR": e}
 ###### ONLY FOR EMERGENCY USE! ########
 
-###### ONLY FOR EMERGENCY USE! ########
-# @router.post("/clean-db")
-# def clean_db():
-#     try:
-#         creator_code = wipe_db()
-#         return {"Message": "Wiped db!", "creator_code": creator_code}
-#     except Exception as e:
-#         return {"Message": "DB WIPING FAILED", "ERROR": e}
-###### ONLY FOR EMERGENCY USE! ########
 
 @router.post("/clean-db")
 def clean_db(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):

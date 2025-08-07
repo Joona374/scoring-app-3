@@ -1,7 +1,7 @@
 import "./Navbar.css";
 import { useContext, useState } from "react";
 import AuthContext from "../../auth/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 export default function Navbar() {
   const { isLoggedIn, isAdmin } = useContext(AuthContext);
@@ -12,13 +12,13 @@ export default function Navbar() {
   return (
     <nav>
       <div className="navbar-left">
-        <Link
+        <NavLink
           to="/"
           onClick={() => setMenuOpen(false)}
           style={{ color: "inherit", textDecoration: "none" }}
         >
           ScoringApp 3.0
-        </Link>
+        </NavLink>
       </div>
 
       <div className="hamburger" onClick={toggleMenu}>
@@ -30,46 +30,73 @@ export default function Navbar() {
           {!isLoggedIn ? (
             <>
               <li>
-                <Link onClick={() => setMenuOpen(false)} to="/login">
+                <NavLink
+                  onClick={() => setMenuOpen(false)}
+                  to="/login"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
                   Kirjaudu
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link onClick={() => setMenuOpen(false)} to="/register">
+                <NavLink
+                  onClick={() => setMenuOpen(false)}
+                  to="/register"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
                   Rekisteröidy
-                </Link>
+                </NavLink>
               </li>
             </>
           ) : (
             <>
               <li>
-                <Link onClick={() => setMenuOpen(false)} to="/dashboard">
+                <NavLink
+                  onClick={() => setMenuOpen(false)}
+                  to="/dashboard"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
                   Joukkuesivu
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link onClick={() => setMenuOpen(false)} to="/tagging">
+                <NavLink
+                  onClick={() => setMenuOpen(false)}
+                  to="/tagging"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
                   Tilastointi
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link onClick={() => setMenuOpen(false)} to="/excel-exporter">
+                <NavLink
+                  onClick={() => setMenuOpen(false)}
+                  to="/excel-exporter"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
                   Excel-vienti
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
+                <NavLink
                   onClick={() => setMenuOpen(false)}
                   to="/roster-management"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
                 >
                   Kokoonpanon hallinta
-                </Link>
+                </NavLink>
               </li>
               {isAdmin && (
                 <li>
-                  <Link onClick={() => setMenuOpen(false)} to="/admin">
+                  <NavLink
+                    onClick={() => setMenuOpen(false)}
+                    to="/admin"
+                    className={({ isActive }) =>
+                      isActive ? "active-link" : ""
+                    }
+                  >
                     Admin
-                  </Link>
+                  </NavLink>
                 </li>
               )}
             </>
