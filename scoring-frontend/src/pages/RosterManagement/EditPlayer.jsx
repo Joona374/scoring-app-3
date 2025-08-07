@@ -252,7 +252,7 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
           <option value="Maalivahti">Maalivahti</option>
         </select>
 
-        <div className="action-buttons">
+        <div className="roster-action-buttons">
           <button
             className="auth-form button"
             id="save-btn"
