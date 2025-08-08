@@ -93,7 +93,9 @@ export default function Register() {
       const redirect_to_create = data.creator;
 
       if (redirect_to_create) {
-        alert("Rekisteröinti onnistui! Luo seuraavaksi joukkue.");
+        alert(
+          "Rekisteröinti onnistui! Sinut ohjataan seuraavaksi joukkueen luomiseen. Odota hetki..."
+        );
       } else {
         alert("Rekisteröinti onnistui! Siirrytään joukkuesivulle.");
       }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import LinkButton from "../../components/LinkButton/LinkButton";
@@ -7,6 +8,7 @@ export default function TeamDashboard() {
   const [teamname, setTeamname] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [players, setPlayers] = useState([]);
+  const navigator = useNavigate();
 
   useEffect(() => {
     const fetchTeamInfo = async () => {
@@ -28,11 +30,18 @@ export default function TeamDashboard() {
         setTeamname(data.team_name);
         setJoinCode(data.join_code);
         setPlayers(data.players);
-
+        if (
+          data.team_name === null &&
+          data.players === null &&
+          data.join_code === null
+        ) {
+          setTeamname("Sinulla ei ole vielä joukkuetta.");
+          navigator("/create-team");
+        }
         console.log(data);
       } catch (err) {
         console.log("Error:", err);
-        setTeamname("Error loading username");
+        setTeamname("Virhe joukkueen haussa.");
       }
     };
 

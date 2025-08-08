@@ -66,6 +66,12 @@ def get_my_team(db_session: Session = Depends(get_db_session), current_user_id: 
     user = db_session.query(User).filter(User.id == current_user_id).first()
     team: Team = user.team
 
+    if not team:
+        return TeamResponse(
+        team_name=None,
+        join_code=None,
+        players=None)
+
     teams_players = []
     if team.players:
         for player in team.players:

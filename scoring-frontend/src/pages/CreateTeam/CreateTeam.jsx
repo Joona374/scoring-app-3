@@ -62,7 +62,7 @@ export default function CreateTeam() {
       <h1>Luo joukkue</h1>
       <p className="info-text">
         {" "}
-        Olet rekisteröimässä perustajakäyttäjää. <br />
+        Olet rekisteröitynyt perustaja-käyttäjänä. <br />
         Luo joukkue ja kutsu muut valmentajat liittymään koodilla.
       </p>
       <form className="auth-form" onSubmit={handleSubmit}>

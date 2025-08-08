@@ -96,9 +96,9 @@ class AddTag(BaseModel):
     tag: dict
 
 class TeamResponse(BaseModel):
-    team_name: str
-    join_code: str
-    players: List[PlayerResponse]
+    team_name: str | None
+    join_code: str | None
+    players: List[PlayerResponse] | None
 
 class PositionInRoster(BaseModel):
     line: int

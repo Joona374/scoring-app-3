@@ -55,7 +55,7 @@ export default function Login() {
       }
     } catch (err) {
       setErrorMsg(
-        "Jokin meni pieleen kirjautumisessa, yritä hieman myöhemmin uudelleen. Ongelmien jatkuessa ota yhteyttä ylläpitäjään.2"
+        "Jokin meni pieleen kirjautumisessa, yritä uudelleen. Ongelmien jatkuessa ota yhteyttä ylläpitäjään."
       );
       console.error("Login error:", err);
       setIsLoadingLogin(false);

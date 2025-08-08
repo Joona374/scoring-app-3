@@ -22,7 +22,7 @@
             "id": 3,
             "type": "TEXT",
             "key": "shot_result",
-            "text": "Minkälainen maalipaikka?",
+            "text": "Minkälainen pelitapahtuma?",
             "options": [
                 {
                     "answer": "Maali +",
@@ -142,7 +142,7 @@
             "id": 7,
             "type": "TEXT",
             "key": "strengths",
-            "text": "Mikä pelitilanne?",
+            "text": "Oliko kyseessä erikoistilann?",
             "options": [
             {
                     "answer": "ES",
