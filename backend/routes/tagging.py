@@ -66,14 +66,14 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
     shot_result_enum = ShotResultTypes.from_string(received_tag["shot_result"])
     shot_result_ref = db_session.query(ShotResult).filter(ShotResult.value == shot_result_enum).first()
     if not shot_result_ref:
-        print(f"Invalid shot zone: {shot_zone}")
+        print(f"Invalid shot result: {shot_result_enum}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot result")
 
     shot_area_enum = ShotAreaTypes.from_string(shot_zone)
     shot_area_ref = db_session.query(ShotArea).filter(ShotArea.value == shot_area_enum).first()
-    if not shot_result_ref:
-        print(f"Invalid shot result: {received_tag['shot_result']}")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot result")
+    if not shot_area_ref:
+        print(f"Invalid shot area: {shot_area_enum}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot area")
 
     if received_tag["shot_type"]:
         shot_type_enum = ShotTypeTypes.from_string(received_tag["shot_type"])

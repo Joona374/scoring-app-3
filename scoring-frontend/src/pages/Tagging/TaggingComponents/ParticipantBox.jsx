@@ -27,12 +27,16 @@ export default function ParticipantBox({
   let colorClass = "";
   if (
     currentTag &&
-    (currentTag.shot_result === "Maali +" || currentTag.shot_result === "MP +")
+    (currentTag.shot_result === "Maali +" ||
+      currentTag.shot_result === "MP +" ||
+      currentTag.shot_result === "Laukaus +")
   ) {
     colorClass = "green";
   } else if (
     currentTag &&
-    (currentTag.shot_result === "Maali -" || currentTag.shot_result === "MP -")
+    (currentTag.shot_result === "Maali -" ||
+      currentTag.shot_result === "MP -" ||
+      currentTag.shot_result === "Laukaus -")
   ) {
     colorClass = "red";
   }

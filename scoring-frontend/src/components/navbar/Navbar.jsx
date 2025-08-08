@@ -80,6 +80,15 @@ export default function Navbar() {
               <li>
                 <NavLink
                   onClick={() => setMenuOpen(false)}
+                  to="/analysis"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
+                  Analyysi
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  onClick={() => setMenuOpen(false)}
                   to="/roster-management"
                   className={({ isActive }) => (isActive ? "active-link" : "")}
                 >
