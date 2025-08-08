@@ -221,7 +221,8 @@ export default function ShotLocationQuestion() {
       setHovering((prev) => {
         if (prev !== hoveredIndex) {
           drawZone(hoveredIndex); // Only redraw if changed
-          if (hoveredIndex) setZoneHovering(shotZones[hoveredIndex].name);
+          if (hoveredIndex !== null)
+            setZoneHovering(shotZones[hoveredIndex].name);
           else setZoneHovering(null);
         }
         return hoveredIndex;
@@ -252,12 +253,18 @@ export default function ShotLocationQuestion() {
     const imageHeight = img.offsetHeight;
     const percentageY = Math.round((y / imageHeight) * 100);
 
+    // Derive the zone from the click position (don’t rely on hover state)
+    const clickedZone = shotZones.find((z) =>
+      pointInZone([percentageX, percentageY], z.points)
+    );
+    const zoneName = clickedZone ? clickedZone.name : null;
+
     const last_question = currentQuestion.last_question;
     const next_question_id = currentQuestion.next_question_id;
     const newTag = {
       ...currentTag,
       location: { x: percentageX, y: percentageY },
-      shotZone: zoneHovering,
+      shotZone: zoneName,
     };
 
     advanceQuestion(last_question, next_question_id, newTag);

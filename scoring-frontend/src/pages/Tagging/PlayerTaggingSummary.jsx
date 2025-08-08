@@ -106,7 +106,9 @@ export default function PlayerTaggingSummary() {
             </span>
             <span
               className={
-                tag.shot_result === "MP +" || tag.shot_result === "Maali +"
+                tag.shot_result === "MP +" ||
+                tag.shot_result === "Maali +" ||
+                tag.shot_result === "Laukaus +"
                   ? "summary-result summary-result-plus"
                   : "summary-result"
               }

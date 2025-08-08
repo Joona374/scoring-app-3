@@ -80,7 +80,9 @@ class ShotResultTypes(Enum):
     GOAL_FOR = "Maali +"
     GOAL_AGAINST = "Maali -"
     CHANCE_FOR = "MP +"
-    CHANCE_AGAINST = "MP -" 
+    CHANCE_AGAINST = "MP -"
+    SHOT_FOR = "Laukaus +"
+    SHOT_AGAINST = "Laukaus -"
 
     @classmethod
     def from_string(cls, str_value: str):

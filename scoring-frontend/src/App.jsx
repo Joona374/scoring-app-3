@@ -11,6 +11,7 @@ import AdminPage from "./pages/Admin/AdminPage";
 import CreateGame from "./pages/CreateGame/CreateGame";
 import ExcelExporter from "./pages/ExcelExporter/ExcelExporter";
 import RosterManagement from "./pages/RosterManagement/RosterManagement";
+import AnalysisPage from "./pages/Analysis/AnalysisPage";
 
 function App() {
   return (
@@ -72,8 +73,23 @@ function App() {
               </ProtectRoute>
             }
           />
+          <Route
+            path="/analysis"
+            element={
+              <ProtectRoute>
+                <AnalysisPage />
+              </ProtectRoute>
+            }
+          />
           {/* TODO: PROTECT THIS IN PROD */}
-          <Route path="/admin" element={<AdminPage />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectRoute>
+                <AdminPage />
+              </ProtectRoute>
+            }
+          />
         </Routes>
       </div>
     </div>
