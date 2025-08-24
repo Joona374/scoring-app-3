@@ -31,7 +31,7 @@ export default function RosterSelector({
         setSelectingPosition(`${nextSpot.line}-${nextSpot.position}`);
       }
     } else {
-      alert("No position selected");
+      alert("Valitse pelipaikka ennen pelaajan valintaa");
     }
   };
 
