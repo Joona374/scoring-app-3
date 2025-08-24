@@ -384,6 +384,11 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
             if strengths not in ["ES", "PP", "PK"]:
                 continue
 
+            if tag.shot_result.value in [ShotResultTypes.SHOT_FOR, ShotResultTypes.SHOT_AGAINST]:
+                continue  # Skip shot tags, only process chances and goals
+
+            print(tag.shot_result.value)
+
             result_part = tag_type_mapping[tag.shot_result.value]
             
             tags_on_ice = OILs_by_PST_id[tag.id]
