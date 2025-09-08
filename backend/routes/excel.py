@@ -167,9 +167,9 @@ def get_chance_column(scoring_chance: TeamStatsTag):
     
     g_columns = ["PAHP", "1. Paine", "Syöttö", "Pohja", "Murtautuminen", "Syöttö sisään", "Suora", "SHP", "Hyökkäysalue", 
                  "IM", "Aloitus Vasen", "Kesk. Pääty.", "Paine", "Kuljetus YV", "Läpiajo", "Aloitus", "Laukaus"]
-    h_columns = ["KAHP", "2. Paine", "Kuljetus", "Half Board", "Syöttö 3", "Murtautuminen sisään", "Ohjaus", "Riisto/Menetys", 
+    h_columns = ["KAHP", "2. Paine", "Kuljetus", "Half Board", "Syöttö 3:lle", "Murtautuminen sisään", "Ohjaus", "Riisto/Menetys", 
                  "Keskialue", "TM", "Aloitus Oikea", "Vasen Siipi", "Ohjuri", "Riisto", "Punnerrus", "Ohjuri", "YV", "Hallinta", "Harhautus"]
-    i_columns = ["Kääntö", "3. / Puolustajan Paine", "Muu", "Viiva", "Syöttö 4/5", "HAHP/PAPP", "Puolustusalue", "4v4", 
+    i_columns = ["Kääntö", "3. / Puolustajan Paine", "Muu", "Viiva", "Syöttö 4/5:lle", "HAHP/PAPP", "Puolustusalue", "4v4", 
                  "Haku / vastaanotto", "Oikea siipi", "Rebound", "Brokenplay", "TV", "Riisto / Menetys"]
 
     for column in final_columns:

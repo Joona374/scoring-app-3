@@ -42,7 +42,6 @@ export default function RosterSelector({
     console.log(line, position);
     const newPlayersInRoster = playersInRoster.map((rosterSpot, idx) => {
       if (rosterSpot.line === line && rosterSpot.position === position) {
-        console.log("Do this match ever?");
         const editedRosterSpot = { ...rosterSpot, player: null };
         return editedRosterSpot;
       }
