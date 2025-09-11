@@ -87,7 +87,6 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
       }
 
       const data = await res.json();
-      console.log("It went okay?", data);
       setCurrentGameId(data.game_id);
       setIsLoadingCreateGame(false);
       pickMode();

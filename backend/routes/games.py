@@ -47,6 +47,7 @@ def create_game(db_session: Session = Depends(get_db_session), current_user_id: 
 
 @router.get("/scrape-roster")
 async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    print(f"Attempting to scrape game with url: {game_url}")
     roster = await scrape_team_slots(game_url, home)
     user = db_session.query(User).filter(User.id == current_user_id).first()
     players_in_team = db_session.query(Player).filter(Player.team == user.team).all()
@@ -56,7 +57,6 @@ async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session
         player = find_player_by_name(players_in_team, player_name)
         
         if player:
-            print("Ever here?")
             player_response = PlayerResponse(
                 id=player.id,
                 first_name=player.first_name,
@@ -70,8 +70,6 @@ async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session
 
 def find_player_by_name(players_in_team: list[Player], player_name: str) -> Player | None:
     first_name, last_name = player_name.split(" ")
-    print(first_name, last_name)
     for player in players_in_team:
-        print(player)
         if player.first_name == first_name and player.last_name == last_name:
             return player

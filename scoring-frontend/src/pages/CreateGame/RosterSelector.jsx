@@ -11,7 +11,6 @@ export default function RosterSelector({
   playersInRoster,
   setPlayersInRoster,
 }) {
-  console.log(players);
   const [selectingPosition, setSelectingPosition] = useState("");
   const [scraperUrl, setScraperUrl] = useState("");
   const [scraperLocation, setScraperLocation] = useState("koti");
@@ -46,7 +45,6 @@ export default function RosterSelector({
     const parts = rosterSpot.split("-");
     const line = parseInt(parts[0]);
     const position = parts[1];
-    console.log(line, position);
     const newPlayersInRoster = playersInRoster.map((rosterSpot, idx) => {
       if (rosterSpot.line === line && rosterSpot.position === position) {
         const editedRosterSpot = { ...rosterSpot, player: null };
@@ -94,7 +92,6 @@ export default function RosterSelector({
   };
 
   const fillRoster = (scrapedRoster) => {
-    console.log(scrapedRoster);
     let newPlayersInRoster = Object.entries(scrapedRoster).map(
       ([pos, player]) => {
         const [line, position] = pos.split("-");
