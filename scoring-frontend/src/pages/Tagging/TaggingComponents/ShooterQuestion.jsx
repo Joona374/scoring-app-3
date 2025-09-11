@@ -39,7 +39,7 @@ export default function ShooterQuestion() {
                       return (
                         <PlayerBox
                           key={`${line}-${position}`}
-                          name={`${player.first_name} ${player.last_name}`}
+                          name={`#${player.jersey_number} ${player.first_name} ${player.last_name}`}
                           pos="DEFENDER"
                           player={player}
                           setCurrentTag={setCurrentTag}
@@ -83,7 +83,7 @@ export default function ShooterQuestion() {
                       return (
                         <PlayerBox
                           key={`${line}-${position}`}
-                          name={`${player.first_name} ${player.last_name}`}
+                          name={`#${player.jersey_number} ${player.first_name} ${player.last_name}`}
                           pos={"FORWARD"}
                           player={player}
                           setCurrentTag={setCurrentTag}
