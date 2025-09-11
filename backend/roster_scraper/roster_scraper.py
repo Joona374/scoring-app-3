@@ -13,6 +13,8 @@ import asyncio
 import re
 from typing import Dict, Literal, Optional, Tuple
 from playwright.async_api import async_playwright, TimeoutError as PWTimeout
+import glob
+
 
 # --- Public config ---
 Side = Literal["home", "away"]
@@ -213,8 +215,22 @@ async def scrape_team_slots(url: str, side: Side) -> Dict[str, str]:
     results: Dict[str, str] = {}
 
     try:
+        # Find the exact chrome binary we baked into the slug during BUILD
+        base = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.playwright")
+        candidates = glob.glob(os.path.join(base, "chromium-*", "chrome-linux", "chrome"))
+        if not candidates:
+            raise RuntimeError(
+                f"No Chromium found under {base}. Did your BUILD step run "
+                f"`python -m playwright install chromium` with PLAYWRIGHT_BROWSERS_PATH set?"
+            )
+        chrome_path = candidates[0]
+
         async with async_playwright() as pw:
-            browser = await pw.chromium.launch(headless=True)
+            browser = await pw.chromium.launch(
+                headless=True,
+                executable_path=chrome_path,
+                args=["--no-sandbox", "--disable-setuid-sandbox"]
+            )
             ctx = await browser.new_context()
             page = await ctx.new_page()
 
