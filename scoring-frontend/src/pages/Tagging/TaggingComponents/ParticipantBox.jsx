@@ -20,7 +20,7 @@ export default function ParticipantBox({
 
   let playersName;
   if (player) {
-    playersName = `${player.first_name} ${player.last_name}`;
+    playersName = `#${player.jersey_number} ${player.first_name} ${player.last_name}`;
   } else playersName = "--";
 
   // Determine color scheme based on currentTag
