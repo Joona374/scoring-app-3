@@ -138,3 +138,47 @@
 .player-list p:hover {
   background-color: #333;
 }
+
+.scraper-roster-input {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.scraper-roster-input input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #444;
+  border-radius: var(--radius);
+  background-color: #2e2e2e;
+  color: var(--text-color);
+}
+
+.scraper-roster-input input[type="radio"] {
+  margin-right: 0rem;
+  width: auto;
+  flex: none;
+}
+
+.scraper-roster-input button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius);
+  background-color: var(--accent-color);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.scraper-roster-input button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.scraper-roster-input button:hover:enabled {
+  background-color: var(--accent-color-dark);
+}
+
+.scraper-roster-input button:active:enabled {
+  background-color: var(--accent-color);
+}

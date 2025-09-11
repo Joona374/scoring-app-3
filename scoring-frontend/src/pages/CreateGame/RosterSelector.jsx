@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import "./Styles/RosterSelector.css";
 import RosterBox from "./RosterBox";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function RosterSelector({
   setShowRosterSelector,
@@ -8,7 +11,11 @@ export default function RosterSelector({
   playersInRoster,
   setPlayersInRoster,
 }) {
+  console.log(players);
   const [selectingPosition, setSelectingPosition] = useState("");
+  const [scraperUrl, setScraperUrl] = useState("");
+  const [scraperLocation, setScraperLocation] = useState("koti");
+  const [isLoadingScrapedRoster, setIsLoadingScrapedRoster] = useState(false);
 
   const handlePlayerListClick = (target, index) => {
     if (selectingPosition) {
@@ -47,7 +54,59 @@ export default function RosterSelector({
       }
       return rosterSpot;
     });
-    console.log(newPlayersInRoster);
+    setPlayersInRoster(newPlayersInRoster);
+  };
+
+  const handleScraperSubmit = async (e) => {
+    setIsLoadingScrapedRoster(true);
+    e.preventDefault();
+    if (!scraperUrl) {
+      setIsLoadingScrapedRoster(false);
+      return;
+    }
+    const token = sessionStorage.getItem("jwt_token");
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/games/scrape-roster?game_url=${encodeURIComponent(
+          scraperUrl
+        )}&home=${scraperLocation === "koti" ? "home" : "away"}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        setIsLoadingScrapedRoster(false);
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      fillRoster(data);
+      setIsLoadingScrapedRoster(false);
+    } catch (error) {
+      setIsLoadingScrapedRoster(false);
+      console.error("Error fetching roster:", error);
+      alert("Kokoonpanon haku epäonnistui. Tarkista URL ja yritä uudelleen.");
+    }
+  };
+
+  const fillRoster = (scrapedRoster) => {
+    console.log(scrapedRoster);
+    let newPlayersInRoster = Object.entries(scrapedRoster).map(
+      ([pos, player]) => {
+        const [line, position] = pos.split("-");
+        const matchedPlayer = players.find((p) => p.id === player.id);
+        return {
+          line: parseInt(line),
+          position: position,
+          player: matchedPlayer || null,
+        };
+      }
+    );
+
     setPlayersInRoster(newPlayersInRoster);
   };
 
@@ -137,6 +196,32 @@ export default function RosterSelector({
               );
             })}
           </div>
+
+          <form onSubmit={handleScraperSubmit} className="scraper-roster-input">
+            <input
+              type="text"
+              placeholder="Kopioi tähän linkki tulospalvelun ottelusivulle"
+              value={scraperUrl}
+              onChange={(e) => setScraperUrl(e.target.value)}
+            />
+            <input
+              type="radio"
+              value="koti"
+              checked={scraperLocation === "koti"}
+              onChange={(e) => setScraperLocation(e.target.value)}
+            />{" "}
+            Koti
+            <input
+              type="radio"
+              value="vieras"
+              checked={scraperLocation === "vieras"}
+              onChange={(e) => setScraperLocation(e.target.value)}
+            />{" "}
+            Vieras
+            <button disabled={!scraperUrl} type="submit">
+              {isLoadingScrapedRoster ? LoadingSpinner(18) : "Hae kokoonpano"}
+            </button>
+          </form>
         </div>
         <div className="player-list">
           <details open>
