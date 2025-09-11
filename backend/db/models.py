@@ -74,6 +74,9 @@ class Player(Base):
     on_ice_for: Mapped[List["PlayerStatsTagOnIce"]] = relationship(back_populates="player", foreign_keys="PlayerStatsTagOnIce.player_id", passive_deletes=True)
     participating_on: Mapped[List["PlayerStatsTagParticipating"]] = relationship(back_populates="player", foreign_keys="PlayerStatsTagParticipating.player_id", passive_deletes=True)
     
+    def __repr__(self):
+        return f"Player({self.first_name} {self.last_name})"
+
 
 # TYPES
 class ShotResultTypes(Enum):
