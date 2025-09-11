@@ -1,6 +1,14 @@
 # leijonat_slots_scraper.py
 from __future__ import annotations
 
+import os
+# Force Playwright to use the slug-bundled browsers, not the default cache
+os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.playwright")
+# Make absolutely sure it doesn't try headless_shell
+os.environ["PLAYWRIGHT_CHROMIUM_USE_HEADLESS_SHELL"] = "0"
+# (Optional) Quiet host checks on slim containers
+# os.environ.setdefault("PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS", "1")
+
 import asyncio
 import re
 from typing import Dict, Literal, Optional, Tuple
