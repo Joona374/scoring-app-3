@@ -33,11 +33,35 @@ def create_game(data: GameCreate, db_session: Session = Depends(get_db_session),
                 player_id=position.player.id
             )
             new_game.in_rosters.append(new_game_in_roster)
-
-    db_session.add(new_game)
-    db_session.commit()
+    try:
+        db_session.add(new_game)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        raise HTTPException(status_code=500, detail=f"Creating a game failed: {str(e)}")
 
     return {"game_id": new_game.id}
+
+@router.delete("/delete/{game_id}")
+def delete_game(game_id: int, already_confirmed: bool, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    game = db_session.query(Game).filter(Game.id == game_id).first()
+    if user.team != game.team:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to delete this game")
+
+    if not already_confirmed and (len(game.player_stats_tags) > 0 or len(game.team_stats_tags) > 0):
+        return {"challenge": True, "team_tags": len(game.team_stats_tags), "player_tags": len(game.player_stats_tags), "goalie_tags": 0} # TODO: Add actual number of goalie tags once they are created
+
+    try:
+        db_session.delete(game)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        print(e)
+        raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
+
+    return {"message": "Game deleted successfully", "success": True, "challenge": False, "game_id": game_id}
+# TODO THIS CRASHES FOR SOME REASON.
 
 @router.get("/get-for-user")
 def create_game(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):

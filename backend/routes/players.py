@@ -72,6 +72,7 @@ def update_player(player_id: int, player_data: PlayerUpdate, db_session: Session
 
 @router.delete("/delete/{player_id}")
 def update_player(player_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    # This is a soft delete, just sets is_active to False
     user = db_session.query(User).filter(User.id == current_user_id).first()
     player = db_session.query(Player).filter(Player.id == player_id).first()
 
@@ -81,7 +82,7 @@ def update_player(player_id: int, db_session: Session = Depends(get_db_session),
     if user.team != player.team:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to edit this player")
 
-    db_session.delete(player)
+    player.is_active = False
     db_session.commit()
 
     return {"message": "Player deleted successfully", "success": True}
@@ -99,6 +100,8 @@ def get_player_for_team(db_session: Session = Depends(get_db_session), current_u
 
     response_players_list = []
     for player in teams_players:
+        if not player.is_active:
+            continue
         player_response = PlayerResponse(
             id=player.id,
             first_name=player.first_name,

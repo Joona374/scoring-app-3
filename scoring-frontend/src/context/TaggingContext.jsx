@@ -15,7 +15,7 @@ export const TaggingProvider = ({ children }) => {
   const [firstQuestionId, setFirstQuestionId] = useState(null);
   const [playersInRoster, setPlayersInRoster] = useState([]);
   const [currentGameId, setCurrentGameId] = useState();
-  const [gamesForTeam, setGamesForTEam] = useState([]);
+  const [gamesForTeam, setGamesForTeam] = useState([]);
 
   const advanceQuestion = (last_question, next_question_id, newTag) => {
     try {
@@ -95,6 +95,28 @@ export const TaggingProvider = ({ children }) => {
     setPreviousQuestionsQueue(previousQuestionsQueue.slice(0, -1));
   };
 
+  const getGamesFromBackend = async () => {
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+    const token = sessionStorage.getItem("jwt_token");
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/games/get-for-user`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        console.log(
+          "Getting a list of games to continue from the server failed."
+        );
+      }
+
+      const data = await res.json();
+      setGamesForTeam(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <TaggingContext.Provider
       value={{
@@ -114,10 +136,11 @@ export const TaggingProvider = ({ children }) => {
         currentGameId,
         setCurrentGameId,
         gamesForTeam,
-        setGamesForTEam,
+        setGamesForTeam,
         currentTaggingMode,
         setCurrentTaggingMode,
         stepBackInTag,
+        getGamesFromBackend,
       }}
     >
       {children}

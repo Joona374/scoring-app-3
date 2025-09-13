@@ -18,38 +18,17 @@ export default function Tagging() {
     currentGameId,
     setCurrentGameId,
     gamesForTeam,
-    setGamesForTEam,
+    setGamesForTeam,
     currentTaggingMode,
     setCurrentTaggingMode,
     taggedEvents,
     setTaggedEvents,
+    getGamesFromBackend,
   } = useContext(TaggingContext);
   const [view, setView] = useState("picker"); // Options: 'picker', 'create'
 
   useEffect(() => {
-    const getGames = async () => {
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-      const token = sessionStorage.getItem("jwt_token");
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/games/get-for-user`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          console.log(
-            "Getting a list of games to continue from the server failed."
-          );
-        }
-
-        const data = await res.json();
-        setGamesForTEam(data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    getGames();
+    getGamesFromBackend();
   }, []);
 
   if (!currentGameId || !currentTaggingMode) {
@@ -76,8 +55,10 @@ export default function Tagging() {
         <ContinueGamePicker
           pickMode={() => setView("mode")}
           gamesForTeam={gamesForTeam}
+          setGamesForTeam={setGamesForTeam}
           setCurrentGameId={setCurrentGameId}
           onReturn={() => setView("picker")}
+          fetchGamesForTeam={getGamesFromBackend}
         ></ContinueGamePicker>
       );
     } else if (view === "mode") {

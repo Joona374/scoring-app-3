@@ -1,0 +1,47 @@
+# To create a new migration:
+
+```
+alembic revision --autogenerate -m "<migration_message>"
+```
+
+# To apply migrations:
+
+```
+alembic upgrade head
+```
+
+# To revert the last migration:
+
+```
+alembic downgrade -1
+```
+
+# To view current revision:
+
+```
+alembic current
+```
+
+# To view the history of migrations:
+
+```
+alembic history
+```
+
+# To view the SQL that would be run for an upgrade:
+
+```
+alembic upgrade head --sql
+```
+
+# To view the SQL that would be run for a downgrade:
+
+```
+alembic downgrade -1 --sql
+```
+
+# To stamp the database with a specific revision without running migrations:
+
+```
+alembic stamp head
+```
