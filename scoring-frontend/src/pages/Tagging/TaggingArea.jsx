@@ -27,7 +27,7 @@ export default function TaggingArea() {
     currentGameId,
     setCurrentGameId,
     gamesForTeam,
-    setGamesForTEam,
+    setGamesForTeam,
   } = useContext(TaggingContext);
 
   // This function gets the roster for this game form db
