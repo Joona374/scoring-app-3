@@ -22,7 +22,9 @@ def create_game(data: GameCreate, db_session: Session = Depends(get_db_session),
         date=data.game_date,
         opponent=data.opponent,
         home=data.home_game,
-        team=user.team
+        team=user.team,
+        powerplays=data.powerplays,
+        penalty_kills=data.penalty_kills
     )
     
     for position in data.players_in_roster:
