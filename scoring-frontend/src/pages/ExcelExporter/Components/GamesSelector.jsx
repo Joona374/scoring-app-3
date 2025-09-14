@@ -14,11 +14,8 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
   const applyFilters = (filter, value) => {
-    console.log(filter, value);
     const dateFilteredGames = applyDateFilter(filter, value);
-    console.log(dateFilteredGames);
     const homeFilteredGames = filterHome(dateFilteredGames, filter, value);
-    console.log(homeFilteredGames);
     setFilteredGames(homeFilteredGames);
   };
 
@@ -51,15 +48,12 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
       endDateObject = new Date("01-01-2070");
     }
 
-    console.log("start", startDateObject, "end", endDateObject);
-
     const gamesToShow = games.filter((game) => {
       const gameDateObject = new Date(game.date);
       return (
         gameDateObject >= startDateObject && gameDateObject <= endDateObject
       );
     });
-    console.log("Show these", gamesToShow);
     return gamesToShow;
   };
 
@@ -71,11 +65,9 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
     if (filterToUse === "BOTH") return games;
     else if (filterToUse === "HOME") {
       const gamesToShow = games.filter((game) => game.home === true);
-      console.log(gamesToShow, 1);
       return gamesToShow;
     } else if (filterToUse === "AWAY") {
       const gamesToShow = games.filter((game) => game.home === false);
-      console.log(gamesToShow, 2);
       return gamesToShow;
     }
 
@@ -146,7 +138,6 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
       }
       console.log(sortedAttributeA, sortedAttributeB);
     });
-    console.log(newFilteredGames);
     setFilteredGames(newFilteredGames);
   };
 
@@ -157,7 +148,6 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
     try {
       const token = sessionStorage.getItem("jwt_token");
       const queryString = `game_ids=${gamesSelected.join(",")}`;
-      console.log(queryString);
       const res = await fetch(
         `${BACKEND_URL}/excel/${reportDownloadEndpoint}?${queryString}`,
         {

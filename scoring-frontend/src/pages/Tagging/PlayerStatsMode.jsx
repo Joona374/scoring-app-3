@@ -51,7 +51,6 @@ export default function PlayerStatsMode({}) {
         }
 
         const data = await res.json();
-        console.log("Tags downloaded:", data);
         setTaggedEvents(data);
       } catch (err) {
         console.log(err);
@@ -109,8 +108,6 @@ export default function PlayerStatsMode({}) {
       }
 
       const data = await res.json();
-      console.log("Got players:");
-      console.log(data);
       setPlayersInRoster(data);
     } catch (err) {
       console.log(err);
@@ -150,10 +147,7 @@ export default function PlayerStatsMode({}) {
 
   const updateRoster = async (newRoster) => {
     setPlayersInRoster(newRoster);
-    console.log("Updating roster to:", newRoster);
-    console.log("For game id:", currentGameId);
 
-    // TODO: Implement the logic to update the roster in the database
     // This could be a PUT or PATCH request to your backend API
     const response = await fetch(
       `${BACKEND_URL}/tagging/roster-for-game?game_id=${currentGameId}`,

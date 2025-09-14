@@ -21,13 +21,10 @@ export default function AdminPage() {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(res);
     const data = await res.json();
-    console.log(data);
 
     setCreatorCode(data.creator_code);
     setWipeMessage(data.Message);
-    console.log(data.creator_code);
     logout();
   };
 

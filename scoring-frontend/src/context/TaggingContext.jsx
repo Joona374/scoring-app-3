@@ -53,8 +53,6 @@ export const TaggingProvider = ({ children }) => {
     else if (currentTaggingMode === "goaie")
       postingEndpoint = `${BACKEND_URL}/tagging/add-goalies-tag`;
 
-    console.log("NEW TAG BEFORE POSTNG:", newTag);
-
     try {
       const res = await fetch(postingEndpoint, {
         method: "POST",
@@ -73,7 +71,6 @@ export const TaggingProvider = ({ children }) => {
       }
       const data = await res.json();
       const fullTag = { ...newTag, id: data.id }; // Merge ID into tag
-      console.log("Tag posted successfully:", fullTag);
       setTaggedEvents((prev) => [...prev, fullTag]); // Safely append
     } catch (error) {
       setTaggedEvents(rollbackTags);

@@ -10,7 +10,6 @@ export default function TeamTaggingSummary() {
 
   const toggleOpen = (index) => {
     setOpenIndex((prev) => (prev === index ? null : index));
-    console.log(taggedEvents);
   };
 
   const editTag = async () => {
@@ -37,7 +36,6 @@ export default function TeamTaggingSummary() {
       }
 
       const data = await res.json();
-      console.log(data);
       const newTags = taggedEvents.filter((tag) => tag.id !== tagId);
       setTaggedEvents(newTags);
     } catch (err) {
@@ -86,64 +84,59 @@ export default function TeamTaggingSummary() {
   return (
     <div className="tagging-summary">
       <h3>Yhteenveto</h3>
-      {[...taggedEvents].reverse().map(
-        (tag, index) => (
-          console.log("Tag:", tag),
-          (
-            <div
-              key={index}
-              className={`summary-row ${openIndex === index ? "expanded" : ""}`}
+      {[...taggedEvents].reverse().map((tag, index) => (
+        <div
+          key={index}
+          className={`summary-row ${openIndex === index ? "expanded" : ""}`}
+        >
+          <div className="summary-header" onClick={() => toggleOpen(index)}>
+            <span className="summary-index">
+              {taggedEvents.length - index}.
+            </span>
+            <span
+              className={
+                tag.play_result === "MP +" || tag.play_result === "Maali +"
+                  ? "summary-result summary-result-plus"
+                  : "summary-result"
+              }
             >
-              <div className="summary-header" onClick={() => toggleOpen(index)}>
-                <span className="summary-index">
-                  {taggedEvents.length - index}.
-                </span>
-                <span
-                  className={
-                    tag.play_result === "MP +" || tag.play_result === "Maali +"
-                      ? "summary-result summary-result-plus"
-                      : "summary-result"
-                  }
-                >
-                  {tag.play_result}
-                </span>
-                <span className="summary-type">{tag.play_type}</span>
-                <span className="summary-type-detail">
-                  {tag[typeDetailFieldMap[tag.play_type]]}
-                </span>
+              {tag.play_result}
+            </span>
+            <span className="summary-type">{tag.play_type}</span>
+            <span className="summary-type-detail">
+              {tag[typeDetailFieldMap[tag.play_type]]}
+            </span>
+          </div>
+
+          {openIndex === index && (
+            <div className="summary-details">
+              <ul className="tag-details-list">
+                {Object.entries(tag).map(([key, value]) => {
+                  if (!value || value === "") return null;
+                  if (key === "new_question") return null;
+                  if (key === "game_id") return null;
+                  if (key === "id") return null;
+                  if (key === "timestamp") return null;
+
+                  return (
+                    <li key={key}>
+                      <strong>
+                        {tagKeyTranslationMapping[key] ?? key}:&nbsp;
+                      </strong>
+                      {value}
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="summary-actions">
+                {/* TODO editTag!! */}
+                <button onClick={() => editTag(index)}>Muokkaa</button>
+                <button onClick={() => deleteTeamTag(tag)}>Poista</button>
               </div>
-
-              {openIndex === index && (
-                <div className="summary-details">
-                  <ul className="tag-details-list">
-                    {Object.entries(tag).map(([key, value]) => {
-                      if (!value || value === "") return null;
-                      if (key === "new_question") return null;
-                      if (key === "game_id") return null;
-                      if (key === "id") return null;
-                      if (key === "timestamp") return null;
-
-                      return (
-                        <li key={key}>
-                          <strong>
-                            {tagKeyTranslationMapping[key] ?? key}:&nbsp;
-                          </strong>
-                          {value}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <div className="summary-actions">
-                    {/* TODO editTag!! */}
-                    <button onClick={() => editTag(index)}>Muokkaa</button>
-                    <button onClick={() => deleteTeamTag(tag)}>Poista</button>
-                  </div>
-                </div>
-              )}
             </div>
-          )
-        )
-      )}
+          )}
+        </div>
+      ))}
     </div>
   );
 }

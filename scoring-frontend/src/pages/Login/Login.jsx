@@ -40,7 +40,6 @@ export default function Login() {
         setIsSlowLogin(false);
         return;
       } else {
-        console.log("Login succesful:", data);
         login(data.jwt_token);
         sessionStorage.setItem("username", data.username);
         sessionStorage.setItem("user_id", data.user_id);

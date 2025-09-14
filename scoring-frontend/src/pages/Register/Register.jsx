@@ -32,7 +32,6 @@ export default function Register() {
       if (!res.ok) {
         setErrorMsg(data.detail || "Login failed");
       } else {
-        console.log("Login succesful:", data);
         login(data.jwt_token);
         sessionStorage.setItem("username", data.username);
         sessionStorage.setItem("user_id", data.user_id);
@@ -86,7 +85,6 @@ export default function Register() {
       }
 
       const data = await res.json();
-      console.log("Success:", data);
 
       setIsLoadingRegister(false);
 
