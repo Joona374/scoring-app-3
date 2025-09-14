@@ -1,8 +1,6 @@
 import "./Styles/MiniRosterView.css";
 
 export default function MiniRosterView({ playersInRoster }) {
-  console.log("Players in roster in mini roster view: ", playersInRoster);
-
   const getNum = (lineIdx, pos) => {
     const rosterSpot = playersInRoster.find(
       (p) => p.line === lineIdx && p.position === pos

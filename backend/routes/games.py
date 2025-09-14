@@ -67,9 +67,13 @@ def delete_game(game_id: int, already_confirmed: bool, db_session: Session = Dep
 
 @router.get("/get-for-user")
 def create_game(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    games = db_session.query(Game).filter(Game.team == user.team).all()
-    return games
+    try:
+        user = db_session.query(User).filter(User.id == current_user_id).first()
+        games = db_session.query(Game).filter(Game.team == user.team).all()
+        return games
+    except Exception as e:
+        print(f"Error getting games: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed getting the games for user: {e}")
 
 @router.get("/scrape-roster")
 async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):

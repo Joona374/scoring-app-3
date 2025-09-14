@@ -7,28 +7,36 @@ import ShooterQuestion from "./TaggingComponents/ShooterQuestion";
 import "./Styles/TaggingArea.css";
 import NetQuestion from "./TaggingComponents/NetQuestion";
 import ParticapntsQuestion from "./TaggingComponents/ParticipantsQuestion";
-import TeamTaggingSummary from "./TeamTaggingSummary";
 import PlayerTaggingSummary from "./PlayerTaggingSummary";
+import BasicButton from "../../components/BasicButton/BasicButton";
+import Modal from "../../components/Modal/Modal";
+import RosterSelector from "../../components/RosterSelector/RosterSelector";
 
 import { Question } from "./question";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function PlayerStatsMode({}) {
-  // Import the "public" variables from context
   const {
     setTaggedEvents,
     questionObjects,
     setQuestionObjects,
     currentQuestionId,
     setCurrentQuestionId,
+    playersInTeam,
+    fetchPlayersInTeam,
+    playersInRoster,
     setPlayersInRoster,
     currentGameId,
     setFirstQuestionId,
     stepBackInTag,
   } = useContext(TaggingContext);
 
+  const [showRosterEditor, setShowRosterEditor] = useState(false);
+
   useEffect(() => {
+    fetchPlayersInTeam();
+
     async function fetchTags() {
       const token = sessionStorage.getItem("jwt_token");
       const queryString = `${BACKEND_URL}/tagging/load/player-tags/${currentGameId}`;
@@ -146,7 +154,31 @@ export default function PlayerStatsMode({}) {
       </div>
       <div className="tagging-summary-column">
         <PlayerTaggingSummary></PlayerTaggingSummary>
+        <BasicButton
+          text="Muokkaa kokoonpanoa"
+          onClickMethod={() => setShowRosterEditor(true)}
+        />
       </div>
+
+      {showRosterEditor && (
+        <Modal
+          children={
+            <RosterSelector
+              setShowRosterSelector={setShowRosterEditor}
+              playersInTeam={playersInTeam}
+              playersInRoster={playersInRoster}
+              setPlayersInRoster={setPlayersInRoster}
+            />
+          }
+        ></Modal>
+
+        // <RosterSelector
+        //   setShowRosterSelector={setShowRosterSelector}
+        //   players={players}
+        //   playersInRoster={playersInRoster}
+        //   setPlayersInRoster={setPlayersInRoster}
+        // />
+      )}
     </div>
   );
 }

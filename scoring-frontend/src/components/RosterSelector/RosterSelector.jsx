@@ -8,7 +8,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function RosterSelector({
   setShowRosterSelector,
-  players,
+  playersInTeam,
   playersInRoster,
   setPlayersInRoster,
 }) {
@@ -16,25 +16,30 @@ export default function RosterSelector({
   const [scraperUrl, setScraperUrl] = useState("");
   const [scraperLocation, setScraperLocation] = useState("koti");
   const [isLoadingScrapedRoster, setIsLoadingScrapedRoster] = useState(false);
+  const [draftRoster, setDraftRoster] = useState([]);
+
+  useEffect(() => {
+    setDraftRoster([...playersInRoster]);
+  }, []);
 
   const handlePlayerListClick = (target, index) => {
     if (selectingPosition) {
-      const player = players[index];
+      const player = playersInTeam[index];
 
       const [line, position] = selectingPosition.split("-");
-      const rosterSpotIndex = playersInRoster.findIndex(
+      const rosterSpotIndex = draftRoster.findIndex(
         (spot) => spot.line === parseInt(line) && spot.position === position
       );
-      let newPlayersInRoster = playersInRoster.map((spot, index) => {
+      let newPlayersInRoster = draftRoster.map((spot, index) => {
         if (index === rosterSpotIndex) {
           return { ...spot, player: player };
         }
         return spot;
       });
-      setPlayersInRoster(newPlayersInRoster);
+      setDraftRoster(newPlayersInRoster);
 
       if (rosterSpotIndex < 24) {
-        const nextSpot = playersInRoster[rosterSpotIndex + 1];
+        const nextSpot = draftRoster[rosterSpotIndex + 1];
         setSelectingPosition(`${nextSpot.line}-${nextSpot.position}`);
       }
     } else {
@@ -46,14 +51,14 @@ export default function RosterSelector({
     const parts = rosterSpot.split("-");
     const line = parseInt(parts[0]);
     const position = parts[1];
-    const newPlayersInRoster = playersInRoster.map((rosterSpot, idx) => {
+    const newPlayersInRoster = draftRoster.map((rosterSpot, idx) => {
       if (rosterSpot.line === line && rosterSpot.position === position) {
         const editedRosterSpot = { ...rosterSpot, player: null };
         return editedRosterSpot;
       }
       return rosterSpot;
     });
-    setPlayersInRoster(newPlayersInRoster);
+    setDraftRoster(newPlayersInRoster);
   };
 
   const handleScraperSubmit = async (e) => {
@@ -96,7 +101,7 @@ export default function RosterSelector({
     let newPlayersInRoster = Object.entries(scrapedRoster).map(
       ([pos, player]) => {
         const [line, position] = pos.split("-");
-        const matchedPlayer = players.find((p) => p.id === player.id);
+        const matchedPlayer = playersInTeam.find((p) => p.id === player.id);
         return {
           line: parseInt(line),
           position: position,
@@ -105,14 +110,43 @@ export default function RosterSelector({
       }
     );
 
-    setPlayersInRoster(newPlayersInRoster);
+    setDraftRoster(newPlayersInRoster);
   };
 
   const confirmRoster = () => {
+    setPlayersInRoster(draftRoster);
     setShowRosterSelector(false);
   };
 
+  const rostersAreEqual = () => {
+    for (let i = 0; i < draftRoster.length; i++) {
+      const draftRosterSpot = draftRoster[i];
+      const currentRosterSpot = playersInRoster[i];
+
+      if (
+        draftRosterSpot.player === null ||
+        currentRosterSpot.player === null
+      ) {
+        if (
+          draftRosterSpot.player === null &&
+          currentRosterSpot.player === null
+        ) {
+          continue;
+        }
+        return false;
+      } else if (draftRosterSpot.player.id !== currentRosterSpot.player.id)
+        return false;
+    }
+    return true;
+  };
+
   const cancelRoster = () => {
+    if (!rostersAreEqual()) {
+      const confirmation = confirm(
+        "Oletko varma että haluat perua muutokset kokoonpaanon?"
+      );
+      if (!confirmation) return;
+    }
     setShowRosterSelector(false);
   };
 
@@ -126,7 +160,7 @@ export default function RosterSelector({
                 return (
                   <div className="positions-row" key={`${num}-DROW`}>
                     {[`${num}-LD`, `${num}-RD`].map((position_id) => {
-                      const rosterSpot = playersInRoster.find(
+                      const rosterSpot = draftRoster.find(
                         (spot) =>
                           `${spot.line}-${spot.position}` === position_id
                       );
@@ -157,7 +191,7 @@ export default function RosterSelector({
                   <div className="positions-row" key={`${num}-FROW`}>
                     {[`${num}-LW`, `${num}-C`, `${num}-RW`].map(
                       (position_id) => {
-                        const rosterSpot = playersInRoster.find(
+                        const rosterSpot = draftRoster.find(
                           (spot) =>
                             `${spot.line}-${spot.position}` === position_id
                         );
@@ -186,7 +220,7 @@ export default function RosterSelector({
           </div>
           <div className="goalies-row">
             {["1-G", "2-G"].map((position_id) => {
-              const rosterSpot = playersInRoster.find(
+              const rosterSpot = draftRoster.find(
                 (spot) => `${spot.line}-${spot.position}` === position_id
               );
               const playerForThisBox = rosterSpot ? rosterSpot.player : null;
@@ -239,51 +273,77 @@ export default function RosterSelector({
         <div className="player-list">
           <details open>
             <summary>Hyökkääjät</summary>
-            {players
+            {playersInTeam
               .filter((p) => p.position === "FORWARD")
               .sort((a, b) => a.last_name.localeCompare(b.last_name))
               .map((player, index) => (
                 <p
                   key={`F-${index}`}
                   onClick={(event) =>
-                    handlePlayerListClick(event.target, players.indexOf(player))
+                    handlePlayerListClick(
+                      event.target,
+                      playersInTeam.indexOf(player)
+                    )
                   }
                 >
-                  #{player.jersey_number} {player.last_name} {player.first_name}
+                  <span className="player-jersey-number">
+                    #{player.jersey_number}{" "}
+                  </span>
+                  <span>
+                    {" "}
+                    {player.last_name} {player.first_name}
+                  </span>
                 </p>
               ))}
           </details>
 
           <details open>
             <summary>Puolustajat</summary>
-            {players
+            {playersInTeam
               .filter((p) => p.position === "DEFENDER")
               .sort((a, b) => a.last_name.localeCompare(b.last_name))
               .map((player, index) => (
                 <p
                   key={`D-${index}`}
                   onClick={(event) =>
-                    handlePlayerListClick(event.target, players.indexOf(player))
+                    handlePlayerListClick(
+                      event.target,
+                      playersInTeam.indexOf(player)
+                    )
                   }
                 >
-                  #{player.jersey_number} {player.first_name} {player.last_name}
+                  <span className="player-jersey-number">
+                    #{player.jersey_number}{" "}
+                  </span>
+                  <span>
+                    {player.last_name} {player.first_name}
+                  </span>
                 </p>
               ))}
           </details>
 
           <details open>
             <summary>Maalivahdit</summary>
-            {players
+            {playersInTeam
               .filter((p) => p.position === "GOALIE")
               .sort((a, b) => a.last_name.localeCompare(b.last_name))
               .map((player, index) => (
                 <p
                   key={`G-${index}`}
                   onClick={(event) =>
-                    handlePlayerListClick(event.target, players.indexOf(player))
+                    handlePlayerListClick(
+                      event.target,
+                      playersInTeam.indexOf(player)
+                    )
                   }
                 >
-                  #{player.jersey_number} {player.first_name} {player.last_name}
+                  <span className="player-jersey-number">
+                    #{player.jersey_number}{" "}
+                  </span>
+                  <span>
+                    {" "}
+                    {player.last_name} {player.first_name}
+                  </span>
                 </p>
               ))}
           </details>

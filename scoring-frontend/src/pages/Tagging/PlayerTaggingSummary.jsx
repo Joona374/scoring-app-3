@@ -93,15 +93,20 @@ export default function PlayerTaggingSummary() {
   };
 
   return (
-    <div className="tagging-summary">
+    <div className="player-tagging-summary">
       <h3>Yhteenveto</h3>
       {[...taggedEvents].reverse().map((tag, index) => (
         <div
           key={index}
-          className={`summary-row ${openIndex === index ? "expanded" : ""}`}
+          className={`player-summary-row ${
+            openIndex === index ? "expanded" : ""
+          }`}
         >
-          <div className="summary-header" onClick={() => toggleOpen(index)}>
-            <span className="summary-index">
+          <div
+            className="player-summary-header"
+            onClick={() => toggleOpen(index)}
+          >
+            <span className="player-summary-index">
               {taggedEvents.length - index}.
             </span>
             <span
@@ -109,22 +114,22 @@ export default function PlayerTaggingSummary() {
                 tag.shot_result === "MP +" ||
                 tag.shot_result === "Maali +" ||
                 tag.shot_result === "Laukaus +"
-                  ? "summary-result summary-result-plus"
-                  : "summary-result"
+                  ? "player-summary-result player-summary-result-plus"
+                  : "player-summary-result"
               }
             >
               {tag.shot_result}
             </span>
-            <span className="summary-type">{tag.shot_type}</span>
+            <span className="player-summary-type">{tag.shot_type}</span>
             {tag.shooter && (
-              <span className="summary-shooter">
+              <span className="player-summary-shooter">
                 {tag.shooter.last_name} {tag.shooter.first_name.slice(0, 1)}.
               </span>
             )}
           </div>
 
           {openIndex === index && (
-            <div className="summary-details">
+            <div className="player-summary-details">
               <ul className="tag-details-list">
                 {Object.entries(tag).map(([key, value]) => {
                   console.log("Key:", key, "Value:", value);

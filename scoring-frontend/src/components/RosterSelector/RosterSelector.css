@@ -127,7 +127,14 @@
   margin-bottom: 0.5rem;
 }
 
+.player-jersey-number {
+  width: 2em; /* Fixed width for jersey numbers */
+  flex-shrink: 0;
+
+}
+
 .player-list p {
+  display: flex;
   padding: 0.4rem;
   margin-left: 1rem;
   border-bottom: 1px solid #444;

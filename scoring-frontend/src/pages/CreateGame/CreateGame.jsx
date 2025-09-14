@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { TaggingContext } from "../../context/TaggingContext";
 import "./Styles/CreateGame.css";
 import CreateGameForm from "./CreateGameForm";
 import RosterSelector from "../../components/RosterSelector/RosterSelector";
@@ -9,6 +10,8 @@ import MutedButton from "../../components/MutedButton/MutedButton";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
+  const { playersInTeam, fetchPlayersInTeam } = useContext(TaggingContext);
+
   const generateEmptyPlayersInRoster = () => {
     let emptyPlayersInRoster = [];
     for (let i = 1; i <= 5; i++) {
@@ -36,33 +39,13 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
   const [powerplays, setPowerplays] = useState(0);
   const [penaltyKills, setPenaltyKills] = useState(0);
   const [showRosterSelector, setShowRosterSelector] = useState(false);
-  const [players, setPlayers] = useState([]);
   const [playersInRoster, setPlayersInRoster] = useState(
     generateEmptyPlayersInRoster()
   );
   const [isLoadingCreateGame, setIsLoadingCreateGame] = useState(false);
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const token = sessionStorage.getItem("jwt_token");
-        const res = await fetch(`${BACKEND_URL}/players/for-team`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch players for users teams");
-        }
-
-        const players = await res.json();
-        setPlayers(players);
-      } catch (error) {
-        console.log("Error?: ", error);
-        throw new Error("Failed to fetch players for users teams");
-      }
-    };
-
-    fetchPlayers();
+    fetchPlayersInTeam();
   }, []);
 
   const submitGame = async (event) => {
@@ -133,19 +116,12 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
           children={
             <RosterSelector
               setShowRosterSelector={setShowRosterSelector}
-              players={players}
+              playersInTeam={playersInTeam}
               playersInRoster={playersInRoster}
               setPlayersInRoster={setPlayersInRoster}
             />
           }
         ></Modal>
-
-        // <RosterSelector
-        //   setShowRosterSelector={setShowRosterSelector}
-        //   players={players}
-        //   playersInRoster={playersInRoster}
-        //   setPlayersInRoster={setPlayersInRoster}
-        // />
       )}
     </div>
   );
