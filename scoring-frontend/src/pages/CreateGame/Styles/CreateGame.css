@@ -28,6 +28,23 @@
   width: 100%;
 }
 
+
+/* Make sure special-team-inputs to make the container grow wider */
+.special-teams-inputs {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.special-team-input {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+
 .create-game-form-wrapper button {
   margin-bottom: 1rem;
   width: 100%;
@@ -55,7 +72,7 @@
 .auth-form fieldset {
   border: 1px solid #444;
   padding: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border-radius: var(--radius);
   background-color: #2e2e2e;
 }

@@ -7,6 +7,10 @@ export default function CreateGameForm({
   setOpponent,
   setGameDate,
   setHomeGame,
+  setPowerplays,
+  setPenaltyKills,
+  powerplays,
+  penaltyKills,
   showRosterSelector,
   setShowRosterSelector,
   submitGame,
@@ -63,6 +67,33 @@ export default function CreateGameForm({
             </div>
           </div>
         </fieldset>
+
+        {/* Erikoistilanteet with ylivoima and alivoima input sideby side not on top of eachother */}
+        <div className="special-teams-inputs">
+          <div className="special-team-input">
+            <label htmlFor="powerplays-input">Ylivoimat</label>
+            <input
+              id="powerplays-input"
+              value={powerplays}
+              onChange={(e) => setPowerplays(e.target.value)}
+              type="number"
+              min="0"
+              placeholder="0"
+            />
+          </div>
+          <div className="special-team-input">
+            <label htmlFor="penaltykills-input">Alivoimat</label>
+            <input
+              id="penaltykills-input"
+              value={penaltyKills}
+              onChange={(e) => setPenaltyKills(e.target.value)}
+              type="number"
+              min="0"
+              placeholder="0"
+            />
+          </div>
+        </div>
+
         <button
           type="button"
           className={"secondary-button"}

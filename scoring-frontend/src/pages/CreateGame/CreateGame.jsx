@@ -33,6 +33,8 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
   const [opponent, setOpponent] = useState("");
   const [gameDate, setGameDate] = useState(null);
   const [homeGame, setHomeGame] = useState(null);
+  const [powerplays, setPowerplays] = useState(0);
+  const [penaltyKills, setPenaltyKills] = useState(0);
   const [showRosterSelector, setShowRosterSelector] = useState(false);
   const [players, setPlayers] = useState([]);
   const [playersInRoster, setPlayersInRoster] = useState(
@@ -81,6 +83,8 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
           game_date: gameDate,
           home_game: homeGame,
           players_in_roster: playersInRoster,
+          powerplays: powerplays,
+          penalty_kills: penaltyKills,
         }),
       });
 
