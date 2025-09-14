@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import "./Styles/CreateGame.css";
 import CreateGameForm from "./CreateGameForm";
-import RosterSelector from "./RosterSelector";
+import RosterSelector from "../../components/RosterSelector/RosterSelector";
+import Modal from "../../components/Modal/Modal";
+import MiniRosterView from "./MiniRosterView";
+import MutedButton from "../../components/MutedButton/MutedButton";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -98,9 +101,9 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
 
   return (
     <div className="create-game-page">
-      <div className="create-game-form-wrapper">
-        <h1>Luo uusi peli</h1>
+      <h1>Luo uusi peli</h1>
 
+      <div className="create-game-form-wrapper">
         <CreateGameForm
           opponent={opponent}
           setOpponent={setOpponent}
@@ -113,14 +116,32 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
           isLoadingCreateGame={isLoadingCreateGame}
           setIsLoadingCreateGame={setIsLoadingCreateGame}
         />
+        <MiniRosterView playersInRoster={playersInRoster} />
       </div>
+
+      <MutedButton
+        text="Peruuta"
+        onClickMethod={() => onCancel()}
+      ></MutedButton>
+
       {showRosterSelector && (
-        <RosterSelector
-          setShowRosterSelector={setShowRosterSelector}
-          players={players}
-          playersInRoster={playersInRoster}
-          setPlayersInRoster={setPlayersInRoster}
-        />
+        <Modal
+          children={
+            <RosterSelector
+              setShowRosterSelector={setShowRosterSelector}
+              players={players}
+              playersInRoster={playersInRoster}
+              setPlayersInRoster={setPlayersInRoster}
+            />
+          }
+        ></Modal>
+
+        // <RosterSelector
+        //   setShowRosterSelector={setShowRosterSelector}
+        //   players={players}
+        //   playersInRoster={playersInRoster}
+        //   setPlayersInRoster={setPlayersInRoster}
+        // />
       )}
     </div>
   );

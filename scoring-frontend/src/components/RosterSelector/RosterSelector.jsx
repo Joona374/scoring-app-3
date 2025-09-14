@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import "./Styles/RosterSelector.css";
+import "./RosterSelector.css";
 import RosterBox from "./RosterBox";
-import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import BasicButton from "../../components/BasicButton/BasicButton";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -107,6 +108,14 @@ export default function RosterSelector({
     setPlayersInRoster(newPlayersInRoster);
   };
 
+  const confirmRoster = () => {
+    setShowRosterSelector(false);
+  };
+
+  const cancelRoster = () => {
+    setShowRosterSelector(false);
+  };
+
   return (
     <div className="roster-selector-wrapper">
       <div className="roster-selector">
@@ -193,32 +202,39 @@ export default function RosterSelector({
               );
             })}
           </div>
+          <div className="roster-controls">
+            <BasicButton text="Vahvista" onClickMethod={confirmRoster} />
+            <BasicButton text="Peruuta" onClickMethod={cancelRoster} />
 
-          <form onSubmit={handleScraperSubmit} className="scraper-roster-input">
-            <input
-              type="text"
-              placeholder="Kopioi tähän linkki tulospalvelun ottelusivulle"
-              value={scraperUrl}
-              onChange={(e) => setScraperUrl(e.target.value)}
-            />
-            <input
-              type="radio"
-              value="koti"
-              checked={scraperLocation === "koti"}
-              onChange={(e) => setScraperLocation(e.target.value)}
-            />{" "}
-            Koti
-            <input
-              type="radio"
-              value="vieras"
-              checked={scraperLocation === "vieras"}
-              onChange={(e) => setScraperLocation(e.target.value)}
-            />{" "}
-            Vieras
-            <button disabled={!scraperUrl} type="submit">
-              {isLoadingScrapedRoster ? LoadingSpinner(18) : "Hae kokoonpano"}
-            </button>
-          </form>
+            <form
+              onSubmit={handleScraperSubmit}
+              className="scraper-roster-input"
+            >
+              <input
+                type="text"
+                placeholder="Kopioi tähän linkki tulospalvelun ottelusivulle"
+                value={scraperUrl}
+                onChange={(e) => setScraperUrl(e.target.value)}
+              />
+              <input
+                type="radio"
+                value="koti"
+                checked={scraperLocation === "koti"}
+                onChange={(e) => setScraperLocation(e.target.value)}
+              />{" "}
+              Koti
+              <input
+                type="radio"
+                value="vieras"
+                checked={scraperLocation === "vieras"}
+                onChange={(e) => setScraperLocation(e.target.value)}
+              />{" "}
+              Vieras
+              <button disabled={!scraperUrl} type="submit">
+                {isLoadingScrapedRoster ? LoadingSpinner(18) : "Hae kokoonpano"}
+              </button>
+            </form>
+          </div>
         </div>
         <div className="player-list">
           <details open>

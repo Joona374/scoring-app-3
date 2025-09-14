@@ -19,7 +19,7 @@ export default function CreateGameForm({
   };
 
   return (
-    <>
+    <div className="create-game-form">
       <form className="auth-form" onSubmit={submitGame}>
         <label htmlFor="opponent-input">Vastustaja</label>
         <input
@@ -74,10 +74,6 @@ export default function CreateGameForm({
           {isLoadingCreateGame ? LoadingSpinner(18) : "Luo peli"}
         </button>
       </form>
-      <MutedButton
-        text="Peruuta"
-        onClickMethod={() => onCancel()}
-      ></MutedButton>
-    </>
+    </div>
   );
 }
