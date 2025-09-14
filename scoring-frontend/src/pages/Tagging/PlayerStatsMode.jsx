@@ -109,6 +109,8 @@ export default function PlayerStatsMode({}) {
       }
 
       const data = await res.json();
+      console.log("Got players:");
+      console.log(data);
       setPlayersInRoster(data);
     } catch (err) {
       console.log(err);
@@ -136,6 +138,8 @@ export default function PlayerStatsMode({}) {
       case "TEXT":
         return <GridChoiceQuestion />;
       case "SHOOTER":
+        console.log(playersInRoster);
+        // TODO FIGURE OUT HOW TO EDIT THE ROSTER IN PlayerStatsMode
         return <ShooterQuestion />;
       case "PARTICIPANTS":
         return <ParticapntsQuestion />;

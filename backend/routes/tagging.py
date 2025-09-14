@@ -2,7 +2,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 import json
 from db.pydantic_schemas import AddTag, TagSchema, GameInRosterResponse, PlayerResponse, TeamStatsTagResponse, PlayerStatsTagResponse
-from db.models import User, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, ShotArea, ShotAreaTypes
+from db.models import User, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, ShotArea, ShotAreaTypes, GameInRoster
 from db.db_manager import get_db_session
 from sqlalchemy.orm import Session
 from utils import get_current_user_id
@@ -175,7 +175,29 @@ def load_player_tags(game_id: int, db_session: Session = Depends(get_db_session)
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to access these tags")
 
+def create_position_response(line_n: int, position: str, in_rosters_list: list[GameInRoster]):
+    in_roster_object = next((in_roster for in_roster in in_rosters_list if in_roster.line == line_n and in_roster.position == position), None)
+    if in_roster_object:
+        player_object = in_roster_object.player
+        player_in_roster = GameInRosterResponse(
+            line=in_roster_object.line,
+            position=in_roster_object.position,
+            player=PlayerResponse(
+                id=player_object.id,
+                first_name=player_object.first_name,
+                last_name=player_object.last_name,
+                jersey_number=player_object.jersey_number,
+                position=player_object.position
+            )
+        )
+    else:
+        player_in_roster = GameInRosterResponse(
+            line=line_n,
+            position=position,
+            player=None
+        )
 
+    return player_in_roster
 
 @router.get("/roster-for-game")
 def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
@@ -186,22 +208,28 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
         # raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User has no rights to this game")
         print("Oh no")
 
-    players_in_roster = []
-    for in_roster in game.in_rosters:
-        player_object = in_roster.player
+    NUMBER_OF_FORWARD_LINES = 5
+    NUMBER_OF_DEFENSE_LINES = 4
+    NUMBER_OF_GOALIES = 2
 
-        player_in_roster =  GameInRosterResponse(
-            line=in_roster.line,
-            position=in_roster.position,
-            player=PlayerResponse(
-                id=player_object.id,
-                first_name=player_object.first_name,
-                last_name=player_object.last_name,
-                jersey_number=player_object.jersey_number,
-                position=player_object.position
-            )
-        )
+    players_in_roster = []
+    
+    for i in range(1, NUMBER_OF_FORWARD_LINES + 1):
+        for pos in ["LW", "C", "RW"]:
+            player_in_roster = create_position_response(i, pos, game.in_rosters)
+            players_in_roster.append(player_in_roster)
+
+    for i in range(1, NUMBER_OF_DEFENSE_LINES + 1):
+        for pos in ["LD", "RD"]:
+            player_in_roster = create_position_response(i, pos, game.in_rosters)
+            players_in_roster.append(player_in_roster)
+
+    for i in range(1, NUMBER_OF_GOALIES + 1):
+        player_in_roster = create_position_response(i, "G", game.in_rosters)
         players_in_roster.append(player_in_roster)
+
+    for thing in players_in_roster:
+        print(thing)
 
     return players_in_roster
 

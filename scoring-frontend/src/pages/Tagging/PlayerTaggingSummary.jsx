@@ -95,123 +95,126 @@ export default function PlayerTaggingSummary() {
   return (
     <div className="player-tagging-summary">
       <h3>Yhteenveto</h3>
-      {[...taggedEvents].reverse().map((tag, index) => (
-        <div
-          key={index}
-          className={`player-summary-row ${
-            openIndex === index ? "expanded" : ""
-          }`}
-        >
-          <div
-            className="player-summary-header"
-            onClick={() => toggleOpen(index)}
-          >
-            <span className="player-summary-index">
-              {taggedEvents.length - index}.
-            </span>
-            <span
-              className={
-                tag.shot_result === "MP +" ||
-                tag.shot_result === "Maali +" ||
-                tag.shot_result === "Laukaus +"
-                  ? "player-summary-result player-summary-result-plus"
-                  : "player-summary-result"
-              }
+      {taggedEvents.length === 0
+        ? LoadingSpinner(50)
+        : [...taggedEvents].reverse().map((tag, index) => (
+            <div
+              key={index}
+              className={`player-summary-row ${
+                openIndex === index ? "expanded" : ""
+              }`}
             >
-              {tag.shot_result}
-            </span>
-            <span className="player-summary-type">{tag.shot_type}</span>
-            {tag.shooter && (
-              <span className="player-summary-shooter">
-                {tag.shooter.last_name} {tag.shooter.first_name.slice(0, 1)}.
-              </span>
-            )}
-          </div>
-
-          {openIndex === index && (
-            <div className="player-summary-details">
-              <ul className="tag-details-list">
-                {Object.entries(tag).map(([key, value]) => {
-                  console.log("Key:", key, "Value:", value);
-                  if (value === null || value === "") {
-                    console.log("Skipping empty value for key:", key);
-                    return null;
+              <div
+                className="player-summary-header"
+                onClick={() => toggleOpen(index)}
+              >
+                <span className="player-summary-index">
+                  {taggedEvents.length - index}.
+                </span>
+                <span
+                  className={
+                    tag.shot_result === "MP +" ||
+                    tag.shot_result === "Maali +" ||
+                    tag.shot_result === "Laukaus +"
+                      ? "player-summary-result player-summary-result-plus"
+                      : "player-summary-result"
                   }
-                  if (key === "new_question") return null;
-                  if (key === "game_id") return null;
-                  if (key === "location") return null;
-                  if (key === "net") return null;
-                  if (key === "on_ices") return null;
-                  if (key === "participations") return null;
-                  if (key === "id") return null;
-
-                  if (key === "shooter") {
-                    return (
-                      <li key={key}>
-                        <strong>Laukoja:&nbsp;</strong>
-                        {value.last_name} {value.first_name}
-                      </li>
-                    );
-                  }
-
-                  if (key === "shotZone") {
-                    return (
-                      <li key={key}>
-                        <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
-                        {shotZoneMapping[value] || value}
-                      </li>
-                    );
-                  }
-
-                  if (key === "crossice") {
-                    return (
-                      <li key={key}>
-                        <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
-                        {value ? "Kyllä" : "Ei"}
-                      </li>
-                    );
-                  }
-
-                  if (key === "netZone") {
-                    return (
-                      <li key={key}>
-                        <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
-                        {netZoneMapping[value] || value}
-                      </li>
-                    );
-                  }
-
-                  if (key === "strengths") {
-                    return (
-                      <li key={key}>
-                        <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
-                        {strengthsMappings[value] || value}
-                      </li>
-                    );
-                  }
-
-                  return (
-                    <li key={key}>
-                      <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
-                      {value}
-                    </li>
-                  );
-                })}
-              </ul>
-              <div className="summary-actions">
-                {/* TODO editTag!! */}
-                <button onClick={() => editTag(index)}>Muokkaa</button>
-                <button
-                  onClick={() => deletePlayerTag(tag)}
-                  disabled={isLoadingDeleteTag}
                 >
-                  {isLoadingDeleteTag ? LoadingSpinner(18) : "Poista"}
-                </button>
+                  {tag.shot_result}
+                </span>
+                <span className="player-summary-type">{tag.shot_type}</span>
+                {tag.shooter && (
+                  <span className="player-summary-shooter">
+                    {tag.shooter.last_name} {tag.shooter.first_name.slice(0, 1)}
+                    .
+                  </span>
+                )}
               </div>
+
+              {openIndex === index && (
+                <div className="player-summary-details">
+                  <ul className="tag-details-list">
+                    {Object.entries(tag).map(([key, value]) => {
+                      console.log("Key:", key, "Value:", value);
+                      if (value === null || value === "") {
+                        console.log("Skipping empty value for key:", key);
+                        return null;
+                      }
+                      if (key === "new_question") return null;
+                      if (key === "game_id") return null;
+                      if (key === "location") return null;
+                      if (key === "net") return null;
+                      if (key === "on_ices") return null;
+                      if (key === "participations") return null;
+                      if (key === "id") return null;
+
+                      if (key === "shooter") {
+                        return (
+                          <li key={key}>
+                            <strong>Laukoja:&nbsp;</strong>
+                            {value.last_name} {value.first_name}
+                          </li>
+                        );
+                      }
+
+                      if (key === "shotZone") {
+                        return (
+                          <li key={key}>
+                            <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
+                            {shotZoneMapping[value] || value}
+                          </li>
+                        );
+                      }
+
+                      if (key === "crossice") {
+                        return (
+                          <li key={key}>
+                            <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
+                            {value ? "Kyllä" : "Ei"}
+                          </li>
+                        );
+                      }
+
+                      if (key === "netZone") {
+                        return (
+                          <li key={key}>
+                            <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
+                            {netZoneMapping[value] || value}
+                          </li>
+                        );
+                      }
+
+                      if (key === "strengths") {
+                        return (
+                          <li key={key}>
+                            <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
+                            {strengthsMappings[value] || value}
+                          </li>
+                        );
+                      }
+
+                      return (
+                        <li key={key}>
+                          <strong>{summaryKeyMapping[key]}:&nbsp;</strong>
+                          {value}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <div className="summary-actions">
+                    {/* TODO editTag!! */}
+                    <button onClick={() => editTag(index)}>Muokkaa</button>
+                    <button
+                      onClick={() => deletePlayerTag(tag)}
+                      disabled={isLoadingDeleteTag}
+                    >
+                      {isLoadingDeleteTag ? LoadingSpinner(18) : "Poista"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      ))}
+          ))}
     </div>
   );
 }

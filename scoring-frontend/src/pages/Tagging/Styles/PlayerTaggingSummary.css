@@ -1,4 +1,7 @@
 .player-tagging-summary {
+  display: flex;
+  flex-direction: column;
+  
   padding: 1rem;
   overflow-y: auto;
   height: 100%;

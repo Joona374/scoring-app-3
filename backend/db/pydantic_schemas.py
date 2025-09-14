@@ -116,8 +116,8 @@ class GameCreate(BaseModel):
 class GameInRosterResponse(BaseModel):
     line: int
     position: str
-    player: PlayerResponse
-    
+    player: Optional[PlayerResponse]
+
 class TeamStatsTagResponse(BaseModel):
     id: Optional[int]
     succes: bool
