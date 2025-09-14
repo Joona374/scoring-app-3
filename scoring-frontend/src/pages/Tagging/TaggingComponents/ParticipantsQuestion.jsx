@@ -22,7 +22,6 @@ export default function ParticapntsQuestion() {
 
   // Add this useEffect:
   useEffect(() => {
-    console.log("roster: ", playersInRoster);
     if (currentTag?.shooter) {
       const shooterId = currentTag.shooter.id;
 
