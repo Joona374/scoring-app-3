@@ -32,6 +32,7 @@ export default function CreateGameForm({
           onChange={(e) => setOpponent(e.target.value)}
           type="text"
           placeholder="Opponent..."
+          required
         />
 
         <label htmlFor="date-input">Päivämäärä:</label>
@@ -39,6 +40,7 @@ export default function CreateGameForm({
           type="date"
           id="date-input"
           onChange={(e) => setGameDate(e.target.value)}
+          required
         />
 
         <fieldset>
@@ -52,6 +54,7 @@ export default function CreateGameForm({
                 id="home-input"
                 value="home"
                 onChange={(e) => changeHomeRadio(e.target.value)}
+                required
               />
               <label htmlFor="home-input">Koti</label>
             </div>
@@ -62,6 +65,7 @@ export default function CreateGameForm({
                 id="away-input"
                 value="away"
                 onChange={(e) => changeHomeRadio(e.target.value)}
+                required
               />
               <label htmlFor="away-input">Vieras</label>
             </div>
