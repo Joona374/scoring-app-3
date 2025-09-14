@@ -22,7 +22,7 @@ export default function MiniRosterView({ playersInRoster }) {
       <div className="mini-forwards-list">
         <p className="mini-roster-title">Hyökkääjät:</p>
         {[...Array(5)].map((_, i) => (
-          <div className="forwards-row">
+          <div key={`forward-${i}`} className="forwards-row">
             <span className="player-number">{getNum(i + 1, "LW")}</span>
             <span className="player-number">{getNum(i + 1, "C")}</span>
             <span className="player-number">{getNum(i + 1, "RW")}</span>
@@ -34,7 +34,7 @@ export default function MiniRosterView({ playersInRoster }) {
       <div className="mini-defenders-list">
         <p className="mini-roster-title">Puolustajat:</p>
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="defenders-row">
+          <div key={`defender-${i}`} className="defenders-row">
             <span className="player-number">{getNum(i + 1, "LD")}</span>
             <span className="player-number">{getNum(i + 1, "RD")}</span>
           </div>

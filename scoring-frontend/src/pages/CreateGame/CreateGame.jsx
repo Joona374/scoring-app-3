@@ -86,6 +86,10 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
     }
   };
 
+  const updateRoster = (newRoster) => {
+    setPlayersInRoster(newRoster);
+  };
+
   return (
     <div className="create-game-page">
       <h1>Luo uusi peli</h1>
@@ -118,7 +122,7 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
               setShowRosterSelector={setShowRosterSelector}
               playersInTeam={playersInTeam}
               playersInRoster={playersInRoster}
-              setPlayersInRoster={setPlayersInRoster}
+              updateRoster={updateRoster}
             />
           }
         ></Modal>

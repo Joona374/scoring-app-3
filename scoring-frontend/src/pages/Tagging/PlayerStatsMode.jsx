@@ -148,6 +148,33 @@ export default function PlayerStatsMode({}) {
     }
   };
 
+  const updateRoster = async (newRoster) => {
+    setPlayersInRoster(newRoster);
+    console.log("Updating roster to:", newRoster);
+    console.log("For game id:", currentGameId);
+
+    // TODO: Implement the logic to update the roster in the database
+    // This could be a PUT or PATCH request to your backend API
+    const response = await fetch(
+      `${BACKEND_URL}/tagging/roster-for-game?game_id=${currentGameId}`,
+      {
+        method: "PUT", // or "PATCH" depending on your API design
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionStorage.getItem("jwt_token")}`,
+        },
+        body: JSON.stringify(newRoster),
+      }
+    );
+
+    if (!response.ok) {
+      console.error("Failed to update roster in the database");
+      // Optionally, you could revert the local state change if the update fails
+    } else {
+      console.log("Roster updated successfully in the database");
+    }
+  };
+
   return (
     <div className="tagging-page">
       <div className="tagging-area-column">
@@ -171,7 +198,7 @@ export default function PlayerStatsMode({}) {
               setShowRosterSelector={setShowRosterEditor}
               playersInTeam={playersInTeam}
               playersInRoster={playersInRoster}
-              setPlayersInRoster={setPlayersInRoster}
+              updateRoster={updateRoster}
             />
           }
         ></Modal>

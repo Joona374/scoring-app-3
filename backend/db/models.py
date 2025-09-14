@@ -177,6 +177,8 @@ class GameInRoster(Base):
     line: Mapped[int] = mapped_column(nullable=False)
     position: Mapped[str] = mapped_column(String(2), nullable=False)
 
+    def __repr__(self):
+        return f"GameInRoster({self.player.first_name} {self.player.last_name} in game {self.game.id} as {self.line}-{self.position})"
 
 # STATS
 class TeamStatsTag(Base):

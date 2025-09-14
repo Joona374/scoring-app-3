@@ -233,6 +233,72 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
 
     return players_in_roster
 
+def filter_changed_in_rosters(frontend_entries: list[GameInRosterResponse], db_entries: list[GameInRoster], game_id: int):
+    matched = []
+    for fe_entry in frontend_entries:
+        match = find_in_roster_entry(fe_entry.line, fe_entry.position, db_entries)
+        matched.append((fe_entry, match))
+
+    rows_to_add = []
+    rows_to_delete = []
+    rows_to_update = []
+    for pair in matched:
+        fe_entry = pair[0]
+        db_entry = pair[1]
+
+        if fe_entry.player == None and db_entry == None:
+            continue
+
+        elif fe_entry.player != None and db_entry == None:
+            new_db_entry = GameInRoster(
+                game_id=game_id,
+                line=fe_entry.line,
+                position=fe_entry.position,
+                player_id=fe_entry.player.id
+            )
+            rows_to_add.append(new_db_entry)
+
+        elif fe_entry.player == None and db_entry != None:
+            rows_to_delete.append(db_entry)
+
+        elif fe_entry.player.id != db_entry.player_id:
+            db_entry.player_id = fe_entry.player.id
+            rows_to_update.append(db_entry)
+
+
+    return rows_to_add, rows_to_delete, rows_to_update
+
+def find_in_roster_entry(line: int, position: str, in_rosters: list[GameInRoster]):
+    return next((entry for entry in in_rosters if entry.line == line and entry.position == position), None)
+
+@router.put("/roster-for-game")
+def update_roster_for_game(game_id: int, new_roster: list[GameInRosterResponse], db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    try:
+        user = db_session.query(User).filter(User.id == current_user_id).first()
+        game = db_session.query(Game).filter(Game.id == game_id).first()
+
+        if user.team != game.team:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to update this game's roster")
+
+        roster_entries_for_game = db_session.query(GameInRoster).filter(GameInRoster.game_id == game_id).all()
+        rows_to_add, rows_to_delete, rows_to_update = filter_changed_in_rosters(new_roster, roster_entries_for_game, game_id)
+
+        for row in rows_to_add:
+            db_session.add(row)
+
+        for row in rows_to_delete:
+            db_session.delete(row)
+
+        for row in rows_to_update:
+            pass
+            # Do nothing change they were already changed inside filter_changed_in_roster()
+
+        db_session.commit()
+        return {"message": "Roster updated successfully", "success": True}
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error processing the roster update")
 
 @router.delete("/delete/team-tag/{tag_id}")
 def update_player(tag_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):

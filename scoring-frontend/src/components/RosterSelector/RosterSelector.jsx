@@ -10,7 +10,7 @@ export default function RosterSelector({
   setShowRosterSelector,
   playersInTeam,
   playersInRoster,
-  setPlayersInRoster,
+  updateRoster,
 }) {
   const [selectingPosition, setSelectingPosition] = useState("");
   const [scraperUrl, setScraperUrl] = useState("");
@@ -114,7 +114,7 @@ export default function RosterSelector({
   };
 
   const confirmRoster = () => {
-    setPlayersInRoster(draftRoster);
+    updateRoster(draftRoster);
     setShowRosterSelector(false);
   };
 
