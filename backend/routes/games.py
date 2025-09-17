@@ -75,6 +75,22 @@ def create_game(db_session: Session = Depends(get_db_session), current_user_id: 
         print(f"Error getting games: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed getting the games for user: {e}")
 
+def complete_scraped_roster(roster_response: dict[str, PlayerResponse]) -> dict[str, PlayerResponse | None]:
+    """ Ensures that all positions are present in the response, filling missing ones with None."""
+    complete_roster_response = {}
+    for line in ["1", "2", "3", "4", "5"]:
+        for pos in ["LW", "C", "RW"]:
+            player = roster_response.get(f"{line}-{pos}", None)
+            complete_roster_response[f"{line}-{pos}"] = player
+    for line in ["1", "2", "3", "4"]:
+        for pos in ["LD", "RD"]:
+            player = roster_response.get(f"{line}-{pos}", None)
+            complete_roster_response[f"{line}-{pos}"] = player
+    for pos in ["1-G", "2-G"]:
+        player = roster_response.get(pos, None)
+        complete_roster_response[pos] = player
+    return complete_roster_response
+
 @router.get("/scrape-roster")
 async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     print(f"Attempting to scrape game with url: {game_url}")
@@ -96,7 +112,11 @@ async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session
             )
             roster_response[position] = player_response
 
-    return roster_response
+    print(roster_response)
+
+    complete_roster_response = complete_scraped_roster(roster_response)
+
+    return complete_roster_response
 
 def find_player_by_name(players_in_team: list[Player], player_name: str) -> Player | None:
     first_name, last_name = player_name.split(" ")

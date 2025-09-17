@@ -14,9 +14,7 @@ export default function CreateGameForm({
   showRosterSelector,
   setShowRosterSelector,
   submitGame,
-  onCancel,
   isLoadingCreateGame,
-  setIsLoadingCreateGame,
 }) {
   const changeHomeRadio = (new_value) => {
     setHomeGame(new_value === "home");

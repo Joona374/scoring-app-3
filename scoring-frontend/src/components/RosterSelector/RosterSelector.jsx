@@ -20,6 +20,8 @@ export default function RosterSelector({
 
   useEffect(() => {
     setDraftRoster([...playersInRoster]);
+    console.log(playersInRoster);
+    console.log(playersInTeam);
   }, []);
 
   const handlePlayerListClick = (target, index) => {
@@ -98,10 +100,14 @@ export default function RosterSelector({
   };
 
   const fillRoster = (scrapedRoster) => {
+    console.log("scrapedRoster:", scrapedRoster);
     let newPlayersInRoster = Object.entries(scrapedRoster).map(
       ([pos, player]) => {
         const [line, position] = pos.split("-");
-        const matchedPlayer = playersInTeam.find((p) => p.id === player.id);
+        let matchedPlayer = null;
+        if (player) {
+          matchedPlayer = playersInTeam.find((p) => p.id === player.id);
+        }
         return {
           line: parseInt(line),
           position: position,

@@ -1013,6 +1013,18 @@ def collect_shooter_total_strengths(players_on_ice_tags: list[PlayerStatsTag], p
 def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], player_id: int) -> dict:
     game_cell_values = {}
     for tag in players_stats_tags:
+        if tag.strengths == "ES":
+            chance_col_ord = 71
+        elif tag.strengths == "PP":
+            chance_col_ord = 84
+        elif tag.strengths == "PK":
+            chance_col_ord = 97
+        elif tag.strengths in ["EN+", "EN-"]:
+            continue
+        else:
+            raise ValueError(f"Unknown strengths value: {tag.strengths}")
+        
+        print(tag)
         if tag.game_id not in game_cell_values:
             game_cell_values[tag.game_id] = {}
             game_cell_values[tag.game_id]["date"] = tag.game.date
@@ -1025,12 +1037,7 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
             if tag.shot_result.value == ShotResultTypes.GOAL_FOR:
                 game_cell_values[tag.game_id]["C"] += 1
 
-        if tag.strengths == "ES":
-            chance_col_ord = 71
-        elif tag.strengths == "PP":
-            chance_col_ord = 84
-        elif tag.strengths == "PK":
-            chance_col_ord = 97
+
 
         if tag.shot_result.value == ShotResultTypes.GOAL_AGAINST:
             chance_col_ord += 1
