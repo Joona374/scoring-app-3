@@ -18,7 +18,6 @@ def create_a_player(player_data: PlayerCreate, db_session: Session = Depends(get
     player_jersey_number = player_data.jersey_number
     player_position = player_data.position
 
-    print(f"Player: {player_first_name} {player_last_name} is {player_position}")
     user = db_session.query(User).filter(User.id == current_user_id).first()
     
     if not user:
@@ -40,7 +39,6 @@ def create_a_player(player_data: PlayerCreate, db_session: Session = Depends(get
 
 @router.patch("/update/{player_id}")
 def update_player(player_id: int, player_data: PlayerUpdate, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    print(player_data)
     user = db_session.query(User).filter(User.id == current_user_id).first()
     player = db_session.query(Player).filter(Player.id == player_id).first()
 

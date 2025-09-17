@@ -112,8 +112,6 @@ async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session
             )
             roster_response[position] = player_response
 
-    print(roster_response)
-
     complete_roster_response = complete_scraped_roster(roster_response)
 
     return complete_roster_response

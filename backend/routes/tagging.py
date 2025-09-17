@@ -37,8 +37,6 @@ def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_se
         key_to_use = key
         tag_for_model[key_to_use] = value
 
-
-    print(tag_for_model)
     new_team_stats_tag = TeamStatsTag(**tag_for_model)
     db_session.add(new_team_stats_tag)
     db_session.commit()
@@ -205,8 +203,7 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
     game = db_session.query(Game).filter(Game.id == game_id).first()
 
     if user.team != game.team:
-        # raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User has no rights to this game")
-        print("Oh no")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User has no rights to this game")
 
     NUMBER_OF_FORWARD_LINES = 5
     NUMBER_OF_DEFENSE_LINES = 4
@@ -227,9 +224,6 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
     for i in range(1, NUMBER_OF_GOALIES + 1):
         player_in_roster = create_position_response(i, "G", game.in_rosters)
         players_in_roster.append(player_in_roster)
-
-    for thing in players_in_roster:
-        print(thing)
 
     return players_in_roster
 
@@ -322,8 +316,6 @@ def update_player(tag_id: int, db_session: Session = Depends(get_db_session), cu
     user = db_session.query(User).filter(User.id == current_user_id).first()
     tag = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.id == tag_id).first()
     tag_game = tag.game
-
-    print("tag_id: ", tag_id)
 
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")

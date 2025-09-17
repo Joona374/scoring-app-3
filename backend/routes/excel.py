@@ -387,7 +387,6 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
             if tag.shot_result.value in [ShotResultTypes.SHOT_FOR, ShotResultTypes.SHOT_AGAINST]:
                 continue  # Skip shot tags, only process chances and goals
 
-            print(tag.shot_result.value)
 
             result_part = tag_type_mapping[tag.shot_result.value]
             
@@ -779,9 +778,6 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session):
     game_tags = defaultdict(list)
     for tag in player_stats_tags:
         game_tags[tag.game_id].append(tag)
-    
-    for game_id, tags in game_tags.items():
-        print(f"{game_id}: has {len(tags)}")
 
     data_collector = []
     for game in teams_games:
@@ -1024,7 +1020,6 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
         else:
             raise ValueError(f"Unknown strengths value: {tag.strengths}")
         
-        print(tag)
         if tag.game_id not in game_cell_values:
             game_cell_values[tag.game_id] = {}
             game_cell_values[tag.game_id]["date"] = tag.game.date

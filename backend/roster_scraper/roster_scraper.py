@@ -4,7 +4,6 @@ from __future__ import annotations
 import os
 
 env = os.environ.get("ENV", "development")  # default to development
-print(env)
 if env != "LOCAL":
     # Force Playwright to use the slug-bundled browsers, not the default cache
     os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.playwright")
