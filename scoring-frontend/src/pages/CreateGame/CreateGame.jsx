@@ -36,8 +36,8 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
   const [opponent, setOpponent] = useState("");
   const [gameDate, setGameDate] = useState(null);
   const [homeGame, setHomeGame] = useState(null);
-  const [powerplays, setPowerplays] = useState(0);
-  const [penaltyKills, setPenaltyKills] = useState(0);
+  const [powerplays, setPowerplays] = useState(null);
+  const [penaltyKills, setPenaltyKills] = useState(null);
   const [showRosterSelector, setShowRosterSelector] = useState(false);
   const [playersInRoster, setPlayersInRoster] = useState(
     generateEmptyPlayersInRoster()
@@ -100,12 +100,14 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
           setOpponent={setOpponent}
           setGameDate={setGameDate}
           setHomeGame={setHomeGame}
+          setPowerplays={setPowerplays}
+          setPenaltyKills={setPenaltyKills}
+          powerplays={powerplays}
+          penaltyKills={penaltyKills}
           showRosterSelector={showRosterSelector}
           setShowRosterSelector={setShowRosterSelector}
           submitGame={submitGame}
-          onCancel={onCancel}
           isLoadingCreateGame={isLoadingCreateGame}
-          setIsLoadingCreateGame={setIsLoadingCreateGame}
         />
         <MiniRosterView playersInRoster={playersInRoster} />
       </div>

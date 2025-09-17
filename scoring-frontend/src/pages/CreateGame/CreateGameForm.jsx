@@ -76,22 +76,28 @@ export default function CreateGameForm({
             <label htmlFor="powerplays-input">Ylivoimat</label>
             <input
               id="powerplays-input"
-              value={powerplays}
-              onChange={(e) => setPowerplays(e.target.value)}
+              value={powerplays === null ? "" : powerplays}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPowerplays(val === "" ? null : Number(val));
+              }}
               type="number"
               min="0"
-              placeholder="0"
+              placeholder="YV kerrat"
             />
           </div>
           <div className="special-team-input">
             <label htmlFor="penaltykills-input">Alivoimat</label>
             <input
               id="penaltykills-input"
-              value={penaltyKills}
-              onChange={(e) => setPenaltyKills(e.target.value)}
+              value={penaltyKills === null ? "" : penaltyKills}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPenaltyKills(val === "" ? null : Number(val));
+              }}
               type="number"
               min="0"
-              placeholder="0"
+              placeholder="AV kerrat"
             />
           </div>
         </div>
