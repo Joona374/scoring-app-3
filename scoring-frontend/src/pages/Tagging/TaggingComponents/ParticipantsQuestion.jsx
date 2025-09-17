@@ -6,10 +6,7 @@ import "../Styles/ParticipantQuestion.css";
 export default function ParticapntsQuestion() {
   const {
     currentTag,
-    setCurrentTag,
-    setQuestionId,
     playersInRoster,
-    setPlayersInRoster,
     advanceQuestion,
     currentQuestionId,
     questionObjects,
@@ -160,7 +157,7 @@ export default function ParticapntsQuestion() {
           <ul>
             {onIces.map((id) => {
               const player = playersInRoster.find(
-                (p) => p.player.id === id
+                (p) => p.player && p.player.id === id
               )?.player;
               return player ? (
                 <li key={`on-ice-${id}`}>
@@ -174,7 +171,7 @@ export default function ParticapntsQuestion() {
           <ul>
             {participations.map((id) => {
               const player = playersInRoster.find(
-                (p) => p.player.id === id
+                (p) => p.player && p.player.id === id
               )?.player;
               return player ? (
                 <li key={`participated-${id}`}>

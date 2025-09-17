@@ -7,19 +7,21 @@ export default function CreateGameForm({
   setOpponent,
   setGameDate,
   setHomeGame,
+  setPowerplays,
+  setPenaltyKills,
+  powerplays,
+  penaltyKills,
   showRosterSelector,
   setShowRosterSelector,
   submitGame,
-  onCancel,
   isLoadingCreateGame,
-  setIsLoadingCreateGame,
 }) {
   const changeHomeRadio = (new_value) => {
     setHomeGame(new_value === "home");
   };
 
   return (
-    <>
+    <div className="create-game-form">
       <form className="auth-form" onSubmit={submitGame}>
         <label htmlFor="opponent-input">Vastustaja</label>
         <input
@@ -28,6 +30,7 @@ export default function CreateGameForm({
           onChange={(e) => setOpponent(e.target.value)}
           type="text"
           placeholder="Opponent..."
+          required
         />
 
         <label htmlFor="date-input">Päivämäärä:</label>
@@ -35,6 +38,7 @@ export default function CreateGameForm({
           type="date"
           id="date-input"
           onChange={(e) => setGameDate(e.target.value)}
+          required
         />
 
         <fieldset>
@@ -48,6 +52,7 @@ export default function CreateGameForm({
                 id="home-input"
                 value="home"
                 onChange={(e) => changeHomeRadio(e.target.value)}
+                required
               />
               <label htmlFor="home-input">Koti</label>
             </div>
@@ -58,11 +63,45 @@ export default function CreateGameForm({
                 id="away-input"
                 value="away"
                 onChange={(e) => changeHomeRadio(e.target.value)}
+                required
               />
               <label htmlFor="away-input">Vieras</label>
             </div>
           </div>
         </fieldset>
+
+        {/* Erikoistilanteet with ylivoima and alivoima input sideby side not on top of eachother */}
+        <div className="special-teams-inputs">
+          <div className="special-team-input">
+            <label htmlFor="powerplays-input">Ylivoimat</label>
+            <input
+              id="powerplays-input"
+              value={powerplays === null ? "" : powerplays}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPowerplays(val === "" ? null : Number(val));
+              }}
+              type="number"
+              min="0"
+              placeholder="YV kerrat"
+            />
+          </div>
+          <div className="special-team-input">
+            <label htmlFor="penaltykills-input">Alivoimat</label>
+            <input
+              id="penaltykills-input"
+              value={penaltyKills === null ? "" : penaltyKills}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPenaltyKills(val === "" ? null : Number(val));
+              }}
+              type="number"
+              min="0"
+              placeholder="AV kerrat"
+            />
+          </div>
+        </div>
+
         <button
           type="button"
           className={"secondary-button"}
@@ -74,10 +113,6 @@ export default function CreateGameForm({
           {isLoadingCreateGame ? LoadingSpinner(18) : "Luo peli"}
         </button>
       </form>
-      <MutedButton
-        text="Peruuta"
-        onClickMethod={() => onCancel()}
-      ></MutedButton>
-    </>
+    </div>
   );
 }

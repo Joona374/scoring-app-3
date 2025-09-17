@@ -64,7 +64,6 @@ export default function PlusMinus({ games }) {
         gameDateObject >= startDateObject && gameDateObject <= endDateObject
       );
     });
-    console.log("Show these", gamesToShow);
     return gamesToShow;
   };
 
@@ -105,10 +104,8 @@ export default function PlusMinus({ games }) {
   const downloadPlusMinus = async () => {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    console.log("This should plusminus");
     const token = sessionStorage.getItem("jwt_token");
     const queryString = `game_ids=${gamesSelected.join(",")}`;
-    console.log(queryString);
     const res = await fetch(`${BACKEND_URL}/excel/plusminus?${queryString}`, {
       headers: {
         Authorization: `Bearer ${token}`,

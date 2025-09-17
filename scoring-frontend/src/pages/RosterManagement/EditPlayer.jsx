@@ -81,7 +81,6 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
       }
 
       const data = await response.json();
-      console.log(data);
       setStatusMessage("Pelaaja poistettu onnistuneesti.");
       setIsSuccess(true);
 
@@ -140,8 +139,6 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
 
     const token = sessionStorage.getItem("jwt_token");
 
-    console.log("Player body:", playerBody);
-
     try {
       if (!playerId) {
         console.error("No player ID selected");
@@ -175,7 +172,6 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
       }
 
       const data = await response.json();
-      console.log(data);
       setStatusMessage("Pelaaja päivitetty onnistuneesti!");
       setIsSuccess(true);
       const updatedPlayer = {
@@ -185,7 +181,6 @@ export default function UpdatePlayer({ players, setPlayers, player }) {
         jersey_number: number,
         position: position,
       };
-      console.log("UPDATED:", updatedPlayer);
       const newPlayers = players.map((player) => {
         if (player.id === updatedPlayer.id) return updatedPlayer;
         else return player;

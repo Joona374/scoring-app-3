@@ -110,12 +110,14 @@ class GameCreate(BaseModel):
     game_date: date
     home_game: bool
     players_in_roster: List[PositionInRoster]
+    powerplays: Optional[int] = 0
+    penalty_kills: Optional[int] = 0
 
 class GameInRosterResponse(BaseModel):
     line: int
     position: str
-    player: PlayerResponse
-    
+    player: Optional[PlayerResponse]
+
 class TeamStatsTagResponse(BaseModel):
     id: Optional[int]
     succes: bool

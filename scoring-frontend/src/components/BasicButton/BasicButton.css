@@ -9,3 +9,15 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
+
+.basic-button:hover {
+    background-color: var(--accent-color-dark);
+}
+
+.basic-button:active {
+    background-color: var(--accent-color);
+}
+
+.basic-button:disabled {
+    cursor: not-allowed;
+}

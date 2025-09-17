@@ -2,7 +2,6 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function ExcelTest() {
   const downloadExcel = async () => {
-    console.log("This should dl");
     const res = await fetch(`${BACKEND_URL}/excel/download-test`);
     const fileBlob = await res.blob();
     const tempUrl = URL.createObjectURL(fileBlob);
@@ -13,7 +12,6 @@ export default function ExcelTest() {
   };
 
   const downloadTeamStats = async () => {
-    console.log("This should dl");
     const token = sessionStorage.getItem("jwt_token");
     try {
       const res = await fetch(`${BACKEND_URL}/excel/teamstats`, {

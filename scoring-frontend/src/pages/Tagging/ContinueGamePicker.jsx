@@ -19,7 +19,6 @@ export default function ContinueGamePicker({
   }, []);
 
   const [deletingGameId, setDeletingGameId] = useState(null);
-  console.log(gamesForTeam);
 
   const firstConfirmDeletingGameWithTags = (game) => {
     const confirmed = window.confirm(
@@ -51,7 +50,6 @@ export default function ContinueGamePicker({
     const newGamesForTeam = gamesForTeam.filter(
       (game) => game.id !== deletedGame.id
     );
-    console.log(newGamesForTeam);
     setGamesForTeam(newGamesForTeam);
   };
 
@@ -80,7 +78,6 @@ export default function ContinueGamePicker({
 
     if (response.ok) {
       const data = await response.json();
-      console.log(data);
       setDeletingGameId(null);
 
       if (data.challenge === true && !alreadyConfirmed) {

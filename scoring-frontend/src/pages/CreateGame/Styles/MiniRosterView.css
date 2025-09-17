@@ -1,0 +1,40 @@
+.mini-roster-view {
+  padding: 2rem;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  width: 400px;
+}
+
+.forwards-row {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.defenders-row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 4px;
+}
+
+.goalies-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.player-number {
+  flex: 1;
+  min-width: 30px;
+  text-align: center;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+
+
+.mini-roster-title {
+  font-weight: bold;
+  margin: 12px;
+  text-align: center;
+}

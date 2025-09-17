@@ -18,7 +18,6 @@ def create_a_player(player_data: PlayerCreate, db_session: Session = Depends(get
     player_jersey_number = player_data.jersey_number
     player_position = player_data.position
 
-    print(f"Player: {player_first_name} {player_last_name} is {player_position}")
     user = db_session.query(User).filter(User.id == current_user_id).first()
     
     if not user:
@@ -40,7 +39,6 @@ def create_a_player(player_data: PlayerCreate, db_session: Session = Depends(get
 
 @router.patch("/update/{player_id}")
 def update_player(player_id: int, player_data: PlayerUpdate, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    print(player_data)
     user = db_session.query(User).filter(User.id == current_user_id).first()
     player = db_session.query(Player).filter(Player.id == player_id).first()
 
@@ -90,25 +88,28 @@ def update_player(player_id: int, db_session: Session = Depends(get_db_session),
 
 @router.get("/for-team")
 def get_player_for_team(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    print(f"Current user id:", current_user_id)
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found in db")
+    try:
+        user = db_session.query(User).filter(User.id == current_user_id).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found in db")
 
-    team = user.team
-    teams_players = team.players
+        team = user.team
+        teams_players = team.players
 
-    response_players_list = []
-    for player in teams_players:
-        if not player.is_active:
-            continue
-        player_response = PlayerResponse(
-            id=player.id,
-            first_name=player.first_name,
-            last_name=player.last_name,
-            jersey_number=player.jersey_number,
-            position=player.position.name
-        )
-        response_players_list.append(player_response)
+        response_players_list = []
+        for player in teams_players:
+            if not player.is_active:
+                continue
+            player_response = PlayerResponse(
+                id=player.id,
+                first_name=player.first_name,
+                last_name=player.last_name,
+                jersey_number=player.jersey_number,
+                position=player.position.name
+            )
+            response_players_list.append(player_response)
 
-    return response_players_list
+        return response_players_list
+    except Exception as e:
+        print(f"Error while getting players for team: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error while getting players for team")

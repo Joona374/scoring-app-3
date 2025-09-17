@@ -38,7 +38,6 @@ export default function TeamDashboard() {
           setTeamname("Sinulla ei ole vielä joukkuetta.");
           navigator("/create-team");
         }
-        console.log(data);
       } catch (err) {
         console.log("Error:", err);
         setTeamname("Virhe joukkueen haussa.");

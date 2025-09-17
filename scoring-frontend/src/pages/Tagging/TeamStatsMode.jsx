@@ -46,7 +46,6 @@ export default function TeamStatsMode() {
         }
 
         const data = await res.json();
-        console.log("Tags downloaded:", data);
         setTaggedEvents(data);
       } catch (err) {
         console.log(err);

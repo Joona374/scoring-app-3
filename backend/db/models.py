@@ -155,6 +155,8 @@ class Game(Base):
     date: Mapped[Date] = mapped_column(Date, nullable=False)
     opponent: Mapped[str] = mapped_column(String(128), nullable=False)
     home: Mapped[bool] = mapped_column(nullable=False)
+    powerplays: Mapped[Optional[int]] = mapped_column(nullable=True, default=None, server_default=None)
+    penalty_kills: Mapped[Optional[int]] = mapped_column(nullable=True, default=None, server_default=None)
 
     in_rosters: Mapped[List["GameInRoster"]] = relationship(back_populates="game", foreign_keys="GameInRoster.game_id", passive_deletes=True)
     team_stats_tags: Mapped[List["TeamStatsTag"]] = relationship(back_populates="game", foreign_keys="TeamStatsTag.game_id", passive_deletes=True)
@@ -175,6 +177,8 @@ class GameInRoster(Base):
     line: Mapped[int] = mapped_column(nullable=False)
     position: Mapped[str] = mapped_column(String(2), nullable=False)
 
+    def __repr__(self):
+        return f"GameInRoster({self.player.first_name} {self.player.last_name} in game {self.game.id} as {self.line}-{self.position})"
 
 # STATS
 class TeamStatsTag(Base):

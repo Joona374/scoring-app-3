@@ -44,10 +44,7 @@ export default function TaggingArea() {
       );
 
       if (!res.ok) {
-        console.log(
-          "no work getting roster for game (IS IT 1? Forgot to change?):",
-          gameId
-        );
+        console.log("Error fetching roster for game:", gameId);
       }
 
       const data = await res.json();

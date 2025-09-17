@@ -16,6 +16,7 @@ export const TaggingProvider = ({ children }) => {
   const [playersInRoster, setPlayersInRoster] = useState([]);
   const [currentGameId, setCurrentGameId] = useState();
   const [gamesForTeam, setGamesForTeam] = useState([]);
+  const [playersInTeam, setPlayersInTeam] = useState([]);
 
   const advanceQuestion = (last_question, next_question_id, newTag) => {
     try {
@@ -52,8 +53,6 @@ export const TaggingProvider = ({ children }) => {
     else if (currentTaggingMode === "goaie")
       postingEndpoint = `${BACKEND_URL}/tagging/add-goalies-tag`;
 
-    console.log("NEW TAG BEFORE POSTNG:", newTag);
-
     try {
       const res = await fetch(postingEndpoint, {
         method: "POST",
@@ -72,7 +71,6 @@ export const TaggingProvider = ({ children }) => {
       }
       const data = await res.json();
       const fullTag = { ...newTag, id: data.id }; // Merge ID into tag
-      console.log("Tag posted successfully:", fullTag);
       setTaggedEvents((prev) => [...prev, fullTag]); // Safely append
     } catch (error) {
       setTaggedEvents(rollbackTags);
@@ -117,6 +115,25 @@ export const TaggingProvider = ({ children }) => {
     }
   };
 
+  const fetchPlayersInTeam = async () => {
+    try {
+      const token = sessionStorage.getItem("jwt_token");
+      const res = await fetch(`${BACKEND_URL}/players/for-team`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch players for users teams");
+      }
+
+      const players = await res.json();
+      setPlayersInTeam(players);
+    } catch (error) {
+      console.log("Error?: ", error);
+      throw new Error("Failed to fetch players for users teams");
+    }
+  };
+
   return (
     <TaggingContext.Provider
       value={{
@@ -141,6 +158,8 @@ export const TaggingProvider = ({ children }) => {
         setCurrentTaggingMode,
         stepBackInTag,
         getGamesFromBackend,
+        fetchPlayersInTeam,
+        playersInTeam,
       }}
     >
       {children}

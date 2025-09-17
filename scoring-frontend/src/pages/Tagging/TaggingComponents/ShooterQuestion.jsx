@@ -34,7 +34,7 @@ export default function ShooterQuestion() {
                         posInRoster.position === position
                     );
 
-                    if (playerForPosition) {
+                    if (playerForPosition && playerForPosition.player) {
                       const player = playerForPosition.player;
                       return (
                         <PlayerBox
@@ -78,7 +78,7 @@ export default function ShooterQuestion() {
                         posInRoster.position === position
                     );
 
-                    if (playerForPosition) {
+                    if (playerForPosition && playerForPosition.player) {
                       const player = playerForPosition.player;
                       return (
                         <PlayerBox

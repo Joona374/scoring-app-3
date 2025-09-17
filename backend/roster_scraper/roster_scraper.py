@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import os
-# Force Playwright to use the slug-bundled browsers, not the default cache
-os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.playwright")
-# Make absolutely sure it doesn't try headless_shell
-os.environ["PLAYWRIGHT_CHROMIUM_USE_HEADLESS_SHELL"] = "0"
-# (Optional) Quiet host checks on slim containers
-# os.environ.setdefault("PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS", "1")
+
+env = os.environ.get("ENV", "development")  # default to development
+if env != "LOCAL":
+    # Force Playwright to use the slug-bundled browsers, not the default cache
+    os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.playwright")
+    # Make absolutely sure it doesn't try headless_shell
+    os.environ["PLAYWRIGHT_CHROMIUM_USE_HEADLESS_SHELL"] = "0"
+    # (Optional) Quiet host checks on slim containers
+    # os.environ.setdefault("PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS", "1")
 
 import asyncio
 import re
@@ -215,15 +218,18 @@ async def scrape_team_slots(url: str, side: Side) -> Dict[str, str]:
     results: Dict[str, str] = {}
 
     try:
+        if env == "LOCAL":
+            chrome_path = None  # use default
+        else:
         # Find the exact chrome binary we baked into the slug during BUILD
-        base = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.playwright")
-        candidates = glob.glob(os.path.join(base, "chromium-*", "chrome-linux", "chrome"))
-        if not candidates:
-            raise RuntimeError(
-                f"No Chromium found under {base}. Did your BUILD step run "
-                f"`python -m playwright install chromium` with PLAYWRIGHT_BROWSERS_PATH set?"
-            )
-        chrome_path = candidates[0]
+            base = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.playwright")
+            candidates = glob.glob(os.path.join(base, "chromium-*", "chrome-linux", "chrome"))
+            if not candidates:
+                raise RuntimeError(
+                    f"No Chromium found under {base}. Did your BUILD step run "
+                    f"`python -m playwright install chromium` with PLAYWRIGHT_BROWSERS_PATH set?"
+                )
+            chrome_path = candidates[0]
 
         async with async_playwright() as pw:
             browser = await pw.chromium.launch(

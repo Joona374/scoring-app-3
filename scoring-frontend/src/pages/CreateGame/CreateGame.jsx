@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { TaggingContext } from "../../context/TaggingContext";
 import "./Styles/CreateGame.css";
 import CreateGameForm from "./CreateGameForm";
-import RosterSelector from "./RosterSelector";
+import RosterSelector from "../../components/RosterSelector/RosterSelector";
+import Modal from "../../components/Modal/Modal";
+import MiniRosterView from "./MiniRosterView";
+import MutedButton from "../../components/MutedButton/MutedButton";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
+  const { playersInTeam, fetchPlayersInTeam } = useContext(TaggingContext);
+
   const generateEmptyPlayersInRoster = () => {
     let emptyPlayersInRoster = [];
     for (let i = 1; i <= 5; i++) {
@@ -30,34 +36,16 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
   const [opponent, setOpponent] = useState("");
   const [gameDate, setGameDate] = useState(null);
   const [homeGame, setHomeGame] = useState(null);
+  const [powerplays, setPowerplays] = useState(null);
+  const [penaltyKills, setPenaltyKills] = useState(null);
   const [showRosterSelector, setShowRosterSelector] = useState(false);
-  const [players, setPlayers] = useState([]);
   const [playersInRoster, setPlayersInRoster] = useState(
     generateEmptyPlayersInRoster()
   );
   const [isLoadingCreateGame, setIsLoadingCreateGame] = useState(false);
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const token = sessionStorage.getItem("jwt_token");
-        const res = await fetch(`${BACKEND_URL}/players/for-team`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch players for users teams");
-        }
-
-        const players = await res.json();
-        setPlayers(players);
-      } catch (error) {
-        console.log("Error?: ", error);
-        throw new Error("Failed to fetch players for users teams");
-      }
-    };
-
-    fetchPlayers();
+    fetchPlayersInTeam();
   }, []);
 
   const submitGame = async (event) => {
@@ -78,6 +66,8 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
           game_date: gameDate,
           home_game: homeGame,
           players_in_roster: playersInRoster,
+          powerplays: powerplays,
+          penalty_kills: penaltyKills,
         }),
       });
 
@@ -96,31 +86,49 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
     }
   };
 
+  const updateRoster = (newRoster) => {
+    setPlayersInRoster(newRoster);
+  };
+
   return (
     <div className="create-game-page">
-      <div className="create-game-form-wrapper">
-        <h1>Luo uusi peli</h1>
+      <h1>Luo uusi peli</h1>
 
+      <div className="create-game-form-wrapper">
         <CreateGameForm
           opponent={opponent}
           setOpponent={setOpponent}
           setGameDate={setGameDate}
           setHomeGame={setHomeGame}
+          setPowerplays={setPowerplays}
+          setPenaltyKills={setPenaltyKills}
+          powerplays={powerplays}
+          penaltyKills={penaltyKills}
           showRosterSelector={showRosterSelector}
           setShowRosterSelector={setShowRosterSelector}
           submitGame={submitGame}
-          onCancel={onCancel}
           isLoadingCreateGame={isLoadingCreateGame}
-          setIsLoadingCreateGame={setIsLoadingCreateGame}
         />
+        <MiniRosterView playersInRoster={playersInRoster} />
       </div>
+
+      <MutedButton
+        text="Peruuta"
+        onClickMethod={() => onCancel()}
+      ></MutedButton>
+
       {showRosterSelector && (
-        <RosterSelector
-          setShowRosterSelector={setShowRosterSelector}
-          players={players}
-          playersInRoster={playersInRoster}
-          setPlayersInRoster={setPlayersInRoster}
-        />
+        <Modal
+          children={
+            <RosterSelector
+              setShowRosterSelector={setShowRosterSelector}
+              playersInTeam={playersInTeam}
+              playersInRoster={playersInRoster}
+              updateRoster={updateRoster}
+              homeGame={homeGame}
+            />
+          }
+        ></Modal>
       )}
     </div>
   );
