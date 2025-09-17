@@ -44,6 +44,14 @@ def create_game(data: GameCreate, db_session: Session = Depends(get_db_session),
 
     return {"game_id": new_game.id}
 
+@router.get("/get/{game_id}")
+def get_game(game_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    game = db_session.query(Game).filter(Game.id == game_id).first()
+    if user.team != game.team:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to view this game")
+    return game
+
 @router.delete("/delete/{game_id}")
 def delete_game(game_id: int, already_confirmed: bool, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     user = db_session.query(User).filter(User.id == current_user_id).first()

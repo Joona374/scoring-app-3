@@ -33,59 +33,85 @@ export default function PlayerStatsMode({}) {
   } = useContext(TaggingContext);
 
   const [showRosterEditor, setShowRosterEditor] = useState(false);
+  const [game, setGame] = useState(null);
 
   useEffect(() => {
     fetchPlayersInTeam();
-
-    async function fetchTags() {
-      const token = sessionStorage.getItem("jwt_token");
-      const queryString = `${BACKEND_URL}/tagging/load/player-tags/${currentGameId}`;
-
-      try {
-        const res = await fetch(queryString, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          console.log("Error downloading tags for game:", currentGameId);
-        }
-
-        const data = await res.json();
-        setTaggedEvents(data);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-
-    async function fetchQuestions() {
-      const token = sessionStorage.getItem("jwt_token");
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/tagging/questions/player`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const questionsJson = await res.json();
-        const questionObjs = questionsJson.questions.map(
-          (element) => new Question(element)
-        );
-        setQuestionObjects(questionObjs);
-        if (questionObjs.length > 0) {
-          // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
-          setCurrentQuestionId(questionObjs[0].id);
-          setFirstQuestionId(questionObjs[0].id);
-        }
-      } catch (err) {
-        console.error("Error fetching questions from backend:", err);
-      }
-    }
     fetchQuestions();
     fetchTags();
+    async function asyncFetchGame() {
+      const game = await fetchGame();
+      console.log("Game:", game);
+      setGame(game);
+    }
+    asyncFetchGame();
   }, []);
+
+  async function fetchGame() {
+    const token = sessionStorage.getItem("jwt_token");
+    const gameId = currentGameId;
+    try {
+      const res = await fetch(`${BACKEND_URL}/games/get/${gameId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const gameJson = await res.json();
+      return gameJson;
+    } catch (err) {
+      console.error("Error fetching game from backend:", err);
+    }
+  }
+
+  async function fetchQuestions() {
+    const token = sessionStorage.getItem("jwt_token");
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/tagging/questions/player`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const questionsJson = await res.json();
+      const questionObjs = questionsJson.questions.map(
+        (element) => new Question(element)
+      );
+      setQuestionObjects(questionObjs);
+      if (questionObjs.length > 0) {
+        // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
+        setCurrentQuestionId(questionObjs[0].id);
+        setFirstQuestionId(questionObjs[0].id);
+      }
+    } catch (err) {
+      console.error("Error fetching questions from backend:", err);
+    }
+  }
+
+  async function fetchTags() {
+    const token = sessionStorage.getItem("jwt_token");
+    const queryString = `${BACKEND_URL}/tagging/load/player-tags/${currentGameId}`;
+
+    try {
+      const res = await fetch(queryString, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        console.log("Error downloading tags for game:", currentGameId);
+      }
+
+      const data = await res.json();
+      setTaggedEvents(data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   // This function gets the roster for this game form db
   const getRosterFromDb = async (gameId) => {
@@ -193,16 +219,10 @@ export default function PlayerStatsMode({}) {
               playersInTeam={playersInTeam}
               playersInRoster={playersInRoster}
               updateRoster={updateRoster}
+              homeGame={game ? game.home_game : null}
             />
           }
         ></Modal>
-
-        // <RosterSelector
-        //   setShowRosterSelector={setShowRosterSelector}
-        //   players={players}
-        //   playersInRoster={playersInRoster}
-        //   setPlayersInRoster={setPlayersInRoster}
-        // />
       )}
     </div>
   );

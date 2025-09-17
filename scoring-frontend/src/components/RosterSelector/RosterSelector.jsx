@@ -11,6 +11,7 @@ export default function RosterSelector({
   playersInTeam,
   playersInRoster,
   updateRoster,
+  homeGame,
 }) {
   const [selectingPosition, setSelectingPosition] = useState("");
   const [scraperUrl, setScraperUrl] = useState("");
@@ -20,8 +21,7 @@ export default function RosterSelector({
 
   useEffect(() => {
     setDraftRoster([...playersInRoster]);
-    console.log(playersInRoster);
-    console.log(playersInTeam);
+    setScraperLocation(homeGame ? "koti" : "vieras");
   }, []);
 
   const handlePlayerListClick = (target, index) => {

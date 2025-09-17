@@ -125,6 +125,7 @@ export default function CreateGame({ pickMode, setCurrentGameId, onCancel }) {
               playersInTeam={playersInTeam}
               playersInRoster={playersInRoster}
               updateRoster={updateRoster}
+              homeGame={homeGame}
             />
           }
         ></Modal>
