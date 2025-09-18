@@ -26,19 +26,45 @@ router = APIRouter(
 
 @router.post("/clean-db")
 def clean_db(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    # Inform user this path is disabled for safety
+    return {"Message": "This path is disabled for safety. Contact the developer if you really need to wipe the db."}
+
+    # user = db_session.query(User).filter(User.id == current_user_id).first()
+    # if not user or not user.is_admin:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non admin user")
+    # db_session.close()
+    # try:
+    #     creator_code = wipe_db()
+    #     return {"Message": "Wiped db!", "creator_code": creator_code}
+    # except Exception as e:
+    #     return {"Message": "DB WIPING FAILED", "ERROR": e}
+
+
+@router.post("/change-admin-team")
+def change_admin_team(new_team_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     user = db_session.query(User).filter(User.id == current_user_id).first()
     if not user or not user.is_admin:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non admin user")
-    db_session.close()
-    try:
-        creator_code = wipe_db()
-        return {"Message": "Wiped db!", "creator_code": creator_code}
-    except Exception as e:
-        return {"Message": "DB WIPING FAILED", "ERROR": e}
+    
+    team = db_session.query(Team).filter(Team.id == new_team_id).first()
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")
+    
+    user.team_id = new_team_id
+    db_session.commit()
+    return {"Message": f"Admin user team changed to {team.name} (id: {team.id})"}
 
+@router.get("/teams")
+def get_teams(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    if not user or not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non admin user")
+
+    teams = db_session.query(Team).all()
+    return {"teams": teams}
 
 @router.post("/create-code")
-def clean_db(code_data: CreateCode, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+def create_code(code_data: CreateCode, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     user = db_session.query(User).filter(User.id == current_user_id).first()
     if not user.is_admin:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non admin user")
