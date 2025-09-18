@@ -90,14 +90,10 @@ export default function ExcelExporter() {
       }
       right={
         <>
-          <div>
-            {selectedReport ? (
-              <p></p>
-            ) : (
-              <p>Valitse vasemmalta raportti jatkaaksesi</p>
-            )}
-          </div>
-
+          {" "}
+          {selectedReport ? null : (
+            <p>Valitse vasemmalta raportti jatkaaksesi</p>
+          )}
           {selectedReport === "plusminus" ? (
             <GamesSelector
               games={games}
