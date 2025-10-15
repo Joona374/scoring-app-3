@@ -58,12 +58,12 @@ export default function NetQuestion() {
     },
 
     {
-      name: "Top-Left",
+      name: "Top-Right",
       points: [
-        [94, 0],
         [65, 0],
-        [65, 35],
+        [94, 0],
         [94, 35],
+        [65, 35],
       ],
     },
 
@@ -88,12 +88,12 @@ export default function NetQuestion() {
     },
 
     {
-      name: "Mid-Left",
+      name: "Mid-Right",
       points: [
-        [94, 35],
         [65, 35],
-        [65, 70],
+        [94, 35],
         [94, 70],
+        [64, 70],
       ],
     },
     {
@@ -117,12 +117,12 @@ export default function NetQuestion() {
     },
 
     {
-      name: "Bottom-Left",
+      name: "Bottom-Right",
       points: [
-        [94, 70],
         [65, 70],
-        [65, 100],
+        [94, 70],
         [94, 100],
+        [65, 100],
       ],
     },
   ];
