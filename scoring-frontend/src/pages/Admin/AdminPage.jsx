@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import AuthContext from "../../auth/AuthContext";
 import "./AdminPage.css";
 
@@ -11,6 +11,48 @@ export default function AdminPage() {
   const [creatorCode, setCreatorCode] = useState("");
   const [newCodeIdentifier, setNewCodeIdentifier] = useState("");
   const [newCode, setNewCode] = useState("");
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState("");
+  const [teamChangeMessage, setTeamChangeMessage] = useState("");
+
+  useEffect(() => {
+    async function fetchData() {
+      // your async code here
+      setTeams(await fetchTeams());
+    }
+    fetchData();
+  }, []);
+
+  const changeAdminTeam = async (teamId) => {
+    const token = sessionStorage.getItem("jwt_token");
+    const res = await fetch(
+      `${BACKEND_URL}/admin/change-admin-team?new_team_id=${teamId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const data = await res.json();
+    console.log(data);
+    setTeamChangeMessage(data.Message);
+    return data;
+  };
+
+  const fetchTeams = async () => {
+    const token = sessionStorage.getItem("jwt_token");
+    const res = await fetch(`${BACKEND_URL}/admin/teams`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    return data.teams;
+  };
 
   const handleCleanDb = async () => {
     const token = sessionStorage.getItem("jwt_token");
@@ -80,6 +122,32 @@ export default function AdminPage() {
 
           <button type="submit">Create New Code</button>
         </form>
+      </div>
+
+      <div className="change-team-wrapper">
+        <div className="auth-form">
+          <label htmlFor="teams">Select Team</label>
+          <select
+            id="teams"
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+          >
+            <option value="">-- Select a team --</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+          {/* Some kind of button to perform an action with the selected team */}
+          <button
+            disabled={!selectedTeam}
+            onClick={() => changeAdminTeam(selectedTeam)}
+          >
+            Select users team
+          </button>
+          <p className="team-change-message">{teamChangeMessage}</p>
+        </div>
       </div>
     </div>
   );

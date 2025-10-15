@@ -176,135 +176,140 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
   }, []);
 
   return (
-    <>
-      <div className="date-selectors">
-        <div className="date-section">
-          <label htmlFor="excel-start-date">Alkaen</label>
-          <input
-            type="date"
-            id="excel-start-date"
-            className="excel-date"
-            value={startDate}
-            onChange={() => applyFilters("start", event.target.value)}
-          />
+    <div className="games-selector-wrapper">
+      <div className="games-selector-top-controls">
+        <div className="date-selectors">
+          <div className="date-section">
+            <label htmlFor="excel-start-date">Alkaen</label>
+            <input
+              type="date"
+              id="excel-start-date"
+              className="excel-date"
+              value={startDate}
+              onChange={() => applyFilters("start", event.target.value)}
+            />
+          </div>
+
+          <div className="date-section">
+            <label htmlFor="excel-end-date">Päättyen</label>
+            <input
+              type="date"
+              id="excel-end-date"
+              className="excel-date"
+              value={endDate}
+              onChange={() => applyFilters("end", event.target.value)}
+            />
+          </div>
+          <button onClick={resetDates}>Nollaa</button>
         </div>
 
-        <div className="date-section">
-          <label htmlFor="excel-end-date">Päättyen</label>
-          <input
-            type="date"
-            id="excel-end-date"
-            className="excel-date"
-            value={endDate}
-            onChange={() => applyFilters("end", event.target.value)}
-          />
+        <div className="game-location-radio">
+          <label>
+            <input
+              type="radio"
+              name="game-location"
+              id="location-radio-BOTH"
+              value="BOTH"
+              checked={homeAwayFilter === "BOTH"}
+              onChange={() => {
+                setHomeAwayFilter("BOTH");
+                applyFilters("home", "BOTH");
+              }}
+            />
+            KAIKKI
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="game-location"
+              id="location-radio-HOME"
+              value="HOME"
+              checked={homeAwayFilter === "HOME"}
+              onChange={() => {
+                setHomeAwayFilter("HOME");
+                applyFilters("home", "HOME");
+              }}
+            />
+            KOTI
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="game-location"
+              id="location-radio-AWAY"
+              value="AWAY"
+              checked={homeAwayFilter === "AWAY"}
+              onChange={() => {
+                setHomeAwayFilter("AWAY");
+                applyFilters("home", "AWAY");
+              }}
+            />
+            VIERAS
+          </label>
         </div>
-        <button onClick={resetDates}>Nollaa</button>
       </div>
 
-      <div className="game-location-radio">
-        <label>
-          <input
-            type="radio"
-            name="game-location"
-            id="location-radio-BOTH"
-            value="BOTH"
-            checked={homeAwayFilter === "BOTH"}
-            onChange={() => {
-              setHomeAwayFilter("BOTH");
-              applyFilters("home", "BOTH");
-            }}
-          />
-          KAIKKI
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="game-location"
-            id="location-radio-HOME"
-            value="HOME"
-            checked={homeAwayFilter === "HOME"}
-            onChange={() => {
-              setHomeAwayFilter("HOME");
-              applyFilters("home", "HOME");
-            }}
-          />
-          KOTI
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="game-location"
-            id="location-radio-AWAY"
-            value="AWAY"
-            checked={homeAwayFilter === "AWAY"}
-            onChange={() => {
-              setHomeAwayFilter("AWAY");
-              applyFilters("home", "AWAY");
-            }}
-          />
-          VIERAS
-        </label>
+      <div className="games-table-scroll">
+        <table className="games-table">
+          <thead>
+            <tr>
+              <th className="games-sorting-th">Valittu</th>
+              <th
+                className={
+                  sortColumn === "date"
+                    ? "active-sort games-sorting-th "
+                    : "games-sorting-th "
+                }
+                onClick={() => handleSort("date")}
+              >
+                PVM{" "}
+                {sortColumn === "date" && (
+                  <span>{sortDirection === "ASC" ? "▼" : "▲"}</span>
+                )}
+              </th>
+              <th
+                className={
+                  sortColumn === "opponent"
+                    ? "active-sort games-sorting-th "
+                    : "games-sorting-th "
+                }
+                onClick={() => handleSort("opponent")}
+              >
+                Vs{" "}
+                {sortColumn === "opponent" && (
+                  <span>{sortDirection === "ASC" ? "▼" : "▲"}</span>
+                )}
+              </th>
+              <th
+                className={
+                  sortColumn === "home"
+                    ? "active-sort games-sorting-th "
+                    : "games-sorting-th "
+                }
+                onClick={() => handleSort("home")}
+              >
+                Koti/Vieras{" "}
+                {sortColumn === "home" && (
+                  <span>{sortDirection === "ASC" ? "▲" : "▼"}</span>
+                )}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredGames.map((game, idx) => {
+              return (
+                <GameSelectorRow
+                  game={game}
+                  key={idx}
+                  gamesSelected={gamesSelected}
+                  setGamesSelected={setGamesSelected}
+                ></GameSelectorRow>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-      <table className="games-table">
-        <thead>
-          {/* TODO: IMPLEMENT SORTING */}
-          <tr>
-            <th className="games-sorting-th">Valittu</th>
-            <th
-              className={
-                sortColumn === "date"
-                  ? "active-sort games-sorting-th "
-                  : "games-sorting-th "
-              }
-              onClick={() => handleSort("date")}
-            >
-              PVM{" "}
-              {sortColumn === "date" && (
-                <span>{sortDirection === "ASC" ? "▼" : "▲"}</span>
-              )}
-            </th>
-            <th
-              className={
-                sortColumn === "opponent"
-                  ? "active-sort games-sorting-th "
-                  : "games-sorting-th "
-              }
-              onClick={() => handleSort("opponent")}
-            >
-              Vs{" "}
-              {sortColumn === "opponent" && (
-                <span>{sortDirection === "ASC" ? "▼" : "▲"}</span>
-              )}
-            </th>
-            <th
-              className={
-                sortColumn === "home"
-                  ? "active-sort games-sorting-th "
-                  : "games-sorting-th "
-              }
-              onClick={() => handleSort("home")}
-            >
-              Koti/Vieras{" "}
-              {sortColumn === "home" && (
-                <span>{sortDirection === "ASC" ? "▲" : "▼"}</span>
-              )}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredGames.map((game, idx) => {
-            return (
-              <GameSelectorRow
-                game={game}
-                key={idx}
-                gamesSelected={gamesSelected}
-                setGamesSelected={setGamesSelected}
-              ></GameSelectorRow>
-            );
-          })}
-        </tbody>
-      </table>
+
       <div className="games-selector-excel-buttons">
         <div className="selection-controls">
           <button onClick={selectAll}>Valitse kaikki</button>
@@ -314,6 +319,6 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 }
