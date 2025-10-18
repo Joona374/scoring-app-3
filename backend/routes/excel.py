@@ -238,7 +238,11 @@ async def get_teamstats_excel(game_ids: str, db_session: Session = Depends(get_d
     for _, tags_list in games_with_stats_dict.items():
         game_object = tags_list[0].game
         game_sheet = workbook.copy_worksheet(team_stats_sheet)
-        game_sheet.title = f"{game_object.opponent} {game_object.date}"
+        if "/" in game_object.opponent:
+            sanitized_opponent = game_object.opponent.replace("/", "&")
+            game_sheet.title = f"{sanitized_opponent} {game_object.date}"
+        else:
+            game_sheet.title = f"{game_object.opponent} {game_object.date}"
         cell_values_for_game = calculate_numbers_for_cells(tags_list)
         for cell, value in cell_values_for_game.items():
             game_sheet[cell] = int(value)
@@ -518,7 +522,12 @@ async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depend
 
     for game in data_for_games:
         game_sheet = workbook.copy_worksheet(template_sheet)
-        game_sheet.title = f"{game["opponent"]} {game["date"]}"
+        
+        if "/" in game["opponent"]:
+            sanitized_opponent = game["opponent"].replace("/", "&")
+            game_sheet.title = f"{sanitized_opponent} {game['date']}"
+        else:
+            game_sheet.title = f"{game["opponent"]} {game["date"]}"
 
         for i, defender in enumerate(game["roster"]["defenders"]):
             row = 4 + i
@@ -827,7 +836,13 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
     cell_values_for_games.sort(key=lambda game: game["date"], reverse=True)
     for game in cell_values_for_games:
         game_sheet = workbook.copy_worksheet(template_sheet)
-        game_sheet.title = f"{game["opponent"]} {game["date"]}"
+
+        if "/" in game["opponent"]:
+            sanitized_opponent = game["opponent"].replace("/", "&")
+            game_sheet.title = f"{sanitized_opponent} {game['date']}"
+        else:
+            game_sheet.title = f"{game['opponent']} {game['date']}"
+
         game_sheet["C1"] = game["date"]
         game_sheet["G1"] = game["opponent"]
         game_sheet["T1"] = game["home"]
