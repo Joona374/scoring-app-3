@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, Depends, Query
+from fastapi import APIRouter, HTTPException, Response, Depends, status
 from sqlalchemy.orm import Session
 from io import BytesIO
 from openpyxl import load_workbook
@@ -7,39 +7,13 @@ import copy
 
 from utils import get_current_user_id
 from db.db_manager import get_db_session
-from db.models import TeamStatsTag, User, Game, PlayerStatsTag, ShotResult, ShotResultTypes, ShotAreaTypes, ShotTypeTypes, PlayerStatsTagOnIce, PlayerStatsTagParticipating
+from db.models import GameInRoster, Player, TeamStatsTag, User, Game, PlayerStatsTag, ShotResult, ShotResultTypes, ShotAreaTypes, ShotTypeTypes, PlayerStatsTagOnIce, PlayerStatsTagParticipating
 
 router = APIRouter(
     prefix="/excel",
     tags=["excel"],
     responses={404: {"description": "Not found"}},
 )
-
-# TODO: Remove this?
-@router.get("/download-test")
-async def download_excel():
-    workbook = load_workbook("mock_excel.xlsx")
-    player_template = workbook.active
-
-    names = ["Pekka", "Tero", "Pasi", "Harri", "Kari"]
-
-    for i in range(5):
-        new_sheet = workbook.copy_worksheet(player_template)
-        new_sheet.title = names[i]
-        new_sheet["B1"] = names[i]
-        new_sheet["D1"] = i * 2
-
-    workbook.remove(workbook.worksheets[0])
-
-    output = BytesIO()
-    workbook.save(output)
-    output.seek(0)
-
-    return Response(
-        content=output.getvalue(),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=stats.xlsx"}
-    )
 
 
 ########################## FOR TEAM STATS ##########################
@@ -52,104 +26,47 @@ def get_result_column_shifter(scoring_chance: TeamStatsTag):
         return 6
     elif scoring_chance.play_result == "MP -":
         return 9
-    
+    else:
+        raise ValueError("Invalid play_result in scoring_chance", scoring_chance)
+
+
 def get_chance_row(scoring_chance: TeamStatsTag):
     try:
         CHANCE_ROW_MAPPING = {
-            "rush_type1": {
-                "Tasavoimainen": 10,
-                "Ylivoimainen": 11,
-                "Alivoimainen": 12,
-                "Läpiajo": 13
-                },
-
+            "rush_type1": {"Tasavoimainen": 10, "Ylivoimainen": 11, "Alivoimainen": 12, "Läpiajo": 13},
             "takeaway_type": {
                 "HAPP/PAHP": 15,
                 "KAPP/KAHP": 17,
                 "PAPP/HAHP": 19,
                 "Jatkopaine": 21,
             },
-
-            "hahp_papp_type": {
-                "Täyttö": 23,
-                "Alapeli": 25,
-                "Yläpeli": 27
-            },
-
+            "hahp_papp_type": {"Täyttö": 23, "Alapeli": 25, "Yläpeli": 27},
             "rebound_type": {
                 "SHP": 29,
                 "Riisto/Menetys": 29,
                 "HAHP/PAPP": 29,
             },
-
             "faceoff_type": {
                 "Hyökkäysalue": 31,
                 "Keskialue": 31,
                 "Puolustusalue": 31,
             },
-
             "v5v5_other_type": {
                 "IM": 33,
                 "TM": 33,
                 "4v4": 33,
             },
+            "pp_faceoff_entry_type": {"Aloitus Vasen": 38, "Aloitus Oikea": 38, "Haku / vastaanotto": 38},
+            "pp_shot_deflection_low_type1": {"Päädystä": 40, "Siiveltä": 41, "Keskeltä": 42, "Viivasta": 43},
+            "pp_blueline_shot_type": {"Suora": 45, "Ohjuri": 45, "Rebound": 45},
+            "pp_pressure_brokenplay_type": {"Paine": 47, "Riisto": 47, "Brokenplay": 47},
+            "pp_other_type": {"Kuljetus": 49, "Punnerrus": 49, "Rebound": 49},
+            "pp_5vs3_type": {"Suora": 51, "Ohjuri": 51, "Rebound": 51},
+            "pp_av_yv_type": {"Läpiajo": 53, "YV": 53, "TV": 53},
+            "v3vs3_type": {"Aloitus": 58, "Hallinta": 58, "Riisto / Menetys": 58},
+            "ps_type": {"Laukaus": 60, "Harhautus": 60, "Muu": 60},
+        }
 
-            "pp_faceoff_entry_type": {
-                "Aloitus Vasen": 38,
-                "Aloitus Oikea": 38,
-                "Haku / vastaanotto": 38
-            },
-
-            "pp_shot_deflection_low_type1": {
-                "Päädystä": 40,
-                "Siiveltä": 41,
-                "Keskeltä": 42,
-                "Viivasta": 43
-            },
-
-            "pp_blueline_shot_type": {
-                "Suora": 45,
-                "Ohjuri": 45,
-                "Rebound": 45
-            },
-
-            "pp_pressure_brokenplay_type": {
-                "Paine": 47,
-                "Riisto": 47,
-                "Brokenplay": 47
-            },
-
-            "pp_other_type": {
-                "Kuljetus": 49,
-                "Punnerrus": 49,
-                "Rebound": 49
-            },
-
-            "pp_5vs3_type": {
-                "Suora": 51,
-                "Ohjuri": 51,
-                "Rebound": 51
-            },
-
-            "pp_av_yv_type": {
-                "Läpiajo": 53,
-                "YV": 53,
-                "TV": 53
-            },
-
-            "v3vs3_type": {
-                "Aloitus": 58,
-                "Hallinta": 58,
-                "Riisto / Menetys": 58
-            },
-
-            "ps_type": {
-                "Laukaus": 60,
-                "Harhautus": 60,
-                "Muu": 60
-            },
-            }
-        
         for row_name in CHANCE_ROW_MAPPING.keys():
             value = getattr(scoring_chance, row_name, None)
             if value:
@@ -157,20 +74,34 @@ def get_chance_row(scoring_chance: TeamStatsTag):
     except Exception as e:
         print(f"Error in get_chance_row with tag:\n{scoring_chance}\nError:{e}")
 
-def get_chance_column(scoring_chance: TeamStatsTag):
+
+def get_chance_column(scoring_chance: TeamStatsTag) -> str:
     final_columns = [
-        "rush_type2", "takeaway_happ_pahp_type", "takeaway_kapp_kahp_type", "takeaway_papp_hahp_type", 
-        "takeaway_jatkopaine_type", "hahp_papp_taytto_type", "hahp_papp_alapeli_type", 
-        "hahp_papp_ylapeli_type", "rebound_type", "faceoff_type", "v5v5_other_type", 
-        "pp_faceoff_entry_type", "pp_shot_deflection_low_type2", "pp_blueline_shot_type", 
-        "pp_pressure_brokenplay_type", "pp_other_type", "pp_5vs3_type", "pp_av_yv_type", "v3vs3_type", "ps_type"]
-    
-    g_columns = ["PAHP", "1. Paine", "Syöttö", "Pohja", "Murtautuminen", "Syöttö sisään", "Suora", "SHP", "Hyökkäysalue", 
-                 "IM", "Aloitus Vasen", "Kesk. / Pääty.", "Paine", "Kuljetus YV", "Läpiajo", "Aloitus", "Laukaus"]
-    h_columns = ["KAHP", "2. Paine", "Kuljetus", "Half Board", "Syöttö 3:lle", "Murtautuminen sisään", "Ohjaus", "Riisto/Menetys", 
-                 "Keskialue", "TM", "Aloitus Oikea", "Vasen Siipi", "Ohjuri", "Riisto", "Punnerrus", "Ohjuri", "YV", "Hallinta", "Harhautus"]
-    i_columns = ["Kääntö", "3. / Puolustajan Paine", "Muu", "Viiva", "Syöttö 4/5:lle", "HAHP/PAPP", "Puolustusalue", "4v4", 
-                 "Haku / vastaanotto", "Oikea siipi", "Rebound", "Brokenplay", "TV", "Riisto / Menetys"]
+        "rush_type2",
+        "takeaway_happ_pahp_type",
+        "takeaway_kapp_kahp_type",
+        "takeaway_papp_hahp_type",
+        "takeaway_jatkopaine_type",
+        "hahp_papp_taytto_type",
+        "hahp_papp_alapeli_type",
+        "hahp_papp_ylapeli_type",
+        "rebound_type",
+        "faceoff_type",
+        "v5v5_other_type",
+        "pp_faceoff_entry_type",
+        "pp_shot_deflection_low_type2",
+        "pp_blueline_shot_type",
+        "pp_pressure_brokenplay_type",
+        "pp_other_type",
+        "pp_5vs3_type",
+        "pp_av_yv_type",
+        "v3vs3_type",
+        "ps_type",
+    ]
+
+    g_columns = ["PAHP", "1. Paine", "Syöttö", "Pohja", "Murtautuminen", "Syöttö sisään", "Suora", "SHP", "Hyökkäysalue", "IM", "Aloitus Vasen", "Kesk. / Pääty.", "Paine", "Kuljetus YV", "Läpiajo", "Aloitus", "Laukaus"]
+    h_columns = ["KAHP", "2. Paine", "Kuljetus", "Half Board", "Syöttö 3:lle", "Murtautuminen sisään", "Ohjaus", "Riisto/Menetys", "Keskialue", "TM", "Aloitus Oikea", "Vasen Siipi", "Ohjuri", "Riisto", "Punnerrus", "Ohjuri", "YV", "Hallinta", "Harhautus"]
+    i_columns = ["Kääntö", "3. / Puolustajan Paine", "Muu", "Viiva", "Syöttö 4/5:lle", "HAHP/PAPP", "Puolustusalue", "4v4", "Haku / vastaanotto", "Oikea siipi", "Rebound", "Brokenplay", "TV", "Riisto / Menetys"]
 
     for column in final_columns:
         value = getattr(scoring_chance, column, None)
@@ -184,7 +115,12 @@ def get_chance_column(scoring_chance: TeamStatsTag):
             else:
                 print(scoring_chance)
                 print(f"This is probelm: {value}")
-                raise ValueError("COLUMN NOT FOUND ANYWHERE SOS! :D", scoring_chance)
+                raise ValueError(f"In get_chance_column: value {value} is not in any column", scoring_chance) # fmt: skip
+        else:
+            raise ValueError(f"In get_chance_column: value for column {column} is None", scoring_chance) # fmt: skip
+
+    raise RuntimeError("final_columns was empty, this should not happen", scoring_chance)
+
 
 def calculate_numbers_for_cells(all_tags):
     cell_values = {}
@@ -198,27 +134,32 @@ def calculate_numbers_for_cells(all_tags):
             cell_values[f"{shifted_col}{row}"] += 1
         else:
             cell_values[f"{shifted_col}{row}"] = 1
-    
+
     return cell_values
+
 
 @router.get("/teamstats")
 async def get_teamstats_excel(game_ids: str, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
 
     user = db_session.query(User).filter(User.id == current_user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current user not found") # fmt: skip
+
     team = user.team
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User has no team assigned") # fmt: skip
 
     teams_games = team.games
     if game_ids:
         filter_game_ids = [int(game_id) for game_id in game_ids.split(",")]
     else:
         filter_game_ids = [game.id for game in teams_games]
-    
 
     # Get all the tag wit db query
     all_tags = db_session.query(TeamStatsTag).filter(TeamStatsTag.game.has(team=user.team), TeamStatsTag.game_id.in_(filter_game_ids)).all()
 
     # Iterate over all_tags to get tags for individual games
-    # games_with_stats_dict = {game_id: list[TeamStatsTag]} 
+    # games_with_stats_dict = {game_id: list[TeamStatsTag]}
     games_with_stats_dict = defaultdict(list)
     for tag in all_tags:
         games_with_stats_dict[tag.game_id].append(tag)
@@ -254,65 +195,83 @@ async def get_teamstats_excel(game_ids: str, db_session: Session = Depends(get_d
     workbook.save(output)
     output.seek(0)
 
-    return Response(
-        content=output.getvalue(),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=joukkuetilastot.xlsx"}
-    )
+    return Response(content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=joukkuetilastot.xlsx"})
+
+
 ########################## FOR TEAM STATS ##########################
 
 
 ########################## FOR PLAYER +/- ##########################
+def format_player_name(player: Player, in_rosters: list[GameInRoster]) -> str:
+    """
+    Formats the player's name as just "LASTNAME" by default.
+    If 2 players share the same last name in the given roster,
+    format as "LASTNAME F." where F is the first (or multiple if needed) initial.
+    """
+
+    players_with_same_lastname = []
+    for roster_spot in in_rosters:
+        other_player = roster_spot.player
+        if other_player.last_name == player.last_name and other_player.id != player.id:
+            players_with_same_lastname.append(other_player)
+
+    if not players_with_same_lastname:
+        return f"{player.last_name.upper()}"
+
+    initials = player.first_name[0]
+    for other_player in players_with_same_lastname:
+        for i in range(0, len(other_player.first_name)):
+            if initials[i] == other_player.first_name[i]:
+                initials += player.first_name[i + 1]
+            else:
+                break
+    return f"{player.last_name.upper()} {initials}."
+
+
 def build_game_data_structure(game: Game):
-    data_structure = {
-        "game_id": game.id,
-        "opponent": game.opponent,
-        "home": game.home,
-        "date": game.date,
-        "roster": {}}
+    data_structure = {"game_id": game.id, "opponent": game.opponent, "home": game.home, "date": game.date, "roster": {}}
     game_roster = data_structure["roster"]
 
     for roster_spot in game.in_rosters:
         player = roster_spot.player
+        formated_name = format_player_name(player, game.in_rosters)
         player_dict = {
-            "name": f"{player.last_name.upper()} {player.first_name}",
+            "name": formated_name,
             "position": player.position.name,
             "stats": {
-                "ES-PG+": 0,   # ES-PG+ = Even strengthParticipated Goal +
+                "ES-PG+": 0,  # ES-PG+ = Even strengthParticipated Goal +
                 "ES-PG-": 0,
-                "ES-PC+": 0,   
-                "ES-PC-": 0,   # PC- = Partcipated chance -
-                "ES-OIG+": 0,  
+                "ES-PC+": 0,
+                "ES-PC-": 0,  # PC- = Partcipated chance -
+                "ES-OIG+": 0,
                 "ES-OIG-": 0,  # OIG- = On ice Goal -
-                "ES-OIC+": 0, 
+                "ES-OIC+": 0,
                 "ES-OIC-": 0,
-                "PP-PG+": 0,   # PP-PG+ = Powerplay
+                "PP-PG+": 0,  # PP-PG+ = Powerplay
                 "PP-PG-": 0,
-                "PP-PC+": 0,   
-                "PP-PC-": 0,   
-                "PP-OIG+": 0,  
-                "PP-OIG-": 0,  
-                "PP-OIC+": 0, 
+                "PP-PC+": 0,
+                "PP-PC-": 0,
+                "PP-OIG+": 0,
+                "PP-OIG-": 0,
+                "PP-OIC+": 0,
                 "PP-OIC-": 0,
-                "PK-PG+": 0,   # PK-PG+ = Penaltykill
+                "PK-PG+": 0,  # PK-PG+ = Penaltykill
                 "PK-PG-": 0,
-                "PK-PC+": 0,   
+                "PK-PC+": 0,
                 "PK-PC-": 0,
-                "PK-OIG+": 0,  
-                "PK-OIG-": 0,  
-                "PK-OIC+": 0, 
-                "PK-OIC-": 0
-            }
+                "PK-OIG+": 0,
+                "PK-OIG-": 0,
+                "PK-OIC+": 0,
+                "PK-OIC-": 0,
+            },
         }
         game_roster[player.id] = player_dict
 
     return data_structure
 
+
 def convert_roster_to_lists(roster: dict) -> dict:
-    listed_roster = {
-        "forwards": [],
-        "defenders": []
-    }
+    listed_roster = {"forwards": [], "defenders": []}
 
     for player_dict in roster.values():
         if player_dict["position"] == "FORWARD":
@@ -324,6 +283,7 @@ def convert_roster_to_lists(roster: dict) -> dict:
         group.sort(key=lambda player: player["name"])
 
     return listed_roster
+
 
 def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
     """
@@ -352,8 +312,8 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
     for tag in player_stats_tags:
         PSTs_by_game_id[tag.game_id].append(tag)
 
-    on_ice_links = db_session.query(PlayerStatsTagOnIce).join(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()  
-    OILs_by_PST_id = defaultdict(list) # list of OnIce links with PlayerStatsTag id as key
+    on_ice_links = db_session.query(PlayerStatsTagOnIce).join(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()
+    OILs_by_PST_id = defaultdict(list)  # list of OnIce links with PlayerStatsTag id as key
     for on_ice_link in on_ice_links:
         OILs_by_PST_id[on_ice_link.tag_id].append(on_ice_link)
 
@@ -363,13 +323,11 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
         PLs_by_PST_id[partic_link.tag_id].append(partic_link)
 
     tag_type_mapping = {
-                ShotResultTypes.GOAL_FOR: "G+",
-                ShotResultTypes.GOAL_AGAINST: "G-",
-                ShotResultTypes.CHANCE_FOR: "C+",
-                ShotResultTypes.CHANCE_AGAINST: "C-",
-                }
-
-
+        ShotResultTypes.GOAL_FOR: "G+",
+        ShotResultTypes.GOAL_AGAINST: "G-",
+        ShotResultTypes.CHANCE_FOR: "C+",
+        ShotResultTypes.CHANCE_AGAINST: "C-",
+    }
 
     for game in teams_games:
         game_data = build_game_data_structure(game)
@@ -381,7 +339,6 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
             else:
                 total_stats[id]["GP"] += 1
 
-
         tags = PSTs_by_game_id[game.id]
         for tag in tags:
             strengths = tag.strengths
@@ -391,9 +348,8 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
             if tag.shot_result.value in [ShotResultTypes.SHOT_FOR, ShotResultTypes.SHOT_AGAINST]:
                 continue  # Skip shot tags, only process chances and goals
 
-
             result_part = tag_type_mapping[tag.shot_result.value]
-            
+
             tags_on_ice = OILs_by_PST_id[tag.id]
             OI_player_ids = [tag.player.id for tag in tags_on_ice]
             for id in OI_player_ids:
@@ -406,21 +362,30 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
                 game_data["roster"][id]["stats"][f"{strengths}-P{result_part}"] += 1
                 total_stats[id]["stats"][f"{strengths}-P{result_part}"] += 1
 
-
         game_data["roster"] = convert_roster_to_lists(game_data["roster"])
 
         data_collector.append(game_data)
-    
+
     type(data_collector[0]["date"])
     data_collector.sort(key=lambda game: game["date"], reverse=True)
     listed_total_data = convert_roster_to_lists(total_stats)
     return data_collector, listed_total_data
 
+
 @router.get("/plusminus")
-async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+async def get_plusminus_excel(
+    game_ids: str | None = None,
+    db_session: Session = Depends(get_db_session),
+    current_user_id: int = Depends(get_current_user_id),
+):
 
     user = db_session.query(User).filter(User.id == current_user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current user not found") # fmt: skip
+
     team = user.team
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User has no team assigned") # fmt: skip
 
     teams_games = team.games
     if game_ids:
@@ -431,7 +396,6 @@ async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depend
                 teams_games.append(game)
     else:
         teams_games = team.games
-    
 
     data_for_games, total_stats = get_plusminus_games_data(teams_games, db_session)
 
@@ -440,44 +404,40 @@ async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depend
     template_sheet = workbook.worksheets[0]
 
     stat_column_mapping = {
-            "OIG+": "A",  
-            "OIG-": "B",  # OIG- = On ice Goal -
-            "OIC+": "D", 
-            "OIC-": "E",
-            "PG+": "H",   # PG+ = Participated Goal +
-            "PG-": "I",
-            "PC+": "K",   
-            "PC-": "L",   # PC- = Partcipated chance -
-
-
-            "ES-OIG+": "A",  
-            "ES-OIG-": "B",  # OIG- = On ice Goal -
-            "ES-OIC+": "D", 
-            "ES-OIC-": "E",
-            "ES-PG+": "H",   # ES-PG+ = Even strengthParticipated Goal +
-            "ES-PG-": "I",
-            "ES-PC+": "K",   
-            "ES-PC-": "L",   # PC- = Partcipated chance -
-
-            "PP-OIG+": "O",  
-            "PP-OIG-": "P",  
-            "PP-OIC+": "R", 
-            "PP-OIC-": "S",
-             "PP-PG+": "V",   # PP-PG+ = Powerplay
-            "PP-PG-": "W",
-            "PP-PC+": "Y",   
-            "PP-PC-": "Z",   
-   
-            "PK-OIG+": "AC",  
-            "PK-OIG-": "AD",  
-            "PK-OIC+": "AF", 
-            "PK-OIC-": "AG",
-            "PK-PG+": "AJ",   # PK-PG+ = 
-            "PK-PG-": "AK",
-            "PK-PC+": "AM",   
-            "PK-PC-": "AN"
+        "OIG+": "A",  # OIG+ = On ice Goal +
+        "OIG-": "B",  # OIG- = On ice Goal -
+        "OIC+": "D",  # OIC+ = On ice Chance +
+        "OIC-": "E",  # OIC- = On ice Chance -
+        "PG+": "H",  # PG+ = Participated Goal +
+        "PG-": "I",  # PG- = Participated Goal -
+        "PC+": "K",  # PC+ = Participated chance +
+        "PC-": "L",  # PC- = Participated chance -
+        "ES-OIG+": "A",  # ES = Even Strength
+        "ES-OIG-": "B",
+        "ES-OIC+": "D",
+        "ES-OIC-": "E",
+        "ES-PG+": "H",
+        "ES-PG-": "I",
+        "ES-PC+": "K",
+        "ES-PC-": "L",
+        "PP-OIG+": "O",  # PP = Powerplay
+        "PP-OIG-": "P",
+        "PP-OIC+": "R",
+        "PP-OIC-": "S",
+        "PP-PG+": "V",
+        "PP-PG-": "W",
+        "PP-PC+": "Y",
+        "PP-PC-": "Z",
+        "PK-OIG+": "AC",  # PK = Penaltykill
+        "PK-OIG-": "AD",
+        "PK-OIC+": "AF",
+        "PK-OIC-": "AG",
+        "PK-PG+": "AJ",
+        "PK-PG-": "AK",
+        "PK-PC+": "AM",
+        "PK-PC-": "AN",
     }
-    name_colums = ["G", "U", "AI","AW"]
+    name_colums = ["G", "U", "AI", "AW"]
 
     total_sheet = workbook.copy_worksheet(template_sheet)
     total_sheet.title = "TOTAL"
@@ -497,7 +457,6 @@ async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depend
             column = stat_column_mapping[key]
             total_sheet[f"{column}{row}"] = value
 
-
     total_avg_sheet = workbook.copy_worksheet(template_sheet)
     total_avg_sheet.title = "TOTAL AVG"
     for i, defender in enumerate(total_stats["defenders"]):
@@ -507,7 +466,7 @@ async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depend
             total_avg_sheet[f"{name_col}{row}"] = defender["name"]
         for key, value in defender["stats"].items():
             column = stat_column_mapping[key]
-            total_avg_sheet[f"{column}{row}"] = value/games_played
+            total_avg_sheet[f"{column}{row}"] = value / games_played
 
     for i, forward in enumerate(total_stats["forwards"]):
         games_played = forward["GP"]
@@ -516,13 +475,11 @@ async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depend
             total_avg_sheet[f"{name_col}{row}"] = forward["name"]
         for key, value in forward["stats"].items():
             column = stat_column_mapping[key]
-            total_avg_sheet[f"{column}{row}"] = value/games_played
-
-
+            total_avg_sheet[f"{column}{row}"] = value / games_played
 
     for game in data_for_games:
         game_sheet = workbook.copy_worksheet(template_sheet)
-        
+
         if "/" in game["opponent"]:
             sanitized_opponent = game["opponent"].replace("/", "&")
             game_sheet.title = f"{sanitized_opponent} {game['date']}"
@@ -545,7 +502,6 @@ async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depend
                 column = stat_column_mapping[key]
                 game_sheet[f"{column}{row}"] = value
 
-            
     # Delete template sheet
     workbook.remove(workbook.worksheets[0])
 
@@ -553,13 +509,11 @@ async def get_plusminus_excel(game_ids: str = None, db_session: Session = Depend
     workbook.save(output)
     output.seek(0)
 
-    return Response(
-        content=output.getvalue(),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=plusminus.xlsx"}
-    )
+    return Response(content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=plusminus.xlsx"})
+
 
 ########################## FOR PLAYER +/- ##########################
+
 
 ########################## FOR TEAM SCORING  #######################
 def get_outcome_cell_adjustment(tag: PlayerStatsTag) -> dict:
@@ -576,10 +530,7 @@ def get_outcome_cell_adjustment(tag: PlayerStatsTag) -> dict:
         - For CHANCE_FOR: no adjustment is made (row and column remain 0).
     """
 
-    adjustment = {
-        "row": 0,
-        "column": 0
-    }
+    adjustment = {"row": 0, "column": 0}
 
     result_type = tag.shot_result.value
 
@@ -593,6 +544,7 @@ def get_outcome_cell_adjustment(tag: PlayerStatsTag) -> dict:
 
     return adjustment
 
+
 def collect_shotzone_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
     """
     Collects and aggregates shot zone data from a list of PlayerStatsTag objects.
@@ -605,17 +557,7 @@ def collect_shotzone_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
         dict: A dictionary where keys are Excel cell references (str) and values are the counts (int) of shots in those cells.
     """
 
-    ZONE_COLUMN_MAPPING = {
-        ShotAreaTypes.ZONE_1: "B",
-        ShotAreaTypes.ZONE_2_MIDDLE: "D",
-        ShotAreaTypes.ZONE_2_SIDE: "F",
-        ShotAreaTypes.HIGH_SLOT: "H",
-        ShotAreaTypes.BLUELINE: "J",
-        ShotAreaTypes.ZONE_4: "L",
-        ShotAreaTypes.OUTSIDE_FAR: "N",
-        ShotAreaTypes.OUTSIDE_CLOSE: "P",
-        ShotAreaTypes.MISC: "R"
-    }
+    ZONE_COLUMN_MAPPING = {ShotAreaTypes.ZONE_1: "B", ShotAreaTypes.ZONE_2_MIDDLE: "D", ShotAreaTypes.ZONE_2_SIDE: "F", ShotAreaTypes.HIGH_SLOT: "H", ShotAreaTypes.BLUELINE: "J", ShotAreaTypes.ZONE_4: "L", ShotAreaTypes.OUTSIDE_FAR: "N", ShotAreaTypes.OUTSIDE_CLOSE: "P", ShotAreaTypes.MISC: "R"}
 
     BASE_ROW = 5
 
@@ -626,12 +568,13 @@ def collect_shotzone_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
         cell_row = BASE_ROW + adjustment["row"]
         cell = f"{cell_col}{cell_row}"
         zone_cell_stats_dict[cell] += 1
-        
+
         # If its a goal, also increment the corresponding chance
         if cell_row == 6:
             zone_cell_stats_dict[f"{cell_col}{cell_row - 1}"] += 1
 
     return zone_cell_stats_dict
+
 
 def collect_shot_type_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
     """
@@ -646,15 +589,7 @@ def collect_shot_type_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
         - The function uses get_outcome_cell_adjustment to determine cell adjustments.
     """
 
-    TYPE_COLUMN_MAPPING = {
-        ShotTypeTypes.CARRY_SHOT: "B",
-        ShotTypeTypes.CAN_SHOT: "D",
-        ShotTypeTypes.ONE_TIMER: "F",
-        ShotTypeTypes.LOWHIGH_SHOT: "N",
-        ShotTypeTypes.TAKEAWAY_SHOT: "P",
-        ShotTypeTypes.REBOUND_SHOT: "R",
-        ShotTypeTypes.DEFLECTION_SHOT: "T"
-    }
+    TYPE_COLUMN_MAPPING = {ShotTypeTypes.CARRY_SHOT: "B", ShotTypeTypes.CAN_SHOT: "D", ShotTypeTypes.ONE_TIMER: "F", ShotTypeTypes.LOWHIGH_SHOT: "N", ShotTypeTypes.TAKEAWAY_SHOT: "P", ShotTypeTypes.REBOUND_SHOT: "R", ShotTypeTypes.DEFLECTION_SHOT: "T"}
 
     BASE_ROW = 12
     type_cell_stats_dict = defaultdict(int)
@@ -673,6 +608,7 @@ def collect_shot_type_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
 
     return type_cell_stats_dict
 
+
 def collect_net_zone_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
     WIDTH_COLUMN_MAPPING = {
         "Left": "C",
@@ -687,10 +623,7 @@ def collect_net_zone_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
     }
 
     def get_adjustment(tag):
-        adjustment = {
-        "row": 0,
-        "column": 0
-    }
+        adjustment = {"row": 0, "column": 0}
         result_type = tag.shot_result.value
 
         if result_type == ShotResultTypes.CHANCE_FOR:
@@ -718,6 +651,7 @@ def collect_net_zone_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
             netzone_cell_stats_dict[f"{chance_col}{cell_row}"] += 1
 
     return netzone_cell_stats_dict
+
 
 def collect_shot_strengths_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
     """
@@ -755,6 +689,7 @@ def collect_shot_strengths_data(player_stats_tags: list[PlayerStatsTag]) -> dict
 
     return strengths_cell_stats_dict
 
+
 def get_scoring_games_data(teams_games: list[Game], db_session: Session):
     """
     Collects and aggregates scoring-related statistics for a list of games.
@@ -773,7 +708,6 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session):
                 - "cell_values": A dictionary with aggregated statistics for the game.
             - total_cell_values (dict): A dictionary with aggregated statistics across all games.
     """
-
 
     game_ids = [game.id for game in teams_games]
 
@@ -800,17 +734,23 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session):
         shot_type_data = collect_shot_type_data(tags_for_game)
         net_zone_data = collect_net_zone_data(tags_for_game)
         strengths_data = collect_shot_strengths_data(tags_for_game)
-        
-        game_cell_values = { **shot_zone_data, **shot_type_data, **net_zone_data, **strengths_data}
+
+        game_cell_values = {**shot_zone_data, **shot_type_data, **net_zone_data, **strengths_data}
         game_data["cell_values"] = game_cell_values
         data_collector.append(game_data)
 
     return data_collector, total_cell_values
 
+
 @router.get("/game-stats")
-async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+async def get_team_scoring_excel(game_ids: str | None = None, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     user = db_session.query(User).filter(User.id == current_user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current user not found") # fmt: skip
+
     team = user.team
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User has no team assigned") # fmt: skip
 
     teams_games = team.games
     if game_ids:
@@ -821,7 +761,6 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
                 teams_games.append(game)
     else:
         teams_games = team.games
-    
 
     cell_values_for_games, total_cell_values = get_scoring_games_data(teams_games, db_session)
 
@@ -849,7 +788,7 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
 
         for cell, value in game["cell_values"].items():
             game_sheet[cell] = value
-        
+
     # Delete template sheet
     workbook.remove(workbook.worksheets[0])
 
@@ -857,11 +796,8 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
     workbook.save(output)
     output.seek(0)
 
-    return Response(
-        content=output.getvalue(),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=pelitilastot.xlsx"}
-    )
+    return Response(content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=pelitilastot.xlsx"})
+
 
 ########################## FOR TEAM SCORING  #######################
 
@@ -877,7 +813,7 @@ def collect_shooter_zones(player_stats_tags: list[PlayerStatsTag]) -> dict:
         ShotAreaTypes.ZONE_4: "L",
         ShotAreaTypes.OUTSIDE_FAR: "N",
         ShotAreaTypes.OUTSIDE_CLOSE: "P",
-        ShotAreaTypes.MISC: "R"
+        ShotAreaTypes.MISC: "R",
     }
 
     BASE_ROW = 4
@@ -887,7 +823,7 @@ def collect_shooter_zones(player_stats_tags: list[PlayerStatsTag]) -> dict:
         cell_col = ZONE_COLUMN_MAPPING[tag.shot_area.value]
         cell = f"{cell_col}{BASE_ROW}"
         zone_cell_stats_dict[cell] += 1
-        
+
         # If its a goal
         if tag.shot_result.value == ShotResultTypes.GOAL_FOR:
             cell_col = chr(ord(ZONE_COLUMN_MAPPING[tag.shot_area.value]) + 1)
@@ -895,16 +831,9 @@ def collect_shooter_zones(player_stats_tags: list[PlayerStatsTag]) -> dict:
 
     return zone_cell_stats_dict
 
+
 def collect_shooter_shot_types(player_stats_tags: list[PlayerStatsTag]) -> dict:
-    TYPE_COLUMN_MAPPING = {
-        ShotTypeTypes.CARRY_SHOT: "B",
-        ShotTypeTypes.CAN_SHOT: "D",
-        ShotTypeTypes.ONE_TIMER: "F",
-        ShotTypeTypes.LOWHIGH_SHOT: "N",
-        ShotTypeTypes.TAKEAWAY_SHOT: "P",
-        ShotTypeTypes.REBOUND_SHOT: "R",
-        ShotTypeTypes.DEFLECTION_SHOT: "T"
-    }
+    TYPE_COLUMN_MAPPING = {ShotTypeTypes.CARRY_SHOT: "B", ShotTypeTypes.CAN_SHOT: "D", ShotTypeTypes.ONE_TIMER: "F", ShotTypeTypes.LOWHIGH_SHOT: "N", ShotTypeTypes.TAKEAWAY_SHOT: "P", ShotTypeTypes.REBOUND_SHOT: "R", ShotTypeTypes.DEFLECTION_SHOT: "T"}
 
     BASE_ROW = 11
 
@@ -913,13 +842,14 @@ def collect_shooter_shot_types(player_stats_tags: list[PlayerStatsTag]) -> dict:
         cell_col = TYPE_COLUMN_MAPPING[tag.shot_type.value]
         cell = f"{cell_col}{BASE_ROW}"
         type_cell_stats_dict[cell] += 1
-        
+
         # If its a goal
         if tag.shot_result.value == ShotResultTypes.GOAL_FOR:
             cell_col = chr(ord(TYPE_COLUMN_MAPPING[tag.shot_type.value]) + 1)
             type_cell_stats_dict[f"{cell_col}{BASE_ROW}"] += 1
 
     return type_cell_stats_dict
+
 
 def collect_shooter_net_zones(player_stats_tags: list[PlayerStatsTag]) -> dict:
     WIDTH_COLUMN_MAPPING = {
@@ -933,7 +863,6 @@ def collect_shooter_net_zones(player_stats_tags: list[PlayerStatsTag]) -> dict:
         "Mid": 1,
         "Bottom": 2,
     }
-
 
     BASE_ROW = 17
 
@@ -949,6 +878,7 @@ def collect_shooter_net_zones(player_stats_tags: list[PlayerStatsTag]) -> dict:
             netzone_cell_stats_dict[f"{goal_col}{cell_row}"] += 1
 
     return netzone_cell_stats_dict
+
 
 def collect_shooter_strengths(player_stats_tags: list[PlayerStatsTag]) -> dict:
     STRENGTHS_COLUMN_MAPPING = {
@@ -972,6 +902,7 @@ def collect_shooter_strengths(player_stats_tags: list[PlayerStatsTag]) -> dict:
 
     return strengths_cell_stats_dict
 
+
 def find_players_on_ice_tags(player_stats_tags: list[PlayerStatsTag]) -> dict:
     """
     Aggregates a dictionary mapping each player ID to a list of PlayerStatsTag objects in which the player was on ice.
@@ -989,7 +920,8 @@ def find_players_on_ice_tags(player_stats_tags: list[PlayerStatsTag]) -> dict:
 
     return tags_for_each_player
 
-def collect_shooter_total_strengths(players_on_ice_tags: list[PlayerStatsTag], player_id: int ) -> dict:
+
+def collect_shooter_total_strengths(players_on_ice_tags: list[PlayerStatsTag], player_id: int) -> dict:
     STRENGTHS_COLUMN_MAPPING = {
         "ES": "B",
         "PP": "E",
@@ -997,7 +929,6 @@ def collect_shooter_total_strengths(players_on_ice_tags: list[PlayerStatsTag], p
         "EN+": "K",
         "EN-": "N",
     }
-
 
     strengths_cell_stats_dict = defaultdict(int)
     for tag in players_on_ice_tags:
@@ -1021,7 +952,8 @@ def collect_shooter_total_strengths(players_on_ice_tags: list[PlayerStatsTag], p
 
     return strengths_cell_stats_dict
 
-def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], player_id: int) -> dict:
+
+def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], player_id: int) -> list[dict]:
     game_cell_values = {}
     for tag in players_stats_tags:
         if tag.strengths == "ES":
@@ -1034,7 +966,7 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
             continue
         else:
             raise ValueError(f"Unknown strengths value: {tag.strengths}")
-        
+
         if tag.game_id not in game_cell_values:
             game_cell_values[tag.game_id] = {}
             game_cell_values[tag.game_id]["date"] = tag.game.date
@@ -1046,8 +978,6 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
             game_cell_values[tag.game_id]["D"] += 1
             if tag.shot_result.value == ShotResultTypes.GOAL_FOR:
                 game_cell_values[tag.game_id]["C"] += 1
-
-
 
         if tag.shot_result.value == ShotResultTypes.GOAL_AGAINST:
             chance_col_ord += 1
@@ -1061,7 +991,7 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
         else:
             chance_col = chr(chance_col_ord)
         game_cell_values[tag.game_id][chance_col] += 1
-        
+
         participating_player_ids = [participating_tag.player_id for participating_tag in tag.players_participating]
         if player_id in participating_player_ids:
             participating_col_ord = chance_col_ord + 6
@@ -1074,10 +1004,20 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
     sorted_games = sorted(game_cell_values.values(), key=lambda d: d["date"], reverse=True)
     return sorted_games
 
+
 @router.get("/player-stats")
-async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+async def get_player_scoring_excel(
+    game_ids: str | None = None,
+    db_session: Session = Depends(get_db_session),
+    current_user_id: int = Depends(get_current_user_id),
+):
     user = db_session.query(User).filter(User.id == current_user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current user not found") # fmt: skip
+
     team = user.team
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User has no team assigned") # fmt: skip
 
     teams_games = team.games
     if game_ids:
@@ -1096,18 +1036,17 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
         for in_roster_object in game.in_rosters:
             player = in_roster_object.player
             if player.id not in players_to_analyze:
-                players_to_analyze[player.id]["first_name"] = player.first_name 
+                players_to_analyze[player.id]["first_name"] = player.first_name
                 players_to_analyze[player.id]["last_name"] = player.last_name
             players_to_analyze[player.id]["games"] += 1
-    
+
     for tag in player_stats_tags:
         if tag.shooter:
             players_to_analyze[tag.shooter.id]["shooter_tags"].append(tag)
 
-    on_ice_tags_for_each_player = find_players_on_ice_tags(player_stats_tags) # {"player1_id": [PlayerStatsTags],..}
+    on_ice_tags_for_each_player = find_players_on_ice_tags(player_stats_tags)  # {"player1_id": [PlayerStatsTags],..}
     for player_id, on_ice_tags in on_ice_tags_for_each_player.items():
         players_to_analyze[player_id]["on_ice_tags"] = on_ice_tags
-
 
     for player_id, player_data in players_to_analyze.items():
         zones = collect_shooter_zones(player_data["shooter_tags"])
@@ -1121,7 +1060,6 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
         players_to_analyze[player_id]["cell_values"] = player_cell_values
         players_to_analyze[player_id]["per_game_stats"] = per_games_stats
 
-
     # Load the excel file and template sheet
     workbook = load_workbook("excels/players_summary_template.xlsx")
     template_sheet = workbook.worksheets[0]
@@ -1129,10 +1067,10 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
     for player_id, player_data in players_to_analyze.items():
         game_sheet = workbook.copy_worksheet(template_sheet)
         game_sheet.title = f"{player_data["last_name"].upper()} {player_data["first_name"]}"
-        
+
         for cell, value in player_data["cell_values"].items():
             game_sheet[cell] = value
-        
+
         for i, game in enumerate(player_data["per_game_stats"]):
             row = 54 + i
             for col, value in game.items():
@@ -1140,7 +1078,6 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
                     continue
                 cell = f"{col}{row}"
                 game_sheet[cell] = value
-
 
     # Delete template sheet
     workbook.remove(workbook.worksheets[0])
@@ -1150,9 +1087,7 @@ async def get_team_scoring_excel(game_ids: str = None, db_session: Session = Dep
     workbook.save(output)
     output.seek(0)
 
-    return Response(
-        content=output.getvalue(),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=pelaajayhteenveto.xlsx"}
-    )
+    return Response(content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=pelaajayhteenveto.xlsx"})
+
+
 ########################## FOR PLAYER SCORING  #####################
