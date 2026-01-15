@@ -19,31 +19,12 @@ export default function NetQuestion() {
 
   const shotZones = [
     {
-      name: "Miss-Left",
-      points: [
-        [0, 0],
-        [6, 0],
-        [6, 100],
-        [0, 100],
-      ],
-    },
-    {
-      name: "Miss-Right",
-      points: [
-        [94, 0],
-        [100, 0],
-        [100, 100],
-        [94, 100],
-      ],
-    },
-
-    {
       name: "Top-Left",
       points: [
-        [6, 0],
+        [0, 0],
         [35, 0],
         [35, 35],
-        [6, 35],
+        [0, 35],
       ],
     },
 
@@ -61,8 +42,8 @@ export default function NetQuestion() {
       name: "Top-Right",
       points: [
         [65, 0],
-        [94, 0],
-        [94, 35],
+        [100, 0],
+        [100, 35],
         [65, 35],
       ],
     },
@@ -70,10 +51,10 @@ export default function NetQuestion() {
     {
       name: "Mid-Left",
       points: [
-        [6, 35],
+        [0, 35],
         [35, 35],
         [35, 70],
-        [6, 70],
+        [0, 70],
       ],
     },
 
@@ -91,18 +72,18 @@ export default function NetQuestion() {
       name: "Mid-Right",
       points: [
         [65, 35],
-        [94, 35],
-        [94, 70],
-        [64, 70],
+        [100, 35],
+        [100, 70],
+        [65, 70],
       ],
     },
     {
       name: "Bottom-Left",
       points: [
-        [6, 70],
+        [0, 70],
         [35, 70],
         [35, 100],
-        [6, 100],
+        [0, 100],
       ],
     },
 
@@ -120,8 +101,8 @@ export default function NetQuestion() {
       name: "Bottom-Right",
       points: [
         [65, 70],
-        [94, 70],
-        [94, 100],
+        [100, 70],
+        [100, 100],
         [65, 100],
       ],
     },
