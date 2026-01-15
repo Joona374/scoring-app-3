@@ -373,11 +373,9 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
 
 
 @router.get("/plusminus")
-async def get_plusminus_excel(
-    game_ids: str | None = None,
-    db_session: Session = Depends(get_db_session),
-    current_user_id: int = Depends(get_current_user_id),
-):
+async def get_plusminus_excel(game_ids: str | None = None, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    FIRST_DEFENDER_ROW = 4
+    FIRST_FORWARD_ROW = 26
 
     user = db_session.query(User).filter(User.id == current_user_id).first()
     if not user:
@@ -442,7 +440,7 @@ async def get_plusminus_excel(
     total_sheet = workbook.copy_worksheet(template_sheet)
     total_sheet.title = "TOTAL"
     for i, defender in enumerate(total_stats["defenders"]):
-        row = 4 + i
+        row = FIRST_DEFENDER_ROW + i
         for name_col in name_colums:
             total_sheet[f"{name_col}{row}"] = defender["name"]
         for key, value in defender["stats"].items():
@@ -450,7 +448,7 @@ async def get_plusminus_excel(
             total_sheet[f"{column}{row}"] = value
 
     for i, forward in enumerate(total_stats["forwards"]):
-        row = 18 + i
+        row = FIRST_FORWARD_ROW + i
         for name_col in name_colums:
             total_sheet[f"{name_col}{row}"] = forward["name"]
         for key, value in forward["stats"].items():
@@ -460,7 +458,7 @@ async def get_plusminus_excel(
     total_avg_sheet = workbook.copy_worksheet(template_sheet)
     total_avg_sheet.title = "TOTAL AVG"
     for i, defender in enumerate(total_stats["defenders"]):
-        row = 4 + i
+        row = FIRST_DEFENDER_ROW + i
         games_played = defender["GP"]
         for name_col in name_colums:
             total_avg_sheet[f"{name_col}{row}"] = defender["name"]
@@ -470,7 +468,7 @@ async def get_plusminus_excel(
 
     for i, forward in enumerate(total_stats["forwards"]):
         games_played = forward["GP"]
-        row = 18 + i
+        row = FIRST_FORWARD_ROW + i
         for name_col in name_colums:
             total_avg_sheet[f"{name_col}{row}"] = forward["name"]
         for key, value in forward["stats"].items():
@@ -487,7 +485,7 @@ async def get_plusminus_excel(
             game_sheet.title = f"{game["opponent"]} {game["date"]}"
 
         for i, defender in enumerate(game["roster"]["defenders"]):
-            row = 4 + i
+            row = FIRST_DEFENDER_ROW + i
             for name_col in name_colums:
                 game_sheet[f"{name_col}{row}"] = defender["name"]
             for key, value in defender["stats"].items():
@@ -495,7 +493,7 @@ async def get_plusminus_excel(
                 game_sheet[f"{column}{row}"] = value
 
         for i, forward in enumerate(game["roster"]["forwards"]):
-            row = 18 + i
+            row = FIRST_FORWARD_ROW + i
             for name_col in name_colums:
                 game_sheet[f"{name_col}{row}"] = forward["name"]
             for key, value in forward["stats"].items():
