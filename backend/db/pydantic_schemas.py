@@ -138,3 +138,57 @@ class CreateCodeResponse(BaseModel):
     join_code: bool
     admin_code: bool
     team_related: str | None # Just the name of the team
+
+
+# =====================
+# Dashboard Schemas
+# =====================
+
+
+class ZoneData(BaseModel):
+    """Per-zone statistics for all metrics"""
+
+    goals_for: int = 0
+    goals_against: int = 0
+    chances_for: int = 0  # includes goals
+    chances_against: int = 0  # includes goals
+
+
+class GamePlayerStats(BaseModel):
+    """Per-game stats for a single player"""
+
+    player_id: int
+    first_name: str
+    last_name: str
+    jersey_number: int
+    goals: int = 0
+    chances: int = 0
+    goals_plus_on_ice: int = 0
+    goals_minus_on_ice: int = 0
+    chances_plus_on_ice: int = 0
+    chances_minus_on_ice: int = 0
+    goals_plus_participating: int = 0
+    goals_minus_participating: int = 0
+    chances_plus_participating: int = 0
+    chances_minus_participating: int = 0
+
+
+class GameKPI(BaseModel):
+    game_id: int
+    date: str
+    opponent: str
+    home: bool
+    goals_for: int
+    goals_against: int
+    chances_for: int
+    chances_against: int
+    efficiency_for: float  # goals_for / chances_for * 100
+    efficiency_against: float  # goals_against / chances_against * 100
+    ice_zones: Dict[str, ZoneData]  # Zone breakdown for this game
+    net_zones: Dict[str, ZoneData]  # Net zone breakdown for this game
+    player_stats: List[GamePlayerStats]  # Per-player stats for this game
+
+
+class DashboardResponse(BaseModel):
+    team_name: str
+    games: List[GameKPI]  # All games with per-game zone and player stats

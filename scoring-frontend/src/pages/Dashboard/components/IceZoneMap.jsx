@@ -129,18 +129,7 @@ const ICE_ZONES = [
   },
 ];
 
-// Aggregate zones that appear multiple times (left/right)
-const AGGREGATED_ZONES = {
-  BLUELINE: { label: "Siniv.", zones: ["BLUELINE"] },
-  HIGH_SLOT: { label: "Yläslotti", zones: ["HIGH_SLOT"] },
-  ZONE_2_MIDDLE: { label: "Keskislotti", zones: ["ZONE_2_MIDDLE"] },
-  ZONE_2_SIDE: { label: "Sivuslotti", zones: ["ZONE_2_SIDE"] },
-  ZONE_1: { label: "Maalivahtialue", zones: ["ZONE_1"] },
-  ZONE_4: { label: "4. vyöhyke", zones: ["ZONE_4"] },
-  OUTSIDE_CLOSE: { label: "Ulkopuoli lähellä", zones: ["OUTSIDE_CLOSE"] },
-  OUTSIDE_FAR: { label: "Ulkopuoli kaukana", zones: ["OUTSIDE_FAR"] },
-  MISC: { label: "Pääty", zones: ["MISC"] },
-};
+
 
 export default function IceZoneMap({ zoneStats, mode = "goals_for", totals }) {
   const imgRef = useRef(null);

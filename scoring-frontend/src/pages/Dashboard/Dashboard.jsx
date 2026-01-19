@@ -22,12 +22,12 @@ export default function TeamDashboard() {
     // Try to load from cache first for instant display
     const cached = getCachedDashboard();
     if (cached) {
-      setDashboardData(cached.data);
-      setGamesCount(cached.data.games.length);
+      setDashboardData(cached);
+      setGamesCount(cached.games.length);
       setLoading(false); // Show cached data immediately
     }
 
-    // Always fetch fresh data
+    // Always fetch fresh data (updates silently when ready)
     const fetchDashboard = async () => {
       const token = sessionStorage.getItem("jwt_token");
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -511,14 +511,14 @@ export default function TeamDashboard() {
                     getSortIndicator={getSortIndicator}
                   />
                   <SortableHeader
-                    label="MP+/- (osall.)"
+                    label="Maalit+/- (osall.)"
                     sortKey="goals_plus_minus_participating"
                     currentSort={sortConfig}
                     onSort={handleSort}
                     getSortIndicator={getSortIndicator}
                   />
                   <SortableHeader
-                    label="MP+/- (jää)"
+                    label="Maalit+/- (jää)"
                     sortKey="goals_plus_minus_on_ice"
                     currentSort={sortConfig}
                     onSort={handleSort}

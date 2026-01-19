@@ -1,26 +1,18 @@
 // Dashboard data caching utility
 // Stores dashboard data in localStorage for instant loading on return visits
+// Strategy: Always show cached data immediately, then fetch fresh data in background
 
 const CACHE_KEY = "dashboard_cache";
-const CACHE_TIMESTAMP_KEY = "dashboard_cache_timestamp";
-const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutes - data older than this will still show but trigger refresh
 
 /**
  * Get cached dashboard data if available
- * @returns {{ data: object, isStale: boolean } | null}
+ * @returns {object | null} The cached dashboard data, or null if not available
  */
 export function getCachedDashboard() {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
-    const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-    
     if (!cached) return null;
-    
-    const data = JSON.parse(cached);
-    const age = Date.now() - parseInt(timestamp || "0", 10);
-    const isStale = age > CACHE_MAX_AGE;
-    
-    return { data, isStale };
+    return JSON.parse(cached);
   } catch (e) {
     console.warn("Failed to read dashboard cache:", e);
     return null;
@@ -34,7 +26,6 @@ export function getCachedDashboard() {
 export function cacheDashboard(data) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
   } catch (e) {
     console.warn("Failed to cache dashboard:", e);
   }
@@ -45,7 +36,6 @@ export function cacheDashboard(data) {
  */
 export function clearDashboardCache() {
   localStorage.removeItem(CACHE_KEY);
-  localStorage.removeItem(CACHE_TIMESTAMP_KEY);
 }
 
 /**
