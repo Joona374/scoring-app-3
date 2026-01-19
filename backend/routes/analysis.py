@@ -65,19 +65,15 @@ def get_analysis(
     # base query
     q = db.query(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(gid_list))
     if shooter_list:
-        print("Filtering by shooters:", shooter_list)
         q = q.filter(PlayerStatsTag.shooter_id.in_(shooter_list))
     if strengths_list:
-        print("Filtering by strengths:", strengths_list)
         q = q.filter(PlayerStatsTag.strengths.in_(strengths_list))
     if shot_types_list:
-        print("Filtering by shot types:", shot_types_list)
         enum_vals = parse_shot_type_values(shot_types_list)
         if enum_vals:
             q = q.join(PlayerStatsTag.shot_type, isouter=True).filter(ShotType.value.in_(enum_vals))
 
     tags = q.all()
-    print(f"Found {len(tags)} tags for analysis")
 
     # filter by result type using enums
     tags = [

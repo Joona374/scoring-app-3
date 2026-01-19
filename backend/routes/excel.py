@@ -72,8 +72,7 @@ def get_chance_row(scoring_chance: TeamStatsTag):
             if value:
                 return CHANCE_ROW_MAPPING[row_name][value]
     except Exception as e:
-        print(f"Error in get_chance_row with tag:\n{scoring_chance}\nError:{e}")
-
+        raise ValueError(f"In get_chance_row: {str(e)}", scoring_chance)  # fmt: skip
 
 def get_chance_column(scoring_chance: TeamStatsTag) -> str:
     final_columns = [
@@ -113,8 +112,6 @@ def get_chance_column(scoring_chance: TeamStatsTag) -> str:
             elif value in i_columns:
                 return "I"
             else:
-                print(scoring_chance)
-                print(f"This is probelm: {value}")
                 raise ValueError(f"In get_chance_column: value {value} is not in any column", scoring_chance) # fmt: skip
         else:
             raise ValueError(f"In get_chance_column: value for column {column} is None", scoring_chance) # fmt: skip

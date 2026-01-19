@@ -111,5 +111,4 @@ def get_player_for_team(db_session: Session = Depends(get_db_session), current_u
 
         return response_players_list
     except Exception as e:
-        print(f"Error while getting players for team: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error while getting players for team")

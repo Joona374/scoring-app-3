@@ -49,8 +49,7 @@ export const TaggingProvider = ({ children }) => {
       postingEndpoint = `${BACKEND_URL}/tagging/add-team-tag`;
     else if (currentTaggingMode === "player")
       postingEndpoint = `${BACKEND_URL}/tagging/add-players-tag`;
-    // TODO: IMPLEMENT THIS ENDPOINT TO BACKEND
-    else if (currentTaggingMode === "goaie")
+    else if (currentTaggingMode === "goalie")
       postingEndpoint = `${BACKEND_URL}/tagging/add-goalies-tag`;
 
     try {

@@ -22,7 +22,7 @@ app.include_router(analysis.router)
 app.include_router(dashboard.router)
 
 
-# Middleware to handle CORS. TODO: Make sure to update the regex to match your frontend URL.
+# Middleware to handle CORS.
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r"https:\/\/scoring-app-3(-git-[\w-]+)?\.vercel\.app|http:\/\/localhost(:\d+)?",

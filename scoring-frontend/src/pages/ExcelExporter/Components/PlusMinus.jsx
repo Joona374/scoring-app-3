@@ -196,7 +196,6 @@ export default function PlusMinus({ games }) {
       </div>
       <table className="games-table">
         <thead>
-          {/* TODO: IMPLEMENT SORTING */}
           <tr>
             <th onClick={() => handleSort("selected")}>Valittu</th>
             <th onClick={() => handleSort("date")}>PVM.</th>
