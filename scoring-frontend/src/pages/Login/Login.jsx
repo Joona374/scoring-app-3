@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../auth/AuthContext";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import { prefetchDashboard } from "../../utils/dashboardCache";
 import "../../components/FormStyles.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -47,6 +48,11 @@ export default function Login() {
           sessionStorage.setItem("is_admin", data.is_admin);
           setIsAdmin(true);
         }
+
+        // Start prefetching dashboard data before navigating
+        // Don't await - let it load in background while navigating
+        prefetchDashboard();
+
         setIsLoadingLogin(false);
         clearTimeout(timer);
         setIsSlowLogin(false);
