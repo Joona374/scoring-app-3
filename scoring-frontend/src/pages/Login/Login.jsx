@@ -1,7 +1,8 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../auth/AuthContext";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import { prefetchDashboard } from "../../utils/dashboardCache";
 import "../../components/FormStyles.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -14,6 +15,13 @@ export default function Login() {
   const { login, setIsAdmin } = useContext(AuthContext);
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
   const [isSlowLogin, setIsSlowLogin] = useState(false);
+
+  // Wake up backend on page load (Render free tier has cold starts)
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/`).catch(() => {
+      // Silently ignore errors - this is just a wake-up ping
+    });
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -43,10 +51,18 @@ export default function Login() {
         login(data.jwt_token);
         sessionStorage.setItem("username", data.username);
         sessionStorage.setItem("user_id", data.user_id);
+        if (data.team_id) {
+          sessionStorage.setItem("team_id", data.team_id);
+        }
         if (data.is_admin) {
           sessionStorage.setItem("is_admin", data.is_admin);
           setIsAdmin(true);
         }
+
+        // Start prefetching dashboard data before navigating
+        // Don't await - let it load in background while navigating
+        prefetchDashboard();
+
         setIsLoadingLogin(false);
         clearTimeout(timer);
         setIsSlowLogin(false);
@@ -54,7 +70,7 @@ export default function Login() {
       }
     } catch (err) {
       setErrorMsg(
-        "Jokin meni pieleen kirjautumisessa, yritä uudelleen. Ongelmien jatkuessa ota yhteyttä ylläpitäjään."
+        "Jokin meni pieleen kirjautumisessa, yritä uudelleen. Ongelmien jatkuessa ota yhteyttä ylläpitäjään.",
       );
       console.error("Login error:", err);
       setIsLoadingLogin(false);

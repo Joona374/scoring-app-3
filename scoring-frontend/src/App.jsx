@@ -81,7 +81,6 @@ function App() {
               </ProtectRoute>
             }
           />
-          {/* TODO: PROTECT THIS IN PROD */}
           <Route
             path="/admin"
             element={

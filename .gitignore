@@ -71,8 +71,13 @@ htmlcov/
 .cache/
 *.stackdump
 
-README.md
+alembic/README.md
 gitflow.md
 api_response.md
 how_to_run.md
 stats_ideas
+api_response.md
+scripts/
+create_demo_data.py
+.vscode/
+.github/

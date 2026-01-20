@@ -13,7 +13,6 @@ export default function TeamTaggingSummary() {
   };
 
   const editTag = async () => {
-    console.warn("TODO");
     alert("Ominaisuus työn alla.");
   };
 
@@ -129,7 +128,6 @@ export default function TeamTaggingSummary() {
                 })}
               </ul>
               <div className="summary-actions">
-                {/* TODO editTag!! */}
                 <button onClick={() => editTag(index)}>Muokkaa</button>
                 <button onClick={() => deleteTeamTag(tag)}>Poista</button>
               </div>

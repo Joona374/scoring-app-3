@@ -70,7 +70,6 @@ export default function TeamStatsMode() {
         );
         setQuestionObjects(questionObjs);
         if (questionObjs.length > 0) {
-          // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
           setCurrentQuestionId(questionObjs[0].id);
           setFirstQuestionId(questionObjs[0].id);
         }

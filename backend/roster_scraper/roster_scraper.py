@@ -221,7 +221,7 @@ async def scrape_team_slots(url: str, side: Side) -> Dict[str, str]:
         if env == "LOCAL":
             chrome_path = None  # use default
         else:
-        # Find the exact chrome binary we baked into the slug during BUILD
+            # Find the exact chrome binary we baked into the slug during BUILD
             base = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.playwright")
             candidates = glob.glob(os.path.join(base, "chromium-*", "chrome-linux", "chrome"))
             if not candidates:
@@ -297,7 +297,6 @@ async def scrape_team_slots(url: str, side: Side) -> Dict[str, str]:
 
         return results
     except Exception as e:
-        print(f"Error scraping roster {e}")
         return {}
 
 def clean_suffixes_from_name(name: str):
@@ -309,7 +308,7 @@ def clean_suffixes_from_name(name: str):
         if pos in name:
             name = name.replace(pos, " ")
     return name
-        
+
 
 def scrape_slots(url: str, user_is_home: bool) -> Dict[str, str]:
     side: Side = "home" if user_is_home else "away"

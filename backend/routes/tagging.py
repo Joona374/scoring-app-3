@@ -44,12 +44,9 @@ def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_se
     return TeamStatsTagResponse(id=new_team_stats_tag.id, succes=True, tag=filtered_tag)
 
 
-
 @router.post("/add-players-tag")
 def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     received_tag = tag_data.tag
-    print(received_tag)
-
 
     shot_location = received_tag["location"]
     shot_zone = received_tag["shotZone"]
@@ -58,26 +55,22 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
     shot_height, shot_width = received_tag["netZone"].split("-")
 
     if not ((0 <= shot_location["x"] <= 100) and (0 <= shot_location["y"] <= 100)):
-        print(f"Invalid shot location: {shot_location}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad coordinates")
 
     shot_result_enum = ShotResultTypes.from_string(received_tag["shot_result"])
     shot_result_ref = db_session.query(ShotResult).filter(ShotResult.value == shot_result_enum).first()
     if not shot_result_ref:
-        print(f"Invalid shot result: {shot_result_enum}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot result")
 
     shot_area_enum = ShotAreaTypes.from_string(shot_zone)
     shot_area_ref = db_session.query(ShotArea).filter(ShotArea.value == shot_area_enum).first()
     if not shot_area_ref:
-        print(f"Invalid shot area: {shot_area_enum}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot area")
 
     if received_tag["shot_type"]:
         shot_type_enum = ShotTypeTypes.from_string(received_tag["shot_type"])
         shot_type_ref = db_session.query(ShotType).filter(ShotType.value == shot_type_enum).first()
         if not shot_type_ref:
-            print(f"Invalid shot type: {received_tag['shot_type']}")
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad shot type")
     else:
         shot_type_ref = None
@@ -87,7 +80,6 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
         shooter_id = received_tag["shooter"]["id"]
     else:
         shooter_id = None
-
 
     try:
         new_tag = PlayerStatsTag(
@@ -109,7 +101,6 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
         db_session.add(new_tag)
         db_session.flush()
 
-
         for on_ice_id in received_tag["on_ices"]:
             new_on_ice_tag = PlayerStatsTagOnIce(
                 player_id=on_ice_id,
@@ -127,10 +118,8 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
         db_session.commit()
 
     except Exception as e:
-        print(e)
         db_session.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error recording the tag to db.")
-
 
     return PlayerStatsTagResponse(id=new_tag.id, succes=True)
 
@@ -291,7 +280,6 @@ def update_roster_for_game(game_id: int, new_roster: list[GameInRosterResponse],
         return {"message": "Roster updated successfully", "success": True}
 
     except Exception as e:
-        print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error processing the roster update")
 
 @router.delete("/delete/team-tag/{tag_id}")
@@ -323,7 +311,6 @@ def update_player(tag_id: int, db_session: Session = Depends(get_db_session), cu
     if user.team != tag_game.team:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to delete this tag")
 
-    # TODO DELETING TAG SHOULD CASCADE TO DELETE Other stuff also
     db_session.delete(tag)
     db_session.commit()
 

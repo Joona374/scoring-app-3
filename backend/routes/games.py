@@ -67,11 +67,10 @@ def delete_game(game_id: int, already_confirmed: bool, db_session: Session = Dep
         db_session.commit()
     except Exception as e:
         db_session.rollback()
-        print(e)
         raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
 
     return {"message": "Game deleted successfully", "success": True, "challenge": False, "game_id": game_id}
-# TODO THIS CRASHES FOR SOME REASON.
+
 
 @router.get("/get-for-user")
 def create_game(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
@@ -80,7 +79,6 @@ def create_game(db_session: Session = Depends(get_db_session), current_user_id: 
         games = db_session.query(Game).filter(Game.team == user.team).all()
         return games
     except Exception as e:
-        print(f"Error getting games: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed getting the games for user: {e}")
 
 def complete_scraped_roster(roster_response: dict[str, PlayerResponse]) -> dict[str, PlayerResponse | None]:
@@ -99,17 +97,17 @@ def complete_scraped_roster(roster_response: dict[str, PlayerResponse]) -> dict[
         complete_roster_response[pos] = player
     return complete_roster_response
 
+
 @router.get("/scrape-roster")
 async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    print(f"Attempting to scrape game with url: {game_url}")
     roster = await scrape_team_slots(game_url, home)
     user = db_session.query(User).filter(User.id == current_user_id).first()
     players_in_team = db_session.query(Player).filter(Player.team == user.team).all()
-    
+
     roster_response = {}
     for position, player_name in roster.items():
         player = find_player_by_name(players_in_team, player_name)
-        
+
         if player:
             player_response = PlayerResponse(
                 id=player.id,
@@ -123,6 +121,7 @@ async def scrape_roster(game_url: str, home: Literal["home", "away"], db_session
     complete_roster_response = complete_scraped_roster(roster_response)
 
     return complete_roster_response
+
 
 def find_player_by_name(players_in_team: list[Player], player_name: str) -> Player | None:
     first_name, last_name = player_name.split(" ")

@@ -12,9 +12,9 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @router.post("/register")
 def register(user_data: UserCreate, db_session: Session = Depends(get_db_session)):
-    print("Received user data:", user_data)
 
     reg_code = db_session.query(RegCode).filter(RegCode.code == user_data.code).first()
     if not reg_code:
@@ -25,7 +25,7 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
     existing_user = db_session.query(User).filter((User.username == user_data.username) | (User.email == user_data.email)).first()
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username or email already exists")
-    
+
     hashed_password = hash_password(user_data.password)
 
     if reg_code.join_code:
@@ -37,7 +37,7 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
             password_hash=hashed_password,
             team=reg_code.team_related
             )
-    
+
         else:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="The registration code is of JOIN type, but there is no team_related. This is a problem at the server.")
 
@@ -65,21 +65,14 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
 @router.post("/login", response_model=LoginResponse)
 def login(login_data: UserLogin, db_session: Session = Depends(get_db_session)):
     found_user = db_session.query(User).filter((User.username == login_data.user) | (User.email == login_data.user)).first()
-    
+
     if not found_user:
-        print(f"User: {login_data.user} was not found")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Käyttäjätunnus tai salasana on virheellinen")
 
     passwords_match = verify_password(login_data.password, found_user.password_hash)
     if not passwords_match:
-        print(f"User: {login_data.user} passwords didnt match")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Käyttäjätunnus tai salasana on virheellinen")
 
     user_data = {"sub": str(found_user.id)}
     access_token = create_jwt(user_data, 180)
-    return LoginResponse(
-        username=found_user.username,
-        user_id=found_user.id,
-        is_admin=found_user.is_admin,
-        jwt_token=access_token
-    )
+    return LoginResponse(username=found_user.username, user_id=found_user.id, is_admin=found_user.is_admin, jwt_token=access_token, team_id=found_user.team_id)

@@ -15,7 +15,6 @@ export default function PlayerTaggingSummary() {
   };
 
   const editTag = async () => {
-    console.warn("TODO");
     alert("Ominaisuus työn alla.");
   };
 
@@ -202,7 +201,6 @@ export default function PlayerTaggingSummary() {
                     })}
                   </ul>
                   <div className="summary-actions">
-                    {/* TODO editTag!! */}
                     <button onClick={() => editTag(index)}>Muokkaa</button>
                     <button
                       onClick={() => deletePlayerTag(tag)}

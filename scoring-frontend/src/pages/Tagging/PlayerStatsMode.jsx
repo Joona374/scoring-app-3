@@ -84,7 +84,6 @@ export default function PlayerStatsMode({}) {
       );
       setQuestionObjects(questionObjs);
       if (questionObjs.length > 0) {
-        // TODO: CHANGING THIS BACK TO questionObjs[0]. This is just for dev
         setCurrentQuestionId(questionObjs[0].id);
         setFirstQuestionId(questionObjs[0].id);
       }
@@ -162,7 +161,6 @@ export default function PlayerStatsMode({}) {
         return <GridChoiceQuestion />;
       case "SHOOTER":
         console.log(playersInRoster);
-        // TODO FIGURE OUT HOW TO EDIT THE ROSTER IN PlayerStatsMode
         return <ShooterQuestion />;
       case "PARTICIPANTS":
         return <ParticapntsQuestion />;
