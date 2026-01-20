@@ -9,6 +9,8 @@ A full-stack web application for tracking and analyzing ice hockey scoring chanc
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?logo=postgresql)
 ![Deployed](https://img.shields.io/badge/Deployed-Vercel%20%2B%20Render-black)
 
+![Dashboard overview with KPIs and zone visualizations](docs/images/dashboard1.png)
+
 ---
 
 ## 📋 Overview
@@ -113,4 +115,27 @@ This is proprietary software. The source code is publicly visible for portfolio 
 
 ## 🖼️ Screenshots
 
-*Coming soon — dashboard, tagging interface, and analysis views*
+### Team Dashboard
+Season overview with KPIs, zone heat maps, and a games-range slider for filtering.
+
+![Dashboard KPIs and zone maps](docs/images/dashboard1.png)
+
+### Player Statistics
+Sortable player stats table showing goals, chances, and plus/minus metrics.
+
+![Player statistics table](docs/images/dashboard2.png)
+
+### Analysis View
+Filter by game situation (e.g., power-play) and visualize shot locations on the rink and net.
+
+![Power-play analysis visualization](docs/images/analysis.png)
+
+### Game Tagging — On-Ice Selection
+Select which players were on the ice and who actively participated in a scoring chance. Previous tags for the game are listed on the left.
+
+![Tagging on-ice player selection](docs/images/onice_selection.png)
+
+### Excel Reports
+Export filtered data to Excel with multiple report types and date/location filters.
+
+![Excel export options](docs/images/excel_download.png)

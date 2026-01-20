@@ -3,6 +3,7 @@ import "./RosterSelector.css";
 import RosterBox from "./RosterBox";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 import BasicButton from "../../components/BasicButton/BasicButton";
+import ScrollContainer from "../ScrollContainer/ScrollContainer";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -168,7 +169,7 @@ export default function RosterSelector({
                     {[`${num}-LD`, `${num}-RD`].map((position_id) => {
                       const rosterSpot = draftRoster.find(
                         (spot) =>
-                          `${spot.line}-${spot.position}` === position_id
+                          `${spot.line}-${spot.position}` === position_id,
                       );
 
                       const playerForThisBox = rosterSpot
@@ -199,7 +200,7 @@ export default function RosterSelector({
                       (position_id) => {
                         const rosterSpot = draftRoster.find(
                           (spot) =>
-                            `${spot.line}-${spot.position}` === position_id
+                            `${spot.line}-${spot.position}` === position_id,
                         );
                         const playerForThisBox = rosterSpot
                           ? rosterSpot.player
@@ -217,7 +218,7 @@ export default function RosterSelector({
                             }
                           />
                         );
-                      }
+                      },
                     )}
                   </div>
                 );
@@ -227,7 +228,7 @@ export default function RosterSelector({
           <div className="goalies-row">
             {["1-G", "2-G"].map((position_id) => {
               const rosterSpot = draftRoster.find(
-                (spot) => `${spot.line}-${spot.position}` === position_id
+                (spot) => `${spot.line}-${spot.position}` === position_id,
               );
               const playerForThisBox = rosterSpot ? rosterSpot.player : null;
               return (
@@ -276,7 +277,7 @@ export default function RosterSelector({
             </form>
           </div>
         </div>
-        <div className="player-list">
+        <ScrollContainer className="player-list">
           <details open>
             <summary>Hyökkääjät</summary>
             {playersInTeam
@@ -288,7 +289,7 @@ export default function RosterSelector({
                   onClick={(event) =>
                     handlePlayerListClick(
                       event.target,
-                      playersInTeam.indexOf(player)
+                      playersInTeam.indexOf(player),
                     )
                   }
                 >
@@ -314,7 +315,7 @@ export default function RosterSelector({
                   onClick={(event) =>
                     handlePlayerListClick(
                       event.target,
-                      playersInTeam.indexOf(player)
+                      playersInTeam.indexOf(player),
                     )
                   }
                 >
@@ -339,7 +340,7 @@ export default function RosterSelector({
                   onClick={(event) =>
                     handlePlayerListClick(
                       event.target,
-                      playersInTeam.indexOf(player)
+                      playersInTeam.indexOf(player),
                     )
                   }
                 >
@@ -353,7 +354,7 @@ export default function RosterSelector({
                 </p>
               ))}
           </details>
-        </div>
+        </ScrollContainer>
       </div>
     </div>
   );

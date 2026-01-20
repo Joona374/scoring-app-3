@@ -4,6 +4,7 @@ import TwoColumnLayout from "../../components/TwoColumnLayout/TwoColumnLayout";
 import CreatePlayer from "./CreatePlayer";
 import UpdatePlayer from "./EditPlayer";
 import "./RosterManagement.css";
+import ScrollContainer from "../../components/ScrollContainer/ScrollContainer";
 
 export default function RosterManagement() {
   const [players, setPlayers] = useState([]);
@@ -69,7 +70,7 @@ export default function RosterManagement() {
         + Lisää uusi pelaaja
       </button>
 
-      <div className="player-sections-scroll">
+      <ScrollContainer className="player-sections-scroll">
         {["Hyökkääjät", "Puolustajat", "Maalivahdit"].map((section) => (
           <div key={section} className="player-section">
             <h2>{section}</h2>
@@ -100,7 +101,7 @@ export default function RosterManagement() {
             })}
           </div>
         ))}
-      </div>
+      </ScrollContainer>
     </>
   );
 

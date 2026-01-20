@@ -106,8 +106,6 @@
   background-color: #1e1e1e;
   padding: 0.5rem;
   border-radius: var(--radius);
-  overflow-y: auto;
-  max-height: 100%;
   color: var(--text-color);
 }
 

@@ -7,6 +7,30 @@
 .ana-grid { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 1400px; margin: 0 auto; }
 .ana-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
 
+.analysis-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.25rem;
+  max-width: 900px;
+  margin: 24px auto;
+}
+.analysis-loading .loading-inner {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.analysis-loading h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  color: var(--text-color);
+}
+.analysis-loading .hint {
+  margin: 0;
+  color: var(--muted-text);
+  font-size: 0.95rem;
+}
+
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
 .kpi { background: var(--card-bg); padding: 7px; border-radius: var(--radius); text-align: center; border: 1px solid #444; }
 .kpi-value { font-size: 20px; font-weight: 700; }
