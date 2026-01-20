@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./GamesSelector.css";
 import GameSelectorRow from "./GameSelectorRow";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
+import ScrollContainer from "../../../components/ScrollContainer/ScrollContainer";
 
 export default function GamesSelector({ games, reportDownloadEndpoint }) {
   const [startDate, setStartDate] = useState("");
@@ -249,7 +250,7 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
         </div>
       </div>
 
-      <div className="games-table-scroll">
+      <ScrollContainer className="games-table-scroll">
         <table className="games-table">
           <thead>
             <tr>
@@ -308,7 +309,7 @@ export default function GamesSelector({ games, reportDownloadEndpoint }) {
             })}
           </tbody>
         </table>
-      </div>
+      </ScrollContainer>
 
       <div className="games-selector-excel-buttons">
         <div className="selection-controls">

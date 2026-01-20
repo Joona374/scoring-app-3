@@ -5,6 +5,7 @@ import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import IceZoneMap from "./components/IceZoneMap";
 import NetZoneMap from "./components/NetZoneMap";
 import { getCachedDashboard, cacheDashboard } from "../../utils/dashboardCache";
+import ScrollContainer from "../../components/ScrollContainer/ScrollContainer";
 
 export default function TeamDashboard() {
   const [loading, setLoading] = useState(true);
@@ -269,7 +270,7 @@ export default function TeamDashboard() {
 
   if (loading) {
     return (
-      <div className="dashboard-wrapper">
+      <ScrollContainer className="dashboard-wrapper">
         <header className="dashboard-header">
           <h1 className="dashboard-title">Ladataan...</h1>
           <p className="dashboard-subtitle">Haetaan joukkueen tietoja</p>
@@ -280,18 +281,18 @@ export default function TeamDashboard() {
             Tämä voi kestää hetken, jos palvelin oli lepotilassa.
           </p>
         </div>
-      </div>
+      </ScrollContainer>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard-wrapper">
+      <ScrollContainer className="dashboard-wrapper">
         <header className="dashboard-header">
           <h1 className="dashboard-title">Virhe</h1>
         </header>
         <p className="dashboard-error">{error}</p>
-      </div>
+      </ScrollContainer>
     );
   }
 
@@ -303,7 +304,7 @@ export default function TeamDashboard() {
   const totalGamesCount = games.length;
 
   return (
-    <div className="dashboard-wrapper">
+    <ScrollContainer className="dashboard-wrapper">
       <header className="dashboard-header">
         <h1 className="dashboard-title">{team_name}</h1>
         <p className="dashboard-subtitle">
@@ -722,7 +723,7 @@ export default function TeamDashboard() {
           </div>
         </section>
       </div>
-    </div>
+    </ScrollContainer>
   );
 }
 

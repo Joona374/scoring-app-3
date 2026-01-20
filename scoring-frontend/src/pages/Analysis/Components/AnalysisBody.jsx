@@ -37,7 +37,18 @@ export default function AnalysisBody({ params }) {
   const filteredIce = data ? data.ice_points : [];
   const filteredNet = data ? data.net_points : [];
 
-  if (!data) return LoadingSpinner(25);
+  if (!data)
+    return (
+      <div className="analysis-loading card">
+        <div className="loading-inner">
+          {LoadingSpinner(48)}
+          <div>
+            <h3>Haetaan analyysitietoja…</h3>
+            <p className="hint">Tietojen kokoaminen voi kestää hetken.</p>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
     <div className="ana-grid">

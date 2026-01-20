@@ -40,7 +40,6 @@
 
 .player-sections-scroll {
   flex-grow: 1;
-  overflow-y: auto;
   margin-top: 1rem;
 }
 

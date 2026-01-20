@@ -2,6 +2,7 @@ import "./Styles/ContinueGamePicker.css"; // assume styles in a separate file
 import BasicButton from "../../components/BasicButton/BasicButton";
 import MutedButton from "../../components/MutedButton/MutedButton";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import ScrollContainer from "../../components/ScrollContainer/ScrollContainer";
 import { useEffect, useState } from "react";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -111,51 +112,53 @@ export default function ContinueGamePicker({
         {gamesForTeam.length === 0 ? (
           LoadingSpinner(200)
         ) : (
-          <table className="game-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Vastustaja</th>
-                <th>Pvm.</th>
-                <th>Koti/Vieras</th>
-                <th>Valitse</th>
-                <th>Poista</th>
-              </tr>
-            </thead>
-            <tbody>
-              {gamesForTeam.map((game, index) => (
-                <tr key={game.id}>
-                  <td>{index + 1}</td>
-                  <td>{game.opponent}</td>
-                  <td>{new Date(game.date).toLocaleDateString()}</td>
-                  <td>{game.home ? "Koti" : "Vieras"}</td>
-                  <td>
-                    <button
-                      className="select-button"
-                      onClick={() => {
-                        setCurrentGameId(game.id);
-                        pickMode();
-                      }}
-                    >
-                      Valitse
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className="select-button"
-                      onClick={() => {
-                        deleteGame(game, false);
-                      }}
-                    >
-                      {deletingGameId === game.id
-                        ? LoadingSpinner(18)
-                        : "Poista"}
-                    </button>
-                  </td>
+          <ScrollContainer className="table-wrapper">
+            <table className="game-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Vastustaja</th>
+                  <th>Pvm.</th>
+                  <th>Koti/Vieras</th>
+                  <th>Valitse</th>
+                  <th>Poista</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {gamesForTeam.map((game, index) => (
+                  <tr key={game.id}>
+                    <td>{index + 1}</td>
+                    <td>{game.opponent}</td>
+                    <td>{new Date(game.date).toLocaleDateString()}</td>
+                    <td>{game.home ? "Koti" : "Vieras"}</td>
+                    <td>
+                      <button
+                        className="select-button"
+                        onClick={() => {
+                          setCurrentGameId(game.id);
+                          pickMode();
+                        }}
+                      >
+                        Valitse
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className="select-button"
+                        onClick={() => {
+                          deleteGame(game, false);
+                        }}
+                      >
+                        {deletingGameId === game.id
+                          ? LoadingSpinner(18)
+                          : "Poista"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ScrollContainer>
         )}
       </div>
       <MutedButton
