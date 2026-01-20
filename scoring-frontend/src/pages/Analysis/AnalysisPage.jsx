@@ -15,7 +15,7 @@ export default function AnalysisPage() {
     show_sf: true,
     show_sa: true,
     strengths: ["ES", "PP", "PK", "EN+", "EN-"],
-    mode: "heatmap", // "scatter"
+    mode: "scatter", // "scatter | (heatmap)"
   });
 
   return (
@@ -25,7 +25,9 @@ export default function AnalysisPage() {
       {filterParams ? (
         <AnalysisBody params={{ ...filterParams, ...resultBar }} />
       ) : (
-        <div className="card hint">Select at least one game to begin.</div>
+        <div className="card hint">
+          Valitse vähintään yksi peli aloittaaksesi.
+        </div>
       )}
     </div>
   );

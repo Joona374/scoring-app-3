@@ -130,7 +130,7 @@ export default function ResultBar({ state, setState }) {
       </div>
 
       {/* View */}
-      <div className="rb-group">
+      {/* <div className="rb-group">
         <span className="rb-label">Näkymä</span>
         <button
           className={`pill xs ${mode === "heatmap" ? "pill-active" : ""}`}
@@ -144,7 +144,7 @@ export default function ResultBar({ state, setState }) {
         >
           Pisteinä
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

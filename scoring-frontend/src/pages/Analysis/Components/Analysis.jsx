@@ -8,7 +8,7 @@ import "../Analysis.css";
 
 export default function Analysis({ params }) {
   const [data, setData] = useState(null);
-  const [mode, setMode] = useState("heatmap"); // "heatmap" | "scatter"
+  const [mode, setMode] = useState("scatter"); // "heatmap" | "scatter" - default to scatter
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const token = sessionStorage.getItem("jwt_token");
@@ -71,20 +71,7 @@ export default function Analysis({ params }) {
   return (
     <div className="ana-grid">
       <div className="card controls">
-        <div className="toggle-group">
-          <button
-            className={`pill ${mode === "heatmap" ? "pill-active" : ""}`}
-            onClick={() => setMode("heatmap")}
-          >
-            Heatmap
-          </button>
-          <button
-            className={`pill ${mode === "scatter" ? "pill-active" : ""}`}
-            onClick={() => setMode("scatter")}
-          >
-            Scatter
-          </button>
-        </div>
+        {/* Heatmap/Scatter toggle removed - always use scatter mode */}
         <div className="toggle-group">
           <label className="chk">
             <input
