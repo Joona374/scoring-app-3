@@ -84,7 +84,9 @@ export default function FilterAccordion({ onApply }) {
   return (
     <div className="accordion">
       <button className="accordion-toggle" onClick={() => setOpen((o) => !o)}>
-        {open ? "▲ Filters (Games & Players)" : "▼ Filters (Games & Players)"}
+        {open
+          ? "▲ Suodattimet (Pelit & Pelaajat)"
+          : "▼ Suodattimet (Pelit & Pelaajat)"}
       </button>
 
       {open && (
@@ -141,7 +143,7 @@ export default function FilterAccordion({ onApply }) {
                 </button>
 
                 {teamPlayers.length === 0 && (
-                  <div className="muted">No players found for team</div>
+                  <div className="muted">Joukkueelle ei löytynyt pelaajia</div>
                 )}
 
                 {teamPlayers.map((p) => (
@@ -169,7 +171,9 @@ export default function FilterAccordion({ onApply }) {
               onClick={apply}
               disabled={disableApply}
               title={
-                disableApply ? "Select at least one game" : "Apply filters"
+                disableApply
+                  ? "Valitse vähintään yksi peli"
+                  : "Käytä suodattimia"
               }
             >
               Valitse
