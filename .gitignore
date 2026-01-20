@@ -81,3 +81,6 @@ scripts/
 create_demo_data.py
 .vscode/
 .github/
+package.json
+package-lock.json
+.gitignore
