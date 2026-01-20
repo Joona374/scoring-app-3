@@ -2,7 +2,7 @@
 
 A full-stack web application for tracking and analyzing ice hockey scoring chances and player performance. Built for real coaching staff to make data-driven decisions.
 
-**🔴 Live & In Production** — Currently used by 3 Finnish U16–U18 SM-sarja teams
+**🔴 Live & In Production** - Currently used by 3 Finnish U16–U18 SM-sarja teams
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)
@@ -19,13 +19,26 @@ This application helps hockey coaches track scoring chances (not just goals) to 
 
 ### Key Features
 
-- **Video-Based Game Tagging** — Review game footage and tag scoring chances efficiently and informatively
-- **Excel Export** — Generate detailed reports for deeper analysis
-- **Team Dashboard** — Season overview with filtering by game range
-- **Zone Visualization** — Heat maps showing where shots and chances come from (ice zones) and where they go (net zones)
-- **Player Analytics** — Individual player stats with plus/minus tracking for both goals and chances
-- **Multi-user Support** — Multiple coaches can collaborate on the same team
-- **Roster Scraper** — Automatically fetch game rosters from Finnish Ice-Hockey Federation website (Playwright)
+- **Video-Review Companion for Coaches** - A web app for tagging and analyzing scoring chances alongside external hockey game footage
+- **Excel Export** - Generate detailed reports for deeper analysis
+- **Team Dashboard** - Season overview with filtering by game range
+- **Zone Visualization** - Heat maps showing where shots and chances come from (ice zones) and where they go (net zones)
+- **Player Analytics** - Individual player stats with plus/minus tracking for both goals and chances
+- **Multi-user Support** - Multiple coaches can collaborate on the same team
+- **Roster Scraper** - Automatically fetch game rosters from Finnish Ice-Hockey Federation website (Playwright)
+
+---
+
+### 💸 100% Free-Tier Stack
+
+The entire application runs on free-tier services. It is a deliberate choice to minimize costs while the product is still in early adoption. This comes with trade-offs:
+
+| Challenge | Mitigation |
+|-----------|------------|
+| **Render cold starts**: backend spins down after ~15 min of inactivity, causing the first request to take 30–80 s | Keepalive pings from an external cron service; frontend shows a friendly loading message while the server wakes |
+| **Neon sleep**: database pauses after inactivity | Neon's auto-wake is fast (~1 s), but combined with Render cold start the first load can feel slow |
+
+Despite these constraints, this stack offers the best balance of cost, UX, and reliability I've found for a bootstrapped side-project in production.
 
 ---
 
@@ -34,7 +47,7 @@ This application helps hockey coaches track scoring chances (not just goals) to 
 ### Frontend
 - **React 19** with Vite
 - **React Router** for navigation
-- **Custom CSS** (no UI framework — intentional choice for learning)
+- **Custom CSS** (no UI framework - intentional choice for learning)
 - **Canvas API** for zone map visualizations
 - **localStorage** caching for instant dashboard loads
 
@@ -51,16 +64,16 @@ This application helps hockey coaches track scoring chances (not just goals) to 
 - **Backend**: Render (free tier with cold starts)
 - **Database**: Neon (serverless PostgreSQL)
 
----
+
 
 ## 📊 Database Schema
 
 The application uses a relational model with 12+ tables including:
 
-- `users` / `teams` — Multi-tenant team management
-- `players` / `games` — Roster and schedule tracking  
-- `player_stats_tags` — Individual scoring chance events with ice position, net position, shot type, and result
-- `team_stats_tags` — Team-level play pattern tracking (rushes, power plays, faceoffs, etc.)
+- `users` / `teams` - Multi-tenant team management
+- `players` / `games` - Roster and schedule tracking  
+- `player_stats_tags` - Individual scoring chance events with ice position, net position, shot type, and result
+- `team_stats_tags` - Team-level play pattern tracking (rushes, power plays, faceoffs, etc.)
 - Junction tables for tracking which players were on-ice or participating in each event
 
 ---
@@ -130,7 +143,7 @@ Filter by game situation (e.g., power-play) and visualize shot locations on the 
 
 ![Power-play analysis visualization](docs/images/analysis.png)
 
-### Game Tagging — On-Ice Selection
+### Game Tagging - On-Ice Selection
 Select which players were on the ice and who actively participated in a scoring chance. Previous tags for the game are listed on the left.
 
 ![Tagging on-ice player selection](docs/images/onice_selection.png)
