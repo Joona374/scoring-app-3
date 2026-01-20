@@ -1,10 +1,19 @@
 import { Link } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import AuthContext from "../../auth/AuthContext";
 import "./Home.css";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function Home() {
   const { isLoggedIn, logout } = useContext(AuthContext);
+
+  // Wake up backend on page load (Render free tier has cold starts)
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/`).catch(() => {
+      // Silently ignore errors - this is just a wake-up ping
+    });
+  }, []);
 
   return (
     <div className="home-hero-container">

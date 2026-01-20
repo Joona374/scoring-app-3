@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../auth/AuthContext";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
@@ -15,6 +15,13 @@ export default function Login() {
   const { login, setIsAdmin } = useContext(AuthContext);
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
   const [isSlowLogin, setIsSlowLogin] = useState(false);
+
+  // Wake up backend on page load (Render free tier has cold starts)
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/`).catch(() => {
+      // Silently ignore errors - this is just a wake-up ping
+    });
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -60,7 +67,7 @@ export default function Login() {
       }
     } catch (err) {
       setErrorMsg(
-        "Jokin meni pieleen kirjautumisessa, yritä uudelleen. Ongelmien jatkuessa ota yhteyttä ylläpitäjään."
+        "Jokin meni pieleen kirjautumisessa, yritä uudelleen. Ongelmien jatkuessa ota yhteyttä ylläpitäjään.",
       );
       console.error("Login error:", err);
       setIsLoadingLogin(false);

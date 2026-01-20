@@ -37,3 +37,10 @@ logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 @app.get("/")
 def read_root():
     return {"message": "Scoring App 3.0 API is live!"}
+
+
+# Keepalive endpoint for uptime monitoring services
+@app.get("/health")
+@app.head("/health")
+def health():
+    return {"status": "ok"}
