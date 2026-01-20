@@ -2,7 +2,17 @@
 // Stores dashboard data in localStorage for instant loading on return visits
 // Strategy: Always show cached data immediately, then fetch fresh data in background
 
-const CACHE_KEY = "dashboard_cache";
+const CACHE_KEY_PREFIX = "dashboard_cache_team_";
+
+/**
+ * Get the cache key for the current team
+ * @returns {string | null} Cache key or null if no team_id in session
+ */
+function getCacheKey() {
+  const teamId = sessionStorage.getItem("team_id");
+  if (!teamId) return null;
+  return `${CACHE_KEY_PREFIX}${teamId}`;
+}
 
 /**
  * Get cached dashboard data if available
@@ -10,7 +20,10 @@ const CACHE_KEY = "dashboard_cache";
  */
 export function getCachedDashboard() {
   try {
-    const cached = localStorage.getItem(CACHE_KEY);
+    const cacheKey = getCacheKey();
+    if (!cacheKey) return null;
+
+    const cached = localStorage.getItem(cacheKey);
     if (!cached) return null;
     return JSON.parse(cached);
   } catch (e) {
@@ -25,7 +38,10 @@ export function getCachedDashboard() {
  */
 export function cacheDashboard(data) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    const cacheKey = getCacheKey();
+    if (!cacheKey) return;
+
+    localStorage.setItem(cacheKey, JSON.stringify(data));
   } catch (e) {
     console.warn("Failed to cache dashboard:", e);
   }
@@ -35,7 +51,10 @@ export function cacheDashboard(data) {
  * Clear the dashboard cache (e.g., on logout)
  */
 export function clearDashboardCache() {
-  localStorage.removeItem(CACHE_KEY);
+  const cacheKey = getCacheKey();
+  if (cacheKey) {
+    localStorage.removeItem(cacheKey);
+  }
 }
 
 /**

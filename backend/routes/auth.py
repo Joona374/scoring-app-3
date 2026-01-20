@@ -75,9 +75,4 @@ def login(login_data: UserLogin, db_session: Session = Depends(get_db_session)):
 
     user_data = {"sub": str(found_user.id)}
     access_token = create_jwt(user_data, 180)
-    return LoginResponse(
-        username=found_user.username,
-        user_id=found_user.id,
-        is_admin=found_user.is_admin,
-        jwt_token=access_token
-    )
+    return LoginResponse(username=found_user.username, user_id=found_user.id, is_admin=found_user.is_admin, jwt_token=access_token, team_id=found_user.team_id)

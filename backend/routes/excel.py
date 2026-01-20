@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Response, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from io import BytesIO
 from openpyxl import load_workbook
 from collections import defaultdict
@@ -113,10 +113,9 @@ def get_chance_column(scoring_chance: TeamStatsTag) -> str:
                 return "I"
             else:
                 raise ValueError(f"In get_chance_column: value {value} is not in any column", scoring_chance) # fmt: skip
-        else:
-            raise ValueError(f"In get_chance_column: value for column {column} is None", scoring_chance) # fmt: skip
+        # If value is None, continue to next column
 
-    raise RuntimeError("final_columns was empty, this should not happen", scoring_chance)
+    raise RuntimeError("No valid column value found in any final_columns", scoring_chance)
 
 
 def calculate_numbers_for_cells(all_tags):
@@ -304,7 +303,16 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
     total_stats = {}
     game_ids = [game.id for game in teams_games]
 
-    player_stats_tags = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()
+    player_stats_tags = (
+        db_session.query(PlayerStatsTag)
+        .options(
+            joinedload(PlayerStatsTag.shot_result),
+            joinedload(PlayerStatsTag.players_on_ice).joinedload(PlayerStatsTagOnIce.player),
+            joinedload(PlayerStatsTag.players_participating).joinedload(PlayerStatsTagParticipating.player),
+        )
+        .filter(PlayerStatsTag.game_id.in_(game_ids))
+        .all()
+    )
     PSTs_by_game_id = defaultdict(list)
     for tag in player_stats_tags:
         PSTs_by_game_id[tag.game_id].append(tag)
@@ -706,7 +714,16 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session):
 
     game_ids = [game.id for game in teams_games]
 
-    player_stats_tags = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()
+    player_stats_tags = (
+        db_session.query(PlayerStatsTag)
+        .options(
+            joinedload(PlayerStatsTag.shot_result),
+            joinedload(PlayerStatsTag.shot_area),
+            joinedload(PlayerStatsTag.shot_type),
+        )
+        .filter(PlayerStatsTag.game_id.in_(game_ids))
+        .all()
+    )
     total_shot_zone_data = collect_shotzone_data(player_stats_tags)
     total_shot_type_data = collect_shot_type_data(player_stats_tags)
     total_net_zone_data = collect_net_zone_data(player_stats_tags)
@@ -1023,7 +1040,20 @@ async def get_player_scoring_excel(
                 teams_games.append(game)
     selected_game_ids = [game.id for game in teams_games]
 
-    player_stats_tags = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(selected_game_ids)).all()
+    player_stats_tags = (
+        db_session.query(PlayerStatsTag)
+        .options(
+            joinedload(PlayerStatsTag.shooter),
+            joinedload(PlayerStatsTag.game),
+            joinedload(PlayerStatsTag.shot_result),
+            joinedload(PlayerStatsTag.shot_area),
+            joinedload(PlayerStatsTag.shot_type),
+            joinedload(PlayerStatsTag.players_on_ice),
+            joinedload(PlayerStatsTag.players_participating),
+        )
+        .filter(PlayerStatsTag.game_id.in_(selected_game_ids))
+        .all()
+    )
 
     players_to_analyze = defaultdict(lambda: {"games": 0, "first_name": "", "last_name": "", "shooter_tags": [], "on_ice_tags": [], "cell_values": {}, "per_game_stats": []})
     for game in teams_games:

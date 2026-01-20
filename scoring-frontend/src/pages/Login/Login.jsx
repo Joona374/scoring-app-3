@@ -51,6 +51,9 @@ export default function Login() {
         login(data.jwt_token);
         sessionStorage.setItem("username", data.username);
         sessionStorage.setItem("user_id", data.user_id);
+        if (data.team_id) {
+          sessionStorage.setItem("team_id", data.team_id);
+        }
         if (data.is_admin) {
           sessionStorage.setItem("is_admin", data.is_admin);
           setIsAdmin(true);

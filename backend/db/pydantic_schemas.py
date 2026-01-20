@@ -46,6 +46,7 @@ class LoginResponse(BaseModel):
     user_id: int
     is_admin: bool
     jwt_token: str
+    team_id: Optional[int] = None
 
 class UserData(BaseModel):
     model_config = {"extra": "forbid"}
