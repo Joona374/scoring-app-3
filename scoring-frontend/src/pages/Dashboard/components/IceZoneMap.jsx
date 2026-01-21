@@ -31,7 +31,7 @@ const ICE_ZONES = [
     ],
   },
   {
-    name: "OUTSIDE_CLOSE",
+    name: "OUTSIDE_CLOSE_LEFT",
     label: "OC-L",
     points: [
       [50, 79],
@@ -40,7 +40,7 @@ const ICE_ZONES = [
     ],
   },
   {
-    name: "OUTSIDE_FAR",
+    name: "OUTSIDE_FAR_LEFT",
     label: "OF-L",
     points: [
       [0, 40],
@@ -50,7 +50,7 @@ const ICE_ZONES = [
     ],
   },
   {
-    name: "ZONE_4",
+    name: "ZONE_4_LEFT",
     label: "Z4-L",
     points: [
       [0, 23],
@@ -60,7 +60,7 @@ const ICE_ZONES = [
     ],
   },
   {
-    name: "OUTSIDE_CLOSE",
+    name: "OUTSIDE_CLOSE_RIGHT",
     label: "OC-R",
     points: [
       [50, 79],
@@ -69,7 +69,7 @@ const ICE_ZONES = [
     ],
   },
   {
-    name: "OUTSIDE_FAR",
+    name: "OUTSIDE_FAR_RIGHT",
     label: "OF-R",
     points: [
       [100, 40],
@@ -79,7 +79,7 @@ const ICE_ZONES = [
     ],
   },
   {
-    name: "ZONE_4",
+    name: "ZONE_4_RIGHT",
     label: "Z4-R",
     points: [
       [100, 23],
@@ -89,7 +89,7 @@ const ICE_ZONES = [
     ],
   },
   {
-    name: "ZONE_2_SIDE",
+    name: "ZONE_2_SIDE_LEFT",
     label: "Z2-L",
     points: [
       [25, 23],
@@ -108,7 +108,7 @@ const ICE_ZONES = [
     ],
   },
   {
-    name: "ZONE_2_SIDE",
+    name: "ZONE_2_SIDE_RIGHT",
     label: "Z2-R",
     points: [
       [75, 23],

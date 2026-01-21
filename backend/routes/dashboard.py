@@ -58,6 +58,14 @@ def calculate_game_kpi(game: Game, tags: list[PlayerStatsTag], db: Session) -> G
         for tag in tag_list:
             result = tag.shot_result.value
             ice_zone_name = tag.shot_area.value.value if tag.shot_area else "UNKNOWN"
+            # Split mirrored zones by side based on ice_x coordinate
+            if ice_zone_name in ["ZONE_2_SIDE", "ZONE_4", "OUTSIDE_FAR", "OUTSIDE_CLOSE"]:
+                if tag.ice_x is not None:
+                    side = "_LEFT" if tag.ice_x < 50 else "_RIGHT"
+                else:
+                    side = "_LEFT"  # default to left if no ice_x
+                ice_zone_name += side
+
             net_zone_name = f"{tag.net_height}-{tag.net_width}"
 
             if ice_zone_name not in ice_z:
