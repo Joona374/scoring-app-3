@@ -14,55 +14,18 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 def calculate_game_kpi(game: Game, tags: list[PlayerStatsTag], db: Session) -> GameKPI:
-    """Calculate KPIs for a single game from its tags, including per-player stats."""
-    goals_for = sum(1 for t in tags if t.shot_result.value == ShotResultTypes.GOAL_FOR)
-    goals_against = sum(1 for t in tags if t.shot_result.value == ShotResultTypes.GOAL_AGAINST)
-    chances_for = sum(1 for t in tags if t.shot_result.value in (ShotResultTypes.CHANCE_FOR, ShotResultTypes.GOAL_FOR))
-    chances_against = sum(1 for t in tags if t.shot_result.value in (ShotResultTypes.CHANCE_AGAINST, ShotResultTypes.GOAL_AGAINST))
+    """Calculate KPIs for a single game from its tags, including per-player stats.
 
-    efficiency_for = round((goals_for / chances_for * 100), 1) if chances_for > 0 else 0.0
-    efficiency_against = round((goals_against / chances_against * 100), 1) if chances_against > 0 else 0.0
+    This function now also computes per-situation aggregates and returns them in the
+    `situations` field of the returned GameKPI. Situations keys are: 'yht' (total),
+    '5v5' (ES), 'YV' (PP), 'AV' (PK).
+    """
 
-    # Calculate zone stats for this game
-    ice_zones: dict[str, ZoneData] = {}
-    net_zones: dict[str, ZoneData] = {}
-
-    for tag in tags:
-        result = tag.shot_result.value
-        ice_zone_name = tag.shot_area.value.value if tag.shot_area else "UNKNOWN"
-        net_zone_name = f"{tag.net_height}-{tag.net_width}"
-
-        # Initialize zones if needed
-        if ice_zone_name not in ice_zones:
-            ice_zones[ice_zone_name] = ZoneData()
-        if net_zone_name not in net_zones:
-            net_zones[net_zone_name] = ZoneData()
-
-        # Update counts based on result type
-        if result == ShotResultTypes.GOAL_FOR:
-            ice_zones[ice_zone_name].goals_for += 1
-            ice_zones[ice_zone_name].chances_for += 1
-            net_zones[net_zone_name].goals_for += 1
-            net_zones[net_zone_name].chances_for += 1
-        elif result == ShotResultTypes.GOAL_AGAINST:
-            ice_zones[ice_zone_name].goals_against += 1
-            ice_zones[ice_zone_name].chances_against += 1
-            net_zones[net_zone_name].goals_against += 1
-            net_zones[net_zone_name].chances_against += 1
-        elif result == ShotResultTypes.CHANCE_FOR:
-            ice_zones[ice_zone_name].chances_for += 1
-            net_zones[net_zone_name].chances_for += 1
-        elif result == ShotResultTypes.CHANCE_AGAINST:
-            ice_zones[ice_zone_name].chances_against += 1
-            net_zones[net_zone_name].chances_against += 1
-
-    # Calculate per-player stats for this game
-    # Get players in this game's roster
+    # Prepare roster and on-ice/participating lookups once (used by all situation aggregations)
     roster_entries = db.query(GameInRoster).filter(GameInRoster.game_id == game.id).all()
     player_ids_in_game = [r.player_id for r in roster_entries]
     players_in_game = db.query(Player).filter(Player.id.in_(player_ids_in_game)).all()
 
-    # Get on-ice and participating records for tags in this game
     tag_ids = [t.id for t in tags]
     on_ice_records = db.query(PlayerStatsTagOnIce).filter(
         PlayerStatsTagOnIce.tag_id.in_(tag_ids)
@@ -71,7 +34,6 @@ def calculate_game_kpi(game: Game, tags: list[PlayerStatsTag], db: Session) -> G
         PlayerStatsTagParticipating.tag_id.in_(tag_ids)
     ).all() if tag_ids else []
 
-    # Build lookup sets: tag_id -> set of player_ids
     on_ice_by_tag = {}
     for rec in on_ice_records:
         on_ice_by_tag.setdefault(rec.tag_id, set()).add(rec.player_id)
@@ -80,73 +42,144 @@ def calculate_game_kpi(game: Game, tags: list[PlayerStatsTag], db: Session) -> G
     for rec in participating_records:
         participating_by_tag.setdefault(rec.tag_id, set()).add(rec.player_id)
 
-    # Calculate stats for each player
-    player_stats_list: list[GamePlayerStats] = []
+    def build_kpi_from_tags(tag_list: list[PlayerStatsTag]):
+        # basic counts
+        gf = sum(1 for t in tag_list if t.shot_result.value == ShotResultTypes.GOAL_FOR)
+        ga = sum(1 for t in tag_list if t.shot_result.value == ShotResultTypes.GOAL_AGAINST)
+        cf = sum(1 for t in tag_list if t.shot_result.value in (ShotResultTypes.CHANCE_FOR, ShotResultTypes.GOAL_FOR))
+        ca = sum(1 for t in tag_list if t.shot_result.value in (ShotResultTypes.CHANCE_AGAINST, ShotResultTypes.GOAL_AGAINST))
 
-    for player in players_in_game:
-        stats = GamePlayerStats(
-            player_id=player.id,
-            first_name=player.first_name,
-            last_name=player.last_name,
-            jersey_number=player.jersey_number,
-        )
+        eff_f = round((gf / cf * 100), 1) if cf > 0 else 0.0
+        eff_a = round((ga / ca * 100), 1) if ca > 0 else 0.0
 
-        for tag in tags:
+        ice_z: dict[str, ZoneData] = {}
+        net_z: dict[str, ZoneData] = {}
+
+        for tag in tag_list:
             result = tag.shot_result.value
-            is_shooter = tag.shooter_id == player.id
-            is_on_ice = player.id in on_ice_by_tag.get(tag.id, set())
-            is_participating = player.id in participating_by_tag.get(tag.id, set())
+            ice_zone_name = tag.shot_area.value.value if tag.shot_area else "UNKNOWN"
+            # Split mirrored zones by side based on ice_x coordinate
+            if ice_zone_name in ["ZONE_2_SIDE", "ZONE_4", "OUTSIDE_FAR", "OUTSIDE_CLOSE"]:
+                if tag.ice_x is not None:
+                    side = "_LEFT" if tag.ice_x < 50 else "_RIGHT"
+                else:
+                    side = "_LEFT"  # default to left if no ice_x
+                ice_zone_name += side
 
-            # Personal goals and chances (as shooter)
-            if is_shooter:
-                if result == ShotResultTypes.GOAL_FOR:
-                    stats.goals += 1
-                    stats.chances += 1
-                elif result == ShotResultTypes.CHANCE_FOR:
-                    stats.chances += 1
+            net_zone_name = f"{tag.net_height}-{tag.net_width}"
 
-            # On-ice +/-
-            if is_on_ice:
-                if result == ShotResultTypes.GOAL_FOR:
-                    stats.goals_plus_on_ice += 1
-                    stats.chances_plus_on_ice += 1
-                elif result == ShotResultTypes.GOAL_AGAINST:
-                    stats.goals_minus_on_ice += 1
-                    stats.chances_minus_on_ice += 1
-                elif result == ShotResultTypes.CHANCE_FOR:
-                    stats.chances_plus_on_ice += 1
-                elif result == ShotResultTypes.CHANCE_AGAINST:
-                    stats.chances_minus_on_ice += 1
+            if ice_zone_name not in ice_z:
+                ice_z[ice_zone_name] = ZoneData()
+            if net_zone_name not in net_z:
+                net_z[net_zone_name] = ZoneData()
 
-            # Participating +/-
-            if is_participating:
-                if result == ShotResultTypes.GOAL_FOR:
-                    stats.goals_plus_participating += 1
-                    stats.chances_plus_participating += 1
-                elif result == ShotResultTypes.GOAL_AGAINST:
-                    stats.goals_minus_participating += 1
-                    stats.chances_minus_participating += 1
-                elif result == ShotResultTypes.CHANCE_FOR:
-                    stats.chances_plus_participating += 1
-                elif result == ShotResultTypes.CHANCE_AGAINST:
-                    stats.chances_minus_participating += 1
+            if result == ShotResultTypes.GOAL_FOR:
+                ice_z[ice_zone_name].goals_for += 1
+                ice_z[ice_zone_name].chances_for += 1
+                net_z[net_zone_name].goals_for += 1
+                net_z[net_zone_name].chances_for += 1
+            elif result == ShotResultTypes.GOAL_AGAINST:
+                ice_z[ice_zone_name].goals_against += 1
+                ice_z[ice_zone_name].chances_against += 1
+                net_z[net_zone_name].goals_against += 1
+                net_z[net_zone_name].chances_against += 1
+            elif result == ShotResultTypes.CHANCE_FOR:
+                ice_z[ice_zone_name].chances_for += 1
+                net_z[net_zone_name].chances_for += 1
+            elif result == ShotResultTypes.CHANCE_AGAINST:
+                ice_z[ice_zone_name].chances_against += 1
+                net_z[net_zone_name].chances_against += 1
 
-        player_stats_list.append(stats)
+        # per-player stats for this tag subset
+        player_stats_local: list[GamePlayerStats] = []
+        for player in players_in_game:
+            stats = GamePlayerStats(
+                player_id=player.id,
+                first_name=player.first_name,
+                last_name=player.last_name,
+                jersey_number=player.jersey_number,
+            )
+
+            for tag in tag_list:
+                result = tag.shot_result.value
+                is_shooter = tag.shooter_id == player.id
+                is_on_ice = player.id in on_ice_by_tag.get(tag.id, set())
+                is_participating = player.id in participating_by_tag.get(tag.id, set())
+
+                if is_shooter:
+                    if result == ShotResultTypes.GOAL_FOR:
+                        stats.goals += 1
+                        stats.chances += 1
+                    elif result == ShotResultTypes.CHANCE_FOR:
+                        stats.chances += 1
+
+                if is_on_ice:
+                    if result == ShotResultTypes.GOAL_FOR:
+                        stats.goals_plus_on_ice += 1
+                        stats.chances_plus_on_ice += 1
+                    elif result == ShotResultTypes.GOAL_AGAINST:
+                        stats.goals_minus_on_ice += 1
+                        stats.chances_minus_on_ice += 1
+                    elif result == ShotResultTypes.CHANCE_FOR:
+                        stats.chances_plus_on_ice += 1
+                    elif result == ShotResultTypes.CHANCE_AGAINST:
+                        stats.chances_minus_on_ice += 1
+
+                if is_participating:
+                    if result == ShotResultTypes.GOAL_FOR:
+                        stats.goals_plus_participating += 1
+                        stats.chances_plus_participating += 1
+                    elif result == ShotResultTypes.GOAL_AGAINST:
+                        stats.goals_minus_participating += 1
+                        stats.chances_minus_participating += 1
+                    elif result == ShotResultTypes.CHANCE_FOR:
+                        stats.chances_plus_participating += 1
+                    elif result == ShotResultTypes.CHANCE_AGAINST:
+                        stats.chances_minus_participating += 1
+
+            player_stats_local.append(stats)
+
+        return {
+            "goals_for": gf,
+            "goals_against": ga,
+            "chances_for": cf,
+            "chances_against": ca,
+            "efficiency_for": eff_f,
+            "efficiency_against": eff_a,
+            "ice_zones": ice_z,
+            "net_zones": net_z,
+            "player_stats": player_stats_local,
+        }
+
+    # Build situation-specific tag lists
+    situations = {}
+    # Total (yht) includes all tags (including EN+/EN-)
+    situations["yht"] = build_kpi_from_tags(tags)
+    # 5v5 -> strengths == 'ES'
+    situations["5v5"] = build_kpi_from_tags([t for t in tags if getattr(t, "strengths", None) == "ES"]) if tags else build_kpi_from_tags([])
+    # YV (powerplay) -> strengths == 'PP'
+    situations["YV"] = build_kpi_from_tags([t for t in tags if getattr(t, "strengths", None) == "PP"]) if tags else build_kpi_from_tags([])
+    # AV (penaltykill) -> strengths == 'PK'
+    situations["AV"] = build_kpi_from_tags([t for t in tags if getattr(t, "strengths", None) == "PK"]) if tags else build_kpi_from_tags([])
+
+    # Use the total (yht) as the top-level KPI for backward compatibility
+    total_kpi = situations["yht"]
 
     return GameKPI(
         game_id=game.id,
         date=str(game.date),
         opponent=game.opponent,
         home=game.home,
-        goals_for=goals_for,
-        goals_against=goals_against,
-        chances_for=chances_for,
-        chances_against=chances_against,
-        efficiency_for=efficiency_for,
-        efficiency_against=efficiency_against,
-        ice_zones=ice_zones,
-        net_zones=net_zones,
-        player_stats=player_stats_list,
+        goals_for=total_kpi["goals_for"],
+        goals_against=total_kpi["goals_against"],
+        chances_for=total_kpi["chances_for"],
+        chances_against=total_kpi["chances_against"],
+        efficiency_for=total_kpi["efficiency_for"],
+        efficiency_against=total_kpi["efficiency_against"],
+        ice_zones=total_kpi["ice_zones"],
+        net_zones=total_kpi["net_zones"],
+        player_stats=total_kpi["player_stats"],
+        situations=situations,
     )
 
 
