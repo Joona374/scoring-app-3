@@ -154,7 +154,7 @@
             "id": 7,
             "type": "TEXT",
             "key": "strengths",
-            "text": "Oliko kyseessä erikoistilann?",
+            "text": "Oliko kyseessä erikoistilanne? (Vastaa aina oman joukkueen näkökulmasta. Esim. vastustaja tekee alivoimamaalin => valitse 'Ylivoima'.)",
             "options": [
             {
                     "answer": "ES",

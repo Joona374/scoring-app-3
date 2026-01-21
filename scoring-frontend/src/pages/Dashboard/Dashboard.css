@@ -234,6 +234,8 @@
     align-items: center;
     width: 100%;
     background: rgba(255, 255, 255, 0.02);
+    border-radius: calc(var(--radius) / 1.5);
+    border: 1px solid #333;
 }
 
 /* Top row with situation filters (5v5 / YV / AV / yht) */
@@ -241,7 +243,8 @@
     display: flex;
     justify-content: center;
     gap: 16px; /* keep spacing similar to the columns */
-    padding: 8px 12px;
+    padding: 0px 12px;
+    padding-top: 16px;
     width: 100%;
     max-width: 480px; /* prevents row from stretching too wide on large screens */
     border-radius: calc(var(--radius) / 1.5);
