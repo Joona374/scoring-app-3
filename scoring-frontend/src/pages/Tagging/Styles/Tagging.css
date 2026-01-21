@@ -33,3 +33,32 @@
     align-items: center;
     justify-content: flex-start;
 }
+
+/* Scrollbar styling copied from ScrollContainer to match theme in tagging column and summaries */
+.tagging-summary-column,
+.player-tagging-summary,
+.tagging-summary {
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) #1e1d22;
+}
+
+/* WebKit-based browsers */
+.tagging-summary-column::-webkit-scrollbar,
+.player-tagging-summary::-webkit-scrollbar,
+.tagging-summary::-webkit-scrollbar {
+    width: 10px;
+}
+.tagging-summary-column::-webkit-scrollbar-track,
+.player-tagging-summary::-webkit-scrollbar-track,
+.tagging-summary::-webkit-scrollbar-track {
+    background: #1e1d22;
+    border-radius: 8px;
+}
+.tagging-summary-column::-webkit-scrollbar-thumb,
+.player-tagging-summary::-webkit-scrollbar-thumb,
+.tagging-summary::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 8px;
+    border: 2px solid #1e1d22; /* creates padding around thumb */
+}
