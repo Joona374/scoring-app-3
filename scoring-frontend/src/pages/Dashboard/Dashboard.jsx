@@ -11,8 +11,9 @@ export default function TeamDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
-  const [gamesCount, setGamesCount] = useState(null); // null = all games
+  const [gameRange, setGameRange] = useState({ start: 0, end: null }); // end null = all games
   const [zoneMode, setZoneMode] = useState("goals_for"); // Current zone display mode
+  const [situationFilter, setSituationFilter] = useState("yht"); // e.g. 5v5, YV, AV
   const [sortConfig, setSortConfig] = useState({
     key: "chances_plus_minus_on_ice",
     direction: "desc",
@@ -24,7 +25,7 @@ export default function TeamDashboard() {
     const cached = getCachedDashboard();
     if (cached) {
       setDashboardData(cached);
-      setGamesCount(cached.games.length);
+      setGameRange({ start: 0, end: cached.games.length - 1 });
       setLoading(false); // Show cached data immediately
     }
 
@@ -55,7 +56,7 @@ export default function TeamDashboard() {
         cacheDashboard(data);
 
         setDashboardData(data);
-        setGamesCount(data.games.length);
+        setGameRange({ start: 0, end: data.games.length - 1 });
       } catch (err) {
         console.error("Dashboard error:", err);
         // Only show error if we don't have cached data
@@ -73,11 +74,72 @@ export default function TeamDashboard() {
   // Filter games based on slider
   const filteredGames = useMemo(() => {
     if (!dashboardData?.games) return [];
-    return dashboardData.games.slice(
-      0,
-      gamesCount || dashboardData.games.length,
-    );
-  }, [dashboardData?.games, gamesCount]);
+    const { start, end } = gameRange;
+    return dashboardData.games.slice(start, end + 1);
+  }, [dashboardData?.games, gameRange]);
+
+  // Handlers for dual range slider
+  const handleMinChange = (e) => {
+    const value = Math.min(Number(e.target.value), gameRange.end);
+    setGameRange((prev) => ({ ...prev, start: value }));
+  };
+
+  const handleMaxChange = (e) => {
+    const value = Math.max(Number(e.target.value), gameRange.start);
+    setGameRange((prev) => ({ ...prev, end: value }));
+  };
+
+  // Calculate percentages for dual slider
+  const totalGames = dashboardData?.games?.length || 1;
+  const denominator = totalGames - 1 || 1; // Avoid division by zero
+  const minPercent = (gameRange.start / denominator) * 100;
+  const maxPercent = (gameRange.end / denominator) * 100;
+
+  // Helper to pick the right per-game structure depending on situationFilter
+  const getSituationData = (game) => {
+    if (!game) return null;
+    if (!game.situations || situationFilter === "yht") {
+      return {
+        goals_for: game.goals_for,
+        goals_against: game.goals_against,
+        chances_for: game.chances_for,
+        chances_against: game.chances_against,
+        efficiency_for: game.efficiency_for,
+        efficiency_against: game.efficiency_against,
+        ice_zones: game.ice_zones || {},
+        net_zones: game.net_zones || {},
+        player_stats: game.player_stats || [],
+      };
+    }
+
+    // Use situation-specific aggregate if available, fall back to totals
+    const sit = game.situations?.[situationFilter];
+    if (!sit) {
+      return {
+        goals_for: game.goals_for,
+        goals_against: game.goals_against,
+        chances_for: game.chances_for,
+        chances_against: game.chances_against,
+        efficiency_for: game.efficiency_for,
+        efficiency_against: game.efficiency_against,
+        ice_zones: game.ice_zones || {},
+        net_zones: game.net_zones || {},
+        player_stats: game.player_stats || [],
+      };
+    }
+
+    return {
+      goals_for: sit.goals_for,
+      goals_against: sit.goals_against,
+      chances_for: sit.chances_for,
+      chances_against: sit.chances_against,
+      efficiency_for: sit.efficiency_for,
+      efficiency_against: sit.efficiency_against,
+      ice_zones: sit.ice_zones || {},
+      net_zones: sit.net_zones || {},
+      player_stats: sit.player_stats || [],
+    };
+  };
 
   // Calculate totals from filtered games
   const totals = useMemo(() => {
@@ -92,10 +154,22 @@ export default function TeamDashboard() {
       };
     }
 
-    const gf = filteredGames.reduce((sum, g) => sum + g.goals_for, 0);
-    const ga = filteredGames.reduce((sum, g) => sum + g.goals_against, 0);
-    const cf = filteredGames.reduce((sum, g) => sum + g.chances_for, 0);
-    const ca = filteredGames.reduce((sum, g) => sum + g.chances_against, 0);
+    const gf = filteredGames.reduce(
+      (sum, g) => sum + (getSituationData(g)?.goals_for || 0),
+      0,
+    );
+    const ga = filteredGames.reduce(
+      (sum, g) => sum + (getSituationData(g)?.goals_against || 0),
+      0,
+    );
+    const cf = filteredGames.reduce(
+      (sum, g) => sum + (getSituationData(g)?.chances_for || 0),
+      0,
+    );
+    const ca = filteredGames.reduce(
+      (sum, g) => sum + (getSituationData(g)?.chances_against || 0),
+      0,
+    );
 
     return {
       goals_for: gf,
@@ -105,7 +179,7 @@ export default function TeamDashboard() {
       efficiency_for: cf > 0 ? Math.round((gf / cf) * 1000) / 10 : 0,
       efficiency_against: ca > 0 ? Math.round((ga / ca) * 1000) / 10 : 0,
     };
-  }, [filteredGames]);
+  }, [filteredGames, situationFilter]);
 
   // Calculate mean and standard deviation for games table coloring
   const gameStats = useMemo(() => {
@@ -128,14 +202,20 @@ export default function TeamDashboard() {
     };
 
     return {
-      goalsFor: calcMeanAndSD(filteredGames.map((g) => g.goals_for)),
-      goalsAgainst: calcMeanAndSD(filteredGames.map((g) => g.goals_against)),
-      chancesFor: calcMeanAndSD(filteredGames.map((g) => g.chances_for)),
+      goalsFor: calcMeanAndSD(
+        filteredGames.map((g) => getSituationData(g)?.goals_for || 0),
+      ),
+      goalsAgainst: calcMeanAndSD(
+        filteredGames.map((g) => getSituationData(g)?.goals_against || 0),
+      ),
+      chancesFor: calcMeanAndSD(
+        filteredGames.map((g) => getSituationData(g)?.chances_for || 0),
+      ),
       chancesAgainst: calcMeanAndSD(
-        filteredGames.map((g) => g.chances_against),
+        filteredGames.map((g) => getSituationData(g)?.chances_against || 0),
       ),
     };
-  }, [filteredGames]);
+  }, [filteredGames, situationFilter]);
 
   // Aggregate zone stats from filtered games
   const aggregatedZoneStats = useMemo(() => {
@@ -143,8 +223,11 @@ export default function TeamDashboard() {
     const net_zones = {};
 
     for (const game of filteredGames) {
+      const gData = getSituationData(game);
       // Aggregate ice zones
-      for (const [zoneName, zoneData] of Object.entries(game.ice_zones || {})) {
+      for (const [zoneName, zoneData] of Object.entries(
+        gData.ice_zones || {},
+      )) {
         if (!ice_zones[zoneName]) {
           ice_zones[zoneName] = {
             goals_for: 0,
@@ -160,7 +243,9 @@ export default function TeamDashboard() {
       }
 
       // Aggregate net zones
-      for (const [zoneName, zoneData] of Object.entries(game.net_zones || {})) {
+      for (const [zoneName, zoneData] of Object.entries(
+        gData.net_zones || {},
+      )) {
         if (!net_zones[zoneName]) {
           net_zones[zoneName] = {
             goals_for: 0,
@@ -177,14 +262,15 @@ export default function TeamDashboard() {
     }
 
     return { ice_zones, net_zones };
-  }, [filteredGames]);
+  }, [filteredGames, situationFilter]);
 
   // Aggregate player stats from filtered games
   const aggregatedPlayers = useMemo(() => {
     const playerMap = {};
 
     for (const game of filteredGames) {
-      for (const ps of game.player_stats || []) {
+      const gData = getSituationData(game);
+      for (const ps of gData.player_stats || []) {
         if (!playerMap[ps.player_id]) {
           playerMap[ps.player_id] = {
             player_id: ps.player_id,
@@ -237,7 +323,7 @@ export default function TeamDashboard() {
         p.goals_plus_participating -
         (p.chances_minus_participating + p.goals_minus_participating),
     }));
-  }, [filteredGames]);
+  }, [filteredGames, situationFilter]);
 
   // Sort players
   const sortedPlayers = useMemo(() => {
@@ -308,9 +394,9 @@ export default function TeamDashboard() {
       <header className="dashboard-header">
         <h1 className="dashboard-title">{team_name}</h1>
         <p className="dashboard-subtitle">
-          {gamesCount === totalGamesCount
-            ? `Kausi ${totalGamesCount} peliä`
-            : `Viimeiset ${gamesCount} / ${totalGamesCount} peliä`}
+          {gameRange.start === 0 && gameRange.end === totalGamesCount - 1
+            ? `Koko kausi ${totalGamesCount} peliä`
+            : `Pelit ${gameRange.start + 1} - ${gameRange.end + 1} / ${totalGamesCount}`}
         </p>
       </header>
 
@@ -318,15 +404,52 @@ export default function TeamDashboard() {
       <section className="games-slider-section">
         <label className="slider-label">
           Näytä tilastot:
-          <input
-            type="range"
-            min="1"
-            max={totalGamesCount}
-            value={gamesCount || totalGamesCount}
-            onChange={(e) => setGamesCount(Number(e.target.value))}
-            className="games-slider"
-          />
-          <span className="slider-value">{gamesCount} peliä</span>
+          <div className="dual-range-slider">
+            {/* Active range track */}
+            <div
+              className="active-range"
+              style={{
+                left: `${minPercent}%`,
+                width: `${maxPercent - minPercent}%`,
+              }}
+            />
+            {/* Min slider */}
+            <input
+              type="range"
+              min="0"
+              max={totalGames - 1}
+              value={gameRange.start}
+              onChange={handleMinChange}
+              style={{
+                zIndex:
+                  gameRange.start === gameRange.end
+                    ? gameRange.end === totalGames - 1
+                      ? 5
+                      : 3
+                    : gameRange.start > totalGames - 100
+                      ? 5
+                      : 3,
+              }}
+            />
+            {/* Max slider */}
+            <input
+              type="range"
+              min="0"
+              max={totalGames - 1}
+              value={gameRange.end}
+              onChange={handleMaxChange}
+              style={{
+                zIndex:
+                  gameRange.start === gameRange.end && gameRange.start === 0
+                    ? 5
+                    : 4,
+              }}
+            />
+          </div>
+          <span className="slider-value">
+            {gameRange.end - gameRange.start + 1} peliä (pelit{" "}
+            {gameRange.start + 1} - {gameRange.end + 1} uudesta vanhimpaan)
+          </span>
         </label>
       </section>
 
@@ -372,88 +495,117 @@ export default function TeamDashboard() {
             />
           </div>
 
-          {/* Zone Mode Selector - between the two maps */}
-          <div className="zone-mode-grid">
-            <div className="mode-column">
-              <span className="mode-column-title">Lukumäärä</span>
+          {/* Zone Mode Selector - situation row above the mode grid */}
+          <div className="zone-mode-wrapper">
+            <div className="situation-row">
               <button
-                className={`mode-btn ${zoneMode === "goals_for" ? "active" : ""}`}
-                onClick={() => setZoneMode("goals_for")}
+                className={`mode-btn ${situationFilter === "yht" ? "active" : ""}`}
+                onClick={() => setSituationFilter("yht")}
               >
-                Maali+
+                Yht.
               </button>
               <button
-                className={`mode-btn ${zoneMode === "goals_against" ? "active" : ""}`}
-                onClick={() => setZoneMode("goals_against")}
+                className={`mode-btn ${situationFilter === "5v5" ? "active" : ""}`}
+                onClick={() => setSituationFilter("5v5")}
               >
-                Maali-
+                5v5
               </button>
               <button
-                className={`mode-btn ${zoneMode === "chances_for" ? "active" : ""}`}
-                onClick={() => setZoneMode("chances_for")}
+                className={`mode-btn ${situationFilter === "YV" ? "active" : ""}`}
+                onClick={() => setSituationFilter("YV")}
               >
-                MP+
+                YV
               </button>
               <button
-                className={`mode-btn ${zoneMode === "chances_against" ? "active" : ""}`}
-                onClick={() => setZoneMode("chances_against")}
+                className={`mode-btn ${situationFilter === "AV" ? "active" : ""}`}
+                onClick={() => setSituationFilter("AV")}
               >
-                MP-
-              </button>
-            </div>
-            <div className="mode-column">
-              <span className="mode-column-title">% kaikista</span>
-              <button
-                className={`mode-btn ${zoneMode === "goals_for_pct" ? "active" : ""}`}
-                onClick={() => setZoneMode("goals_for_pct")}
-              >
-                Maali+ %
-              </button>
-              <button
-                className={`mode-btn ${zoneMode === "goals_against_pct" ? "active" : ""}`}
-                onClick={() => setZoneMode("goals_against_pct")}
-              >
-                Maali- %
-              </button>
-              <button
-                className={`mode-btn ${zoneMode === "chances_for_pct" ? "active" : ""}`}
-                onClick={() => setZoneMode("chances_for_pct")}
-              >
-                MP+ %
-              </button>
-              <button
-                className={`mode-btn ${zoneMode === "chances_against_pct" ? "active" : ""}`}
-                onClick={() => setZoneMode("chances_against_pct")}
-              >
-                MP- %
+                AV
               </button>
             </div>
-            <div className="mode-column">
-              <span className="mode-column-title">+/- & Teho</span>
-              <button
-                className={`mode-btn ${zoneMode === "goals_diff" ? "active" : ""}`}
-                onClick={() => setZoneMode("goals_diff")}
-              >
-                Maali +/-
-              </button>
-              <button
-                className={`mode-btn ${zoneMode === "chances_diff" ? "active" : ""}`}
-                onClick={() => setZoneMode("chances_diff")}
-              >
-                MP +/-
-              </button>
-              <button
-                className={`mode-btn ${zoneMode === "efficiency_for" ? "active" : ""}`}
-                onClick={() => setZoneMode("efficiency_for")}
-              >
-                MP+ teho%
-              </button>
-              <button
-                className={`mode-btn ${zoneMode === "efficiency_against" ? "active" : ""}`}
-                onClick={() => setZoneMode("efficiency_against")}
-              >
-                MP- teho%
-              </button>
+
+            <div className="zone-mode-grid">
+              <div className="mode-column">
+                <span className="mode-column-title">Lukumäärä</span>
+                <button
+                  className={`mode-btn ${zoneMode === "goals_for" ? "active" : ""}`}
+                  onClick={() => setZoneMode("goals_for")}
+                >
+                  Maali+
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "goals_against" ? "active" : ""}`}
+                  onClick={() => setZoneMode("goals_against")}
+                >
+                  Maali-
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "chances_for" ? "active" : ""}`}
+                  onClick={() => setZoneMode("chances_for")}
+                >
+                  MP+
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "chances_against" ? "active" : ""}`}
+                  onClick={() => setZoneMode("chances_against")}
+                >
+                  MP-
+                </button>
+              </div>
+              <div className="mode-column">
+                <span className="mode-column-title">% kaikista</span>
+                <button
+                  className={`mode-btn ${zoneMode === "goals_for_pct" ? "active" : ""}`}
+                  onClick={() => setZoneMode("goals_for_pct")}
+                >
+                  Maali+ %
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "goals_against_pct" ? "active" : ""}`}
+                  onClick={() => setZoneMode("goals_against_pct")}
+                >
+                  Maali- %
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "chances_for_pct" ? "active" : ""}`}
+                  onClick={() => setZoneMode("chances_for_pct")}
+                >
+                  MP+ %
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "chances_against_pct" ? "active" : ""}`}
+                  onClick={() => setZoneMode("chances_against_pct")}
+                >
+                  MP- %
+                </button>
+              </div>
+              <div className="mode-column">
+                <span className="mode-column-title">+/- & Teho</span>
+                <button
+                  className={`mode-btn ${zoneMode === "goals_diff" ? "active" : ""}`}
+                  onClick={() => setZoneMode("goals_diff")}
+                >
+                  Maali +/-
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "chances_diff" ? "active" : ""}`}
+                  onClick={() => setZoneMode("chances_diff")}
+                >
+                  MP +/-
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "efficiency_for" ? "active" : ""}`}
+                  onClick={() => setZoneMode("efficiency_for")}
+                >
+                  MP+ teho%
+                </button>
+                <button
+                  className={`mode-btn ${zoneMode === "efficiency_against" ? "active" : ""}`}
+                  onClick={() => setZoneMode("efficiency_against")}
+                >
+                  MP- teho%
+                </button>
+              </div>
             </div>
           </div>
 
@@ -604,9 +756,9 @@ export default function TeamDashboard() {
         {/* Games KPI Table */}
         <section className="dashboard-section">
           <h2 className="section-title">
-            {gamesCount === totalGamesCount
+            {gameRange.start === 0 && gameRange.end === totalGamesCount - 1
               ? "Kaikki pelit"
-              : `Viimeiset ${gamesCount} peliä`}
+              : `Valitut pelit (${gameRange.end - gameRange.start + 1} peliä)`}
           </h2>
           <div className="table-container">
             <table className="dashboard-table dashboard-games-table">
@@ -623,11 +775,12 @@ export default function TeamDashboard() {
               </thead>
               <tbody>
                 {filteredGames.map((game, index) => {
+                  const gData = getSituationData(game);
                   // Determine win/loss/draw
                   const result =
-                    game.goals_for > game.goals_against
+                    gData.goals_for > gData.goals_against
                       ? "win"
-                      : game.goals_for < game.goals_against
+                      : gData.goals_for < gData.goals_against
                         ? "loss"
                         : "draw";
                   const resultClass =
@@ -669,42 +822,42 @@ export default function TeamDashboard() {
                       </td>
                       <td
                         className={isOutlier(
-                          game.goals_for,
+                          gData.goals_for,
                           gameStats.goalsFor,
                           true,
                         )}
                       >
-                        {game.goals_for}
+                        {gData.goals_for}
                       </td>
                       <td
                         className={isOutlier(
-                          game.goals_against,
+                          gData.goals_against,
                           gameStats.goalsAgainst,
                           false,
                         )}
                       >
-                        {game.goals_against}
+                        {gData.goals_against}
                       </td>
                       <td
                         className={isOutlier(
-                          game.chances_for,
+                          gData.chances_for,
                           gameStats.chancesFor,
                           true,
                         )}
                       >
-                        {game.chances_for}
+                        {gData.chances_for}
                       </td>
                       <td
                         className={isOutlier(
-                          game.chances_against,
+                          gData.chances_against,
                           gameStats.chancesAgainst,
                           false,
                         )}
                       >
-                        {game.chances_against}
+                        {gData.chances_against}
                       </td>
-                      <td>{game.efficiency_for}%</td>
-                      <td>{game.efficiency_against}%</td>
+                      <td>{gData.efficiency_for}%</td>
+                      <td>{gData.efficiency_against}%</td>
                     </tr>
                   );
                 })}

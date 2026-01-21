@@ -174,6 +174,20 @@ class GamePlayerStats(BaseModel):
     chances_minus_participating: int = 0
 
 
+class SituationKPI(BaseModel):
+    """Aggregated KPIs for a specific situation (e.g., ES/PP/PK or total)."""
+
+    goals_for: int
+    goals_against: int
+    chances_for: int
+    chances_against: int
+    efficiency_for: float
+    efficiency_against: float
+    ice_zones: Dict[str, ZoneData]
+    net_zones: Dict[str, ZoneData]
+    player_stats: List[GamePlayerStats]
+
+
 class GameKPI(BaseModel):
     game_id: int
     date: str
@@ -188,6 +202,8 @@ class GameKPI(BaseModel):
     ice_zones: Dict[str, ZoneData]  # Zone breakdown for this game
     net_zones: Dict[str, ZoneData]  # Net zone breakdown for this game
     player_stats: List[GamePlayerStats]  # Per-player stats for this game
+    # Optional per-situation aggregates (keys: 'yht', '5v5', 'YV', 'AV')
+    situations: Optional[Dict[str, "SituationKPI"]] = None
 
 
 class DashboardResponse(BaseModel):

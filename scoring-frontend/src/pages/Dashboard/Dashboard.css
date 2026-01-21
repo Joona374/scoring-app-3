@@ -144,23 +144,77 @@
 
 .slider-label {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
     color: var(--text-color);
     font-size: 0.95rem;
 }
 
-.games-slider {
+.dual-range-slider {
+    position: relative;
     width: 200px;
     height: 6px;
-    accent-color: var(--accent-color);
+}
+
+/* Background track */
+.dual-range-slider::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 6px;
+    background: #2a2a2a;
+    border-radius: 3px;
+}
+
+/* Active range track */
+.dual-range-slider .active-range {
+    position: absolute;
+    height: 6px;
+    background: var(--accent-color);
+    border-radius: 3px;
+}
+
+/* Slider inputs */
+.dual-range-slider input[type="range"] {
+    position: absolute;
+    width: 100%;
+    height: 6px;
+    background: transparent;
+    appearance: none;
+    pointer-events: none;
     cursor: pointer;
 }
 
+/* Thumb styles */
+.dual-range-slider input[type="range"]::-webkit-slider-thumb {
+    pointer-events: auto;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.dual-range-slider input[type="range"]::-moz-range-thumb {
+    pointer-events: auto;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
 .slider-value {
-    min-width: 70px;
     color: var(--accent-color);
     font-weight: 600;
+    font-size: 0.85rem;
 }
 
 /* Zone Mode Toggle */
@@ -168,10 +222,34 @@
     display: flex;
     justify-content: center;
     gap: 24px;
-    margin-top: 20px;
     padding: 16px;
-    background: rgba(255, 255, 255, 0.02);
     border-radius: var(--radius);
+}
+
+/* Wrapper for situation row + mode grid */
+.zone-mode-wrapper {
+    display: flex;
+    align-self: center;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Top row with situation filters (5v5 / YV / AV / yht) */
+.situation-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px; /* keep spacing similar to the columns */
+    padding: 8px 12px;
+    width: 100%;
+    max-width: 480px; /* prevents row from stretching too wide on large screens */
+    border-radius: calc(var(--radius) / 1.5);
+}
+
+.situation-row .mode-btn {
+    min-width: 58px; /* make buttons a bit wider so 4 buttons look consistent */
+    padding: 6px 10px;
 }
 
 .mode-column {
