@@ -1,6 +1,7 @@
 from collections import defaultdict
-from typing import Any
+from typing import Any, TypeAlias
 from io import BytesIO
+from enum import Enum
 
 from openpyxl import Workbook, load_workbook
 from sqlalchemy.orm import Session, joinedload
@@ -9,6 +10,28 @@ from fastapi import Depends, APIRouter, Response
 from db.models import Game, User, Team, PlayerStatsTag, ShotResultTypes, ShotAreaTypes, ShotTypeTypes
 from db.db_manager import get_db_session
 from utils import get_current_user_and_team
+
+TOTAL_STATS_CELL_VALUES = "cell_values"
+TOTAL_STATS_MAP_COORDINATES = "coordinates"
+MAPPED_DATA_FOR = "for"
+MAPPED_DATA_AGAINST = "against"
+
+
+class MapCategories(str, Enum):
+    ICE = "ice"
+    NET = "net"
+
+
+Point: TypeAlias = tuple[int, int]
+CategoryMap: TypeAlias = defaultdict[MapCategories, list[Point]]
+ResultMap: TypeAlias = dict[ShotResultTypes, CategoryMap]
+
+MAP_RESULT_MAPPING: dict[ShotResultTypes, list[ShotResultTypes]] = {
+    ShotResultTypes.CHANCE_FOR: [ShotResultTypes.CHANCE_FOR],
+    ShotResultTypes.GOAL_FOR: [ShotResultTypes.CHANCE_FOR, ShotResultTypes.GOAL_FOR],
+    ShotResultTypes.CHANCE_AGAINST: [ShotResultTypes.CHANCE_AGAINST],
+    ShotResultTypes.GOAL_AGAINST: [ShotResultTypes.CHANCE_AGAINST, ShotResultTypes.GOAL_AGAINST],
+}
 
 router = APIRouter() 
 
@@ -205,7 +228,53 @@ def collect_shot_strengths_data(player_stats_tags: list[PlayerStatsTag]) -> dict
     return strengths_cell_stats_dict
 
 
-def get_scoring_games_data(teams_games: list[Game], db_session: Session) -> tuple[list[dict[str, Any]], dict[str, int]]:
+def collect_mapped_data(scoring_chances: list[PlayerStatsTag]) -> ResultMap:
+    """
+    Collects and maps scoring chance data into a structured format.
+
+    Args:
+        scoring_chances (list[PlayerStatsTag]): List of scoring chances to process.
+
+    Returns:
+        ResultMap: Dictionary mapping shot results to categories with ice and net coordinates.
+            So data[ShotResultTypes][MapCategories] is a list of (int, int)
+                    What outcome? Net or ice image? List of coordinates to draw.
+    """
+
+    data: ResultMap = {result: defaultdict(list) for result in ShotResultTypes}
+    for chance in scoring_chances:
+        ice = (chance.ice_x, chance.ice_y)
+        net = (chance.net_x, chance.net_y)
+
+        for result in MAP_RESULT_MAPPING[chance.shot_result.value]:
+            data[result][MapCategories.ICE].append(ice)
+            data[result][MapCategories.NET].append(net)
+
+    return data
+
+
+def build_total_stats(scoring_chances: list[PlayerStatsTag]) -> dict[str, dict[str, int]]:
+    """
+    Builds total game statistics by aggregating shot zone, shot type, net zone, strengths, and mapped data from scoring chances.
+    Args:
+        scoring_chances (list[PlayerStatsTag]): List of player statistics tags.
+    Returns:
+        dict[str, dict[str, int]]: Dictionary containing total stats with cell values and map coordinates.
+    """
+
+    shot_zone_data = collect_shotzone_data(scoring_chances)
+    shot_type_data = collect_shot_type_data(scoring_chances)
+    net_zone_data = collect_net_zone_data(scoring_chances)
+    strengths_data = collect_shot_strengths_data(scoring_chances)
+
+    mapped_data = collect_mapped_data(scoring_chances)
+
+    total_stats = {TOTAL_STATS_CELL_VALUES: {**shot_zone_data, **shot_type_data, **net_zone_data, **strengths_data}, TOTAL_STATS_MAP_COORDINATES: mapped_data}
+
+    return total_stats
+
+
+def get_scoring_games_data(teams_games: list[Game], db_session: Session) -> tuple[list[dict[str, Any]], dict[str, dict[str, int]]]:
     """
     Collects and aggregates scoring-related statistics for a list of games.
     For each game in the provided list, this function gathers various player statistics
@@ -216,12 +285,13 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session) -> tupl
         db_session (Session): An active SQLAlchemy database session.
     Returns:
         tuple:
-            - data_collector (list[dict]): A list of dictionaries, each containing:
+            - per_game_stats (list[dict]): A list of dictionaries, each containing:
                 - "date": The date of the game.
                 - "opponent": The opponent team.
                 - "home": Boolean indicating if the game was at home.
                 - "cell_values": A dictionary with aggregated statistics for the game.
-            - total_cell_values (dict): A dictionary with aggregated statistics across all games.
+            - total_stats (dict): A dictionary with aggregated statistics across all games.
+                - "cell_values": dict where keys are excel cell names and values are int value to write on the cell
     """
 
     game_ids = [game.id for game in teams_games]
@@ -236,17 +306,25 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session) -> tupl
         .filter(PlayerStatsTag.game_id.in_(game_ids))
         .all()
     )
-    total_shot_zone_data = collect_shotzone_data(player_stats_tags)
-    total_shot_type_data = collect_shot_type_data(player_stats_tags)
-    total_net_zone_data = collect_net_zone_data(player_stats_tags)
-    total_strengths_data = collect_shot_strengths_data(player_stats_tags)
-    total_cell_values = {**total_shot_zone_data, **total_shot_type_data, **total_net_zone_data, **total_strengths_data}
 
+    total_stats = build_total_stats(player_stats_tags)
+
+    # TODO:
+    # 1. Abstract the code below in to a helper
+    # (build_per_game_stats) similar to build_total_stats
+    #
+    # 2. After getting the map (net and ice image) data (coordinates)
+    # to the dicts returned here, go to create_game_stats_workbook.
+    # Abstract the per game sheet writing to a helper.
+    #
+    # 3. Add methods that take the template images,
+    # Take the map coordinates and draw those to game and total sheets
+    # And attaches them to the sheets
     game_tags = defaultdict(list)
     for tag in player_stats_tags:
         game_tags[tag.game_id].append(tag)
 
-    data_collector = []
+    per_game_stats = []
     for game in teams_games:
         game_data = {}
         game_data["date"] = game.date
@@ -261,9 +339,9 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session) -> tupl
 
         game_cell_values = {**shot_zone_data, **shot_type_data, **net_zone_data, **strengths_data}
         game_data["cell_values"] = game_cell_values
-        data_collector.append(game_data)
+        per_game_stats.append(game_data)
 
-    return data_collector, total_cell_values
+    return per_game_stats, total_stats
 
 
 def get_filtered_team_games(team: Team, game_id_str: str | None) -> list["Game"]:
@@ -283,14 +361,15 @@ def write_total_sheet_for_game_stats(workbook: Workbook, total_cell_values: dict
         total_sheet[cell] = value
 
 
-def create_game_stats_workbook(total_cell_values: dict[str, int], cell_values_for_games: list[dict[str, Any]]) -> Workbook:
+def create_game_stats_workbook(total_stats: dict[str, dict[str, int]], per_game_stats: list[dict[str, Any]]) -> Workbook:
     workbook = load_workbook("excels/game_stats_template.xlsx")
     template_sheet = workbook.worksheets[0]
 
-    write_total_sheet_for_game_stats(workbook, total_cell_values)
+    write_total_sheet_for_game_stats(workbook, total_stats["cell_values"])
 
-    cell_values_for_games.sort(key=lambda game: game["date"], reverse=True)
-    for game in cell_values_for_games:
+    # TODO: abstract this to helper similar to write_total_sheet_for_game_stats
+    per_game_stats.sort(key=lambda game: game["date"], reverse=True)
+    for game in per_game_stats:
         game_sheet = workbook.copy_worksheet(template_sheet)
 
         if "/" in game["opponent"]:
@@ -318,9 +397,9 @@ async def get_team_scoring_excel(game_ids: str | None = None, db_session: Sessio
 
     teams_games = get_filtered_team_games(team, game_ids)
 
-    cell_values_for_games, total_cell_values = get_scoring_games_data(teams_games, db_session)
+    per_game_stats, total_stats = get_scoring_games_data(teams_games, db_session)
 
-    workbook = create_game_stats_workbook(total_cell_values, cell_values_for_games)
+    workbook = create_game_stats_workbook(total_stats, per_game_stats)
 
     output = BytesIO()
     workbook.save(output)
