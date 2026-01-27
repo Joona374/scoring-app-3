@@ -5,9 +5,9 @@ from openpyxl import load_workbook
 from collections import defaultdict
 import copy
 
-from utils import get_current_user_id
+from utils import get_current_user_id, get_current_user_and_team
 from db.db_manager import get_db_session
-from db.models import GameInRoster, Player, TeamStatsTag, User, Game, PlayerStatsTag, ShotResult, ShotResultTypes, ShotAreaTypes, ShotTypeTypes, PlayerStatsTagOnIce, PlayerStatsTagParticipating
+from db.models import GameInRoster, Player, Team, TeamStatsTag, User, Game, PlayerStatsTag, ShotResult, ShotResultTypes, ShotAreaTypes, ShotTypeTypes, PlayerStatsTagOnIce, PlayerStatsTagParticipating
 
 router = APIRouter(
     prefix="/excel",
@@ -135,15 +135,9 @@ def calculate_numbers_for_cells(all_tags):
 
 
 @router.get("/teamstats")
-async def get_teamstats_excel(game_ids: str, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+async def get_teamstats_excel(game_ids: str, db_session: Session = Depends(get_db_session), user_and_team: tuple["User", "Team"] = Depends(get_current_user_and_team)):
 
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current user not found") # fmt: skip
-
-    team = user.team
-    if not team:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User has no team assigned") # fmt: skip
+    user, team = user_and_team
 
     teams_games = team.games
     if game_ids:
@@ -378,17 +372,11 @@ def get_plusminus_games_data(teams_games: list[Game], db_session: Session):
 
 
 @router.get("/plusminus")
-async def get_plusminus_excel(game_ids: str | None = None, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+async def get_plusminus_excel(game_ids: str | None = None, db_session: Session = Depends(get_db_session), user_and_team: tuple["User", "Team"] = Depends(get_current_user_and_team)):
     FIRST_DEFENDER_ROW = 4
     FIRST_FORWARD_ROW = 26
 
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current user not found") # fmt: skip
-
-    team = user.team
-    if not team:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User has no team assigned") # fmt: skip
+    user, team = user_and_team
 
     teams_games = team.games
     if game_ids:
@@ -755,14 +743,8 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session):
 
 
 @router.get("/game-stats")
-async def get_team_scoring_excel(game_ids: str | None = None, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current user not found") # fmt: skip
-
-    team = user.team
-    if not team:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User has no team assigned") # fmt: skip
+async def get_team_scoring_excel(game_ids: str | None = None, db_session: Session = Depends(get_db_session), user_and_team: tuple["User", "Team"] = Depends(get_current_user_and_team)):
+    user, team = user_and_team
 
     teams_games = team.games
     if game_ids:
@@ -1018,19 +1000,8 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
 
 
 @router.get("/player-stats")
-async def get_player_scoring_excel(
-    game_ids: str | None = None,
-    db_session: Session = Depends(get_db_session),
-    current_user_id: int = Depends(get_current_user_id),
-):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current user not found") # fmt: skip
-
-    team = user.team
-    if not team:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User has no team assigned") # fmt: skip
-
+async def get_player_scoring_excel(game_ids: str | None = None, db_session: Session = Depends(get_db_session), user_and_team: tuple["User", "Team"] = Depends(get_current_user_and_team)):
+    _, team = user_and_team
     teams_games = team.games
     if game_ids:
         teams_games = []
