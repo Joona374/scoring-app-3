@@ -2,17 +2,21 @@ from collections import defaultdict
 from typing import Any, TypeAlias
 from io import BytesIO
 from enum import Enum
+import tempfile
 
 from openpyxl import Workbook, load_workbook
+from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.drawing.image import Image as EXCLImage
 from sqlalchemy.orm import Session, joinedload
 from fastapi import Depends, APIRouter, Response
+from PIL import Image, ImageDraw
 
 from db.models import Game, User, Team, PlayerStatsTag, ShotResultTypes, ShotAreaTypes, ShotTypeTypes
 from db.db_manager import get_db_session
 from utils import get_current_user_and_team
 
-TOTAL_STATS_CELL_VALUES = "cell_values"
-TOTAL_STATS_MAP_COORDINATES = "coordinates"
+STATS_CELL_VALUES = "cell_values"
+STATS_MAP_COORDINATES = "coordinates"
 MAPPED_DATA_FOR = "for"
 MAPPED_DATA_AGAINST = "against"
 
@@ -269,9 +273,36 @@ def build_total_stats(scoring_chances: list[PlayerStatsTag]) -> dict[str, dict[s
 
     mapped_data = collect_mapped_data(scoring_chances)
 
-    total_stats = {TOTAL_STATS_CELL_VALUES: {**shot_zone_data, **shot_type_data, **net_zone_data, **strengths_data}, TOTAL_STATS_MAP_COORDINATES: mapped_data}
+    total_stats = {STATS_CELL_VALUES: {**shot_zone_data, **shot_type_data, **net_zone_data, **strengths_data}, STATS_MAP_COORDINATES: mapped_data}
 
     return total_stats
+
+
+def build_per_game_stats(player_stats_tags: list[PlayerStatsTag], teams_games: list[Game]) -> list:
+    game_tags = defaultdict(list[PlayerStatsTag])
+    for tag in player_stats_tags:
+        game_tags[tag.game_id].append(tag)
+
+    per_game_stats = []
+    for game in teams_games:
+        game_data = {}
+        game_data["date"] = game.date
+        game_data["opponent"] = game.opponent
+        game_data["home"] = game.home
+
+        tags_for_game = game_tags[game.id]
+        shot_zone_data = collect_shotzone_data(tags_for_game)
+        shot_type_data = collect_shot_type_data(tags_for_game)
+        net_zone_data = collect_net_zone_data(tags_for_game)
+        strengths_data = collect_shot_strengths_data(tags_for_game)
+
+        mapped_data = collect_mapped_data(tags_for_game)
+
+        game_data[STATS_CELL_VALUES] = {**shot_zone_data, **shot_type_data, **net_zone_data, **strengths_data}
+        game_data[STATS_MAP_COORDINATES] = mapped_data
+        per_game_stats.append(game_data)
+
+    return per_game_stats
 
 
 def get_scoring_games_data(teams_games: list[Game], db_session: Session) -> tuple[list[dict[str, Any]], dict[str, dict[str, int]]]:
@@ -307,39 +338,8 @@ def get_scoring_games_data(teams_games: list[Game], db_session: Session) -> tupl
         .all()
     )
 
+    per_game_stats = build_per_game_stats(player_stats_tags, teams_games)
     total_stats = build_total_stats(player_stats_tags)
-
-    # TODO:
-    # 1. Abstract the code below in to a helper
-    # (build_per_game_stats) similar to build_total_stats
-    #
-    # 2. After getting the map (net and ice image) data (coordinates)
-    # to the dicts returned here, go to create_game_stats_workbook.
-    # Abstract the per game sheet writing to a helper.
-    #
-    # 3. Add methods that take the template images,
-    # Take the map coordinates and draw those to game and total sheets
-    # And attaches them to the sheets
-    game_tags = defaultdict(list)
-    for tag in player_stats_tags:
-        game_tags[tag.game_id].append(tag)
-
-    per_game_stats = []
-    for game in teams_games:
-        game_data = {}
-        game_data["date"] = game.date
-        game_data["opponent"] = game.opponent
-        game_data["home"] = game.home
-
-        tags_for_game = game_tags[game.id]
-        shot_zone_data = collect_shotzone_data(tags_for_game)
-        shot_type_data = collect_shot_type_data(tags_for_game)
-        net_zone_data = collect_net_zone_data(tags_for_game)
-        strengths_data = collect_shot_strengths_data(tags_for_game)
-
-        game_cell_values = {**shot_zone_data, **shot_type_data, **net_zone_data, **strengths_data}
-        game_data["cell_values"] = game_cell_values
-        per_game_stats.append(game_data)
 
     return per_game_stats, total_stats
 
@@ -354,36 +354,185 @@ def get_filtered_team_games(team: Team, game_id_str: str | None) -> list["Game"]
         return teams_games
 
 
-def write_total_sheet_for_game_stats(workbook: Workbook, total_cell_values: dict[str, int]):
+def draw_x(img_draw: ImageDraw.ImageDraw, x: int, y: int, color: str, size: int = 12, thicknes: int = 7) -> None:
+    img_draw.line((x - size, y - size, x + size, y + size), fill=color, width=thicknes)
+    img_draw.line((x - size, y + size, x + size, y - size), fill=color, width=thicknes)
+
+
+def draw_o(img_draw: ImageDraw.ImageDraw, x: int, y: int, color: str, r: int = 10, width: int = 5):
+    img_draw.ellipse((x - r, y - r, x + r, y + r), outline=color, width=width)
+
+
+def draw_map_image(goals: list[tuple[int, int]], chances: list[tuple[int, int]], img_path: str, color: str) -> Image.Image:
+    """
+    Draws markers on a map image for goals and chances.
+    Args:
+        goals (list[tuple[int, int]]): List of (x, y) coordinates for goals.
+        chances (list[tuple[int, int]]): List of (x, y) coordinates for chances.
+        img_path (str): Path to the template image file.
+        color (str): Color for the markers.
+    Returns:
+        Image.Image: The modified image with markers drawn.
+    """
+
+    with Image.open(img_path) as img:
+        img = img.copy().convert("RGB")
+    draw = ImageDraw.Draw(img)
+
+    x_scale = img.width / 100
+    y_scale = img.height / 100
+
+    # Remove to avoid drawing duplicates
+    for goal in goals:
+        if goal in chances:
+            chances.remove(goal)
+
+    for chance in chances:
+        px = int(round(chance[0] * x_scale))
+        py = int(round(chance[1] * y_scale))
+        draw_o(draw, px, py, color)
+
+    for goal in goals:
+        px = int(round(goal[0] * x_scale))
+        py = int(round(goal[1] * y_scale))
+        draw_x(draw, px, py, "black")
+
+    return img
+
+
+def get_map_images(coords: dict) -> dict[str, Image.Image]:
+    """
+    Generates map images for goals and chances for and against, on net and ice.
+    Args:
+        coords (dict): Coordinates for shots, categorized by result and map category.
+    Returns:
+        dict[str, Image.Image]: Dictionary with keys 'net_for', 'ice_for', 'net_vs', 'ice_vs' containing the generated images.
+    """
+
+    NET_IMG = "excels/images/maali.jpg"
+    ICE_IMG = "excels/images/kaukalo.png"
+
+    net_for_img = draw_map_image(
+        goals=coords[ShotResultTypes.GOAL_FOR][MapCategories.NET], 
+        chances=coords[ShotResultTypes.CHANCE_FOR][MapCategories.NET],
+        img_path= NET_IMG, 
+        color="green") # fmt: skip
+
+    ice_for_img = draw_map_image(
+        goals=coords[ShotResultTypes.GOAL_FOR][MapCategories.ICE], 
+        chances=coords[ShotResultTypes.CHANCE_FOR][MapCategories.ICE],
+        img_path= ICE_IMG, 
+        color="green") # fmt: skip
+
+    net_vs_img = draw_map_image(
+        goals=coords[ShotResultTypes.GOAL_AGAINST][MapCategories.NET], 
+        chances=coords[ShotResultTypes.CHANCE_AGAINST][MapCategories.NET],
+        img_path= NET_IMG, 
+        color="red") # fmt: skip
+
+    ice_vs_img = draw_map_image(
+        goals=coords[ShotResultTypes.GOAL_AGAINST][MapCategories.ICE], 
+        chances=coords[ShotResultTypes.CHANCE_AGAINST][MapCategories.ICE],
+        img_path= ICE_IMG, 
+        color="red") # fmt: skip
+
+    return {"net_for": net_for_img, "ice_for": ice_for_img, "net_vs": net_vs_img, "ice_vs": ice_vs_img}
+
+
+# def get_map_imagesv2(coords: dict) -> dict[str, Image.Image]:
+#     NET_IMG = "excels/images/maali.jpg"
+#     ICE_IMG = "excels/images/kaukalo.png"
+
+#     config = {
+#         "net_for": (ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR, MapCategories.NET, NET_IMG, "green"),
+#         "ice_for": (ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR, MapCategories.ICE, ICE_IMG, "green"),
+#         "net_vs": (ShotResultTypes.GOAL_AGAINST, ShotResultTypes.CHANCE_AGAINST, MapCategories.NET, NET_IMG, "red"),
+#         "ice_vs": (ShotResultTypes.GOAL_AGAINST, ShotResultTypes.CHANCE_AGAINST, MapCategories.ICE, ICE_IMG, "red"),
+#     }
+
+#     images = {}
+
+#     for img_name, (goal, chance, category, img, color) in config.items():
+#         images[img_name] = draw_map_image(goals=coords[goal][category], chances=coords[chance][category], img_path=img, color=color)
+
+#     return images
+
+
+def scale_image(img: Image.Image, scale: float) -> Image.Image:
+    new_width = int(round(img.width * scale))
+    new_height = int(round(img.height * scale))
+    scaled_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+    return scaled_img
+
+
+def add_images_to_sheet(sheet: Worksheet, map_images: dict[str, Image.Image]):
+    image_config = {
+        "net_for": {"scale": 0.81, "cell": "T20"}, 
+        "ice_for": {"scale": 0.73, "cell": "T34"},
+        "net_vs": {"scale": 0.81, "cell": "Y20"}, 
+        "ice_vs": {"scale": 0.73, "cell": "Y34"}} # fmt: skip
+
+    for img_name, config in image_config.items():
+        img = map_images[img_name]
+        scaled_img = scale_image(img, config["scale"])
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_img:
+            scaled_img.save(tmp_img.name)
+            excl_img = EXCLImage(tmp_img.name)
+
+        sheet.add_image(excl_img, config["cell"])
+
+
+def write_stats_to_cells(sheet: Worksheet, cell_values: dict):
+    for cell, value in cell_values.items():
+        sheet[cell] = value
+
+
+def write_total_sheet_for_game_stats(workbook: Workbook, total_stats: dict[str, dict]):
     total_sheet = workbook.worksheets[1]
 
-    for cell, value in total_cell_values.items():
-        total_sheet[cell] = value
+    coordinates = total_stats[STATS_MAP_COORDINATES]
+    map_images = get_map_images(coordinates)
+    add_images_to_sheet(total_sheet, map_images)
+    write_stats_to_cells(total_sheet, total_stats[STATS_CELL_VALUES])
+
+
+def sanitize_opponent_name(name: str) -> str:
+    if "/" in name:
+        name = name.replace("/", "&")
+    return name
+
+
+def write_game_metadata(game_sheet: Worksheet, game: dict[str, Any]):
+    opponent_name = sanitize_opponent_name(game["opponent"])
+    game_sheet.title = f"{opponent_name} {game['date']}"
+
+    game_sheet["C1"] = game["date"]
+    game_sheet["G1"] = game["opponent"]
+    game_sheet["T1"] = game["home"]
+
+
+def write_per_game_sheets_for_game_stats(workbook: Workbook, per_game_stats: list[dict[str, Any]]):
+    template_sheet = workbook.worksheets[0]
+
+    per_game_stats.sort(key=lambda game: game["date"], reverse=True)
+    for game in per_game_stats:
+        game_sheet = workbook.copy_worksheet(template_sheet)
+        write_game_metadata(game_sheet, game)
+
+        coordinates = game[STATS_MAP_COORDINATES]
+        map_images = get_map_images(coordinates)
+        add_images_to_sheet(game_sheet, map_images)
+
+        write_stats_to_cells(game_sheet, game[STATS_CELL_VALUES])
 
 
 def create_game_stats_workbook(total_stats: dict[str, dict[str, int]], per_game_stats: list[dict[str, Any]]) -> Workbook:
     workbook = load_workbook("excels/game_stats_template.xlsx")
-    template_sheet = workbook.worksheets[0]
 
-    write_total_sheet_for_game_stats(workbook, total_stats["cell_values"])
-
-    # TODO: abstract this to helper similar to write_total_sheet_for_game_stats
-    per_game_stats.sort(key=lambda game: game["date"], reverse=True)
-    for game in per_game_stats:
-        game_sheet = workbook.copy_worksheet(template_sheet)
-
-        if "/" in game["opponent"]:
-            sanitized_opponent = game["opponent"].replace("/", "&")
-            game_sheet.title = f"{sanitized_opponent} {game['date']}"
-        else:
-            game_sheet.title = f"{game['opponent']} {game['date']}"
-
-        game_sheet["C1"] = game["date"]
-        game_sheet["G1"] = game["opponent"]
-        game_sheet["T1"] = game["home"]
-
-        for cell, value in game["cell_values"].items():
-            game_sheet[cell] = value
+    write_total_sheet_for_game_stats(workbook, total_stats)
+    write_per_game_sheets_for_game_stats(workbook, per_game_stats)
 
     # Delete template sheet
     workbook.remove(workbook.worksheets[0])
