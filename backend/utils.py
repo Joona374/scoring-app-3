@@ -15,10 +15,15 @@ from fastapi.security import OAuth2PasswordBearer
 from typing import Optional, Iterable, List, Union
 from enum import Enum
 
+from sqlalchemy.orm import Session
+
+from db.db_manager import get_db_session
 from db.models import (
     RegCode,
     ShotResultTypes,
     ShotTypeTypes,
+    Team,
+    User,
 )
 
 # =========================
@@ -82,9 +87,10 @@ def allow_result_enum(
 def is_chance_enum(res: ShotResultTypes) -> bool:
     return res in {ShotResultTypes.CHANCE_FOR, ShotResultTypes.CHANCE_AGAINST}
 
+
 def is_shot_enum(res: ShotResultTypes) -> bool:
-    # works even before you add Laukaus ± to the Enum
     return (SHOT_FOR and res == SHOT_FOR) or (SHOT_AGAINST and res == SHOT_AGAINST)
+
 
 def parse_shot_type_values(values: Optional[Iterable[str]]) -> List[ShotTypeTypes]:
     """Convert list of strings to ShotTypeTypes, skipping unknowns."""
@@ -108,7 +114,8 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = os.getenv("JWT_ALGORITHM")
-EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES"))
+DEFAULT_EXPIRE_MINUTES = 60 * 3  # 3 Hours
+EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", DEFAULT_EXPIRE_MINUTES))
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -120,14 +127,20 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-def create_jwt(data: dict, expires_delta: int = None):
+
+def create_jwt(data: dict, expires_delta: int | None = None):
     data_to_encode = data.copy()
     if expires_delta:
         expires = datetime.now(timezone.utc) + timedelta(minutes=expires_delta)
     else:
         expires = datetime.now(timezone.utc) + timedelta(minutes=EXPIRE_MINUTES)
     data_to_encode.update({"exp": expires})
+
+    if SECRET_KEY is None or ALGORITHM is None:
+        raise ValueError("JWT_SECRET_KEY or JWT_ALGORITHM environment variable is not set.")
+
     return jwt.encode(data_to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 def decode_jwt(token: str) -> dict:
     try:
@@ -151,6 +164,35 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
+
+
+def get_current_user_and_team(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)) -> tuple["User", "Team"]:
+    """Retrieve the current user and their team from the database.
+    Args:
+        db_session: Database session dependency.
+        current_user_id: ID of the authenticated user.
+    Returns:
+        tuple[User, Team]: The User and their associated Team.
+    Raises:
+        HTTPException: 404 if the user or team is not found.
+    """
+
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Current user not found"
+            ) # fmt: skip
+
+    team = user.team
+    if not team:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="User has no team assigned"
+            ) # fmt: skip
+
+    return (user, team)
+
 
 def generate_random_code() -> str:
     return "".join(random.choice(string.ascii_uppercase + string.digits + string.digits) for _ in range(6))
