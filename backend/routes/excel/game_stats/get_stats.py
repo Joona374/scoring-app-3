@@ -1,6 +1,7 @@
 from typing import Any
 from collections import defaultdict
 from sqlalchemy.orm import Session, joinedload
+from routes.excel.excel_utils import get_outcome_cell_adjustment
 from db.models import Game, PlayerStatsTag, ShotAreaTypes, ShotResultTypes, ShotTypeTypes
 from routes.excel.game_stats.game_stats_utils import MAP_RESULT_MAPPING, MapCategories, ResultMap
 
@@ -9,34 +10,6 @@ STATS_CELL_VALUES = "cell_values"
 STATS_MAP_COORDINATES = "coordinates"
 MAPPED_DATA_FOR = "for"
 MAPPED_DATA_AGAINST = "against"
-
-def get_outcome_cell_adjustment(tag: PlayerStatsTag) -> dict:
-    """
-    Calculates the adjustment to be made to a cell's row and column based on the outcome of a player's shot.
-    Args:
-        tag (PlayerStatsTag): An object containing information about the player's shot, including its result type.
-    Returns:
-        dict: A dictionary with 'row' and 'column' keys indicating the adjustment values to be applied.
-    The adjustment is determined as follows:
-        - If the shot result is CHANCE_AGAINST: column is incremented by 1.
-        - If the shot result is GOAL_FOR: row is incremented by 1.
-        - If the shot result is GOAL_AGAINST: both row and column are incremented by 1.
-        - For CHANCE_FOR: no adjustment is made (row and column remain 0).
-    """
-
-    adjustment = {"row": 0, "column": 0}
-
-    result_type = tag.shot_result.value
-
-    if result_type == ShotResultTypes.CHANCE_AGAINST:
-        adjustment["column"] = 1
-    elif result_type == ShotResultTypes.GOAL_FOR:
-        adjustment["row"] = 1
-    elif result_type == ShotResultTypes.GOAL_AGAINST:
-        adjustment["column"] = 1
-        adjustment["row"] = 1
-
-    return adjustment
 
 
 def collect_shotzone_data(player_stats_tags: list[PlayerStatsTag]) -> dict:

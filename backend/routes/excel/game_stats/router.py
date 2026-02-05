@@ -10,6 +10,7 @@ from utils import get_current_user_and_team
 from routes.excel.game_stats.get_stats import get_game_stats
 from routes.excel.game_stats.game_stats_utils import get_filtered_team_games
 from routes.excel.game_stats.workbook_writers import create_game_stats_workbook
+from routes.excel.excel_utils import workbook_to_bytesio
 
 router = APIRouter()
 
@@ -24,9 +25,7 @@ async def get_team_scoring_excel(game_ids: str | None = None, db_session: Sessio
 
     workbook = create_game_stats_workbook(total_stats, per_game_stats)
 
-    output = BytesIO()
-    workbook.save(output)
-    output.seek(0)
+    output = workbook_to_bytesio(workbook)
 
     return Response(
         content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=pelitilastot.xlsx"}

@@ -1,41 +1,10 @@
 from collections import defaultdict
-from io import BytesIO
-from typing import TypedDict
+from db.models import PlayerStatsTag, ShotResultTypes, ShotTypeTypes
+from routes.excel.player_stats.player_stats_utils import ZONE_COLUMN_MAPPING, PlayerStats
+from routes.excel.excel_utils import get_outcome_cell_adjustment
 
-from fastapi import Depends, APIRouter, Response
-from openpyxl import load_workbook
-from sqlalchemy.orm import Session, joinedload
 
-from routes.excel.game_stats.get_stats import get_outcome_cell_adjustment
-from db.db_manager import get_db_session
-from db.models import ShotAreaTypes, PlayerStatsTag, ShotResultTypes, ShotTypeTypes, Team, User
-from utils import get_current_user_and_team
-
-class PlayerStats(TypedDict):
-    games: int
-    first_name: str
-    last_name: str
-    shooter_tags: list
-    on_ice_tags: list
-    cell_values: dict
-    per_game_stats: list
-
-router = APIRouter()
-
-########################## FOR PLAYER SCORING  #####################
 def collect_shooter_zones(player_stats_tags: list[PlayerStatsTag]) -> dict:
-    ZONE_COLUMN_MAPPING = {
-        ShotAreaTypes.ZONE_1: "B",
-        ShotAreaTypes.ZONE_2_MIDDLE: "D",
-        ShotAreaTypes.ZONE_2_SIDE: "F",
-        ShotAreaTypes.HIGH_SLOT: "H",
-        ShotAreaTypes.BLUELINE: "J",
-        ShotAreaTypes.ZONE_4: "L",
-        ShotAreaTypes.OUTSIDE_FAR: "N",
-        ShotAreaTypes.OUTSIDE_CLOSE: "P",
-        ShotAreaTypes.MISC: "R",
-    }
-
     BASE_ROW = 4
 
     zone_cell_stats_dict = defaultdict(int)
@@ -131,7 +100,7 @@ def collect_shooter_strengths(player_stats_tags: list[PlayerStatsTag]) -> dict:
     return strengths_cell_stats_dict
 
 
-def find_players_on_ice_tags(player_stats_tags: list[PlayerStatsTag]) -> dict:
+def find_players_on_ice_tags(player_stats_tags: list[PlayerStatsTag]) -> dict[int, list[PlayerStatsTag]]:
     """
     Aggregates a dictionary mapping each player ID to a list of PlayerStatsTag objects in which the player was on ice.
     Args:
@@ -233,101 +202,18 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
     return sorted_games
 
 
-@router.get("/player-stats")
-async def get_player_scoring_excel(game_ids: str | None = None, db_session: Session = Depends(get_db_session), user_and_team: tuple["User", "Team"] = Depends(get_current_user_and_team)):
-    _, team = user_and_team
-    teams_games = team.games
-    if game_ids:
-        teams_games = []
-        split_ids = [int(game_id) for game_id in game_ids.split(",")]
-        for game in team.games:
-            if game.id in split_ids:
-                teams_games.append(game)
-    selected_game_ids = [game.id for game in teams_games]
-
-    player_stats_tags = (
-        db_session.query(PlayerStatsTag)
-        .options(
-            joinedload(PlayerStatsTag.shooter),
-            joinedload(PlayerStatsTag.game),
-            joinedload(PlayerStatsTag.shot_result),
-            joinedload(PlayerStatsTag.shot_area),
-            joinedload(PlayerStatsTag.shot_type),
-            joinedload(PlayerStatsTag.players_on_ice),
-            joinedload(PlayerStatsTag.players_participating),
-        )
-        .filter(PlayerStatsTag.game_id.in_(selected_game_ids))
-        .all()
-    )
-
-    players_to_analyze: defaultdict[int, PlayerStats] = defaultdict(lambda: {"games": 0, 
-                                                                             "first_name": "", 
-                                                                             "last_name": "", 
-                                                                             "shooter_tags": [], 
-                                                                             "on_ice_tags": [], 
-                                                                             "cell_values": {}, 
-                                                                             "per_game_stats": []}
-                                                                             )
-    for game in teams_games:
-
-        for in_roster_object in game.in_rosters:
-            player = in_roster_object.player
-            if player.id not in players_to_analyze:
-                players_to_analyze[player.id]["first_name"] = player.first_name
-                players_to_analyze[player.id]["last_name"] = player.last_name
-
-            players_to_analyze[player.id]["games"] += 1
-
-    for tag in player_stats_tags:
-        if tag.shooter:
-            players_to_analyze[tag.shooter.id]["shooter_tags"].append(tag)
-
-    on_ice_tags_for_each_player = find_players_on_ice_tags(player_stats_tags)  # {"player1_id": [PlayerStatsTags],..}
-    for player_id, on_ice_tags in on_ice_tags_for_each_player.items():
-        players_to_analyze[player_id]["on_ice_tags"] = on_ice_tags
-
+def add_player_stats(players_to_analyze: defaultdict[int, PlayerStats]) -> None:
     for player_id, player_data in players_to_analyze.items():
+        # Build and add cell values to write to sheet
         zones = collect_shooter_zones(player_data["shooter_tags"])
         types = collect_shooter_shot_types(player_data["shooter_tags"])
         net_zones = collect_shooter_net_zones(player_data["shooter_tags"])
         strengths = collect_shooter_strengths(player_data["shooter_tags"])
         total_strengths = collect_shooter_total_strengths(player_data["on_ice_tags"], player_id)
-        per_games_stats = collect_players_per_game_stats(player_data["on_ice_tags"], player_id)
 
-        player_cell_values = {**zones, **types, **net_zones, **strengths, **total_strengths, "G1": player_data["games"]}
+        player_cell_values = {**zones, **types, **net_zones, **strengths, **total_strengths, "B1": f"{player_data["first_name"]} {player_data["last_name"]}", "G1": player_data["games"]}
         players_to_analyze[player_id]["cell_values"] = player_cell_values
+
+        # Build and add per game stats
+        per_games_stats = collect_players_per_game_stats(player_data["on_ice_tags"], player_id)
         players_to_analyze[player_id]["per_game_stats"] = per_games_stats
-
-    # Load the excel file and template sheet
-    workbook = load_workbook("excels/players_summary_template.xlsx")
-    template_sheet = workbook.worksheets[0]
-
-    for player_id, player_data in players_to_analyze.items():
-        game_sheet = workbook.copy_worksheet(template_sheet)
-        game_sheet.title = f"{player_data["last_name"].upper()} {player_data["first_name"]}"
-
-        for cell, value in player_data["cell_values"].items():
-            game_sheet[cell] = value
-
-        for i, game in enumerate(player_data["per_game_stats"]):
-            row = 54 + i
-            for col, value in game.items():
-                if col == "date":
-                    continue
-                cell = f"{col}{row}"
-                game_sheet[cell] = value
-
-    # Delete template sheet
-    workbook.remove(workbook.worksheets[0])
-    workbook.remove(workbook.worksheets[0])
-
-    output = BytesIO()
-    workbook.save(output)
-    output.seek(0)
-
-    return Response(
-        content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=pelaajayhteenveto.xlsx"}
-    )
-
-
-########################## FOR PLAYER SCORING  #####################
