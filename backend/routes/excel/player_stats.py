@@ -6,7 +6,7 @@ from fastapi import Depends, APIRouter, Response
 from openpyxl import load_workbook
 from sqlalchemy.orm import Session, joinedload
 
-from routes.excel.game_stats import get_outcome_cell_adjustment
+from routes.excel.game_stats.get_stats import get_outcome_cell_adjustment
 from db.db_manager import get_db_session
 from db.models import ShotAreaTypes, PlayerStatsTag, ShotResultTypes, ShotTypeTypes, Team, User
 from utils import get_current_user_and_team
