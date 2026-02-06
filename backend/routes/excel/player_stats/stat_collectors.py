@@ -1,4 +1,5 @@
 from collections import defaultdict
+from routes.excel.stats_utils import MAP_RESULT_MAPPING, STATS_CELL_VALUES, STATS_MAP_COORDINATES, STATS_ON_ICE_STATS, STATS_PER_GAME_STATS, STATS_SHOOTER_TAGS, MapCategories, ResultMap
 from db.models import PlayerStatsTag, ShotResultTypes, ShotTypeTypes
 from routes.excel.player_stats.player_stats_utils import ZONE_COLUMN_MAPPING, PlayerStats
 from routes.excel.excel_utils import get_outcome_cell_adjustment
@@ -202,18 +203,47 @@ def collect_players_per_game_stats(players_stats_tags: list[PlayerStatsTag], pla
     return sorted_games
 
 
+def collect_mapped_data(scoring_chances: list[PlayerStatsTag]) -> ResultMap:
+    """
+    Collects and maps scoring chance data into a structured format.
+
+    Args:
+        scoring_chances (list[PlayerStatsTag]): List of scoring chances to process.
+
+    Returns:
+        ResultMap: Dictionary mapping shot results to categories with ice and net coordinates.
+            So data[ShotResultTypes][MapCategories] is a list of (int, int)
+                    What outcome?    Net or ice image?   List of coordinates to draw.
+    """
+
+    data: ResultMap = {result: defaultdict(list) for result in ShotResultTypes}
+    for chance in scoring_chances:
+        ice = (chance.ice_x, chance.ice_y)
+        net = (chance.net_x, chance.net_y)
+
+        for result in MAP_RESULT_MAPPING[chance.shot_result.value]:
+            data[result][MapCategories.ICE].append(ice)
+            data[result][MapCategories.NET].append(net)
+
+    return data
+
+
 def add_player_stats(players_to_analyze: defaultdict[int, PlayerStats]) -> None:
     for player_id, player_data in players_to_analyze.items():
-        # Build and add cell values to write to sheet
-        zones = collect_shooter_zones(player_data["shooter_tags"])
-        types = collect_shooter_shot_types(player_data["shooter_tags"])
-        net_zones = collect_shooter_net_zones(player_data["shooter_tags"])
-        strengths = collect_shooter_strengths(player_data["shooter_tags"])
-        total_strengths = collect_shooter_total_strengths(player_data["on_ice_tags"], player_id)
+        # 1. Build and add cell values to write to sheet
+        zones = collect_shooter_zones(player_data[STATS_SHOOTER_TAGS])
+        types = collect_shooter_shot_types(player_data[STATS_SHOOTER_TAGS])
+        net_zones = collect_shooter_net_zones(player_data[STATS_SHOOTER_TAGS])
+        strengths = collect_shooter_strengths(player_data[STATS_SHOOTER_TAGS])
+        total_strengths = collect_shooter_total_strengths(player_data[STATS_ON_ICE_STATS], player_id)
 
         player_cell_values = {**zones, **types, **net_zones, **strengths, **total_strengths, "B1": f"{player_data["first_name"]} {player_data["last_name"]}", "G1": player_data["games"]}
-        players_to_analyze[player_id]["cell_values"] = player_cell_values
+        players_to_analyze[player_id][STATS_CELL_VALUES] = player_cell_values
 
-        # Build and add per game stats
-        per_games_stats = collect_players_per_game_stats(player_data["on_ice_tags"], player_id)
-        players_to_analyze[player_id]["per_game_stats"] = per_games_stats
+        # 2. Build and add per game stats
+        per_games_stats = collect_players_per_game_stats(player_data[STATS_ON_ICE_STATS], player_id)
+        players_to_analyze[player_id][STATS_PER_GAME_STATS] = per_games_stats
+
+        # 3. Find the map image stats:
+        mapped_data = collect_mapped_data(player_data[STATS_SHOOTER_TAGS])
+        players_to_analyze[player_id][STATS_MAP_COORDINATES] = mapped_data

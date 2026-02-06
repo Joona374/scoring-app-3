@@ -3,13 +3,7 @@ from collections import defaultdict
 from sqlalchemy.orm import Session, joinedload
 from routes.excel.excel_utils import get_outcome_cell_adjustment
 from db.models import Game, PlayerStatsTag, ShotAreaTypes, ShotResultTypes, ShotTypeTypes
-from routes.excel.game_stats.game_stats_utils import MAP_RESULT_MAPPING, MapCategories, ResultMap
-
-
-STATS_CELL_VALUES = "cell_values"
-STATS_MAP_COORDINATES = "coordinates"
-MAPPED_DATA_FOR = "for"
-MAPPED_DATA_AGAINST = "against"
+from routes.excel.stats_utils import MAP_RESULT_MAPPING, STATS_CELL_VALUES, STATS_MAP_COORDINATES, MapCategories, ResultMap
 
 
 def collect_shotzone_data(player_stats_tags: list[PlayerStatsTag]) -> dict:

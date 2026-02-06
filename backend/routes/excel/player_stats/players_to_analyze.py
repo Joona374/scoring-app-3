@@ -3,15 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from db.models import Game, PlayerStatsTag, Team
 from routes.excel.player_stats.player_stats_utils import PlayerStats
-
-
-def get_selected_games(team: Team, game_ids_str: str | None) -> list[Game]:
-    if not game_ids_str:
-        return team.games
-
-    selected_ids = [int(game_id) for game_id in game_ids_str.split(",")]
-    return [game for game in team.games if game.id in selected_ids]
-
+from routes.excel.stats_utils import get_selected_games
 
 def build_players_to_analyze_dict(selected_games: list[Game]) -> defaultdict[int, PlayerStats]:
     """

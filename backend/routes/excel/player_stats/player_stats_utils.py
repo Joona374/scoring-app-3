@@ -1,7 +1,5 @@
 from typing import TypedDict
-
 from db.models import ShotAreaTypes
-
 
 class PlayerStats(TypedDict):
     games: int
@@ -11,6 +9,7 @@ class PlayerStats(TypedDict):
     on_ice_tags: list
     cell_values: dict
     per_game_stats: list
+    coordinates: dict
 
 ZONE_COLUMN_MAPPING = {
     ShotAreaTypes.ZONE_1: "B",

@@ -1,9 +1,8 @@
 import tempfile
 from PIL import Image, ImageDraw
-from openpyxl.drawing.image import Image as EXCLImage
-from openpyxl.worksheet.worksheet import Worksheet
+from routes.excel.stats_utils import MapCategories
 from db.models import ShotResultTypes
-from routes.excel.game_stats.game_stats_utils import MapCategories
+
 
 def draw_x(img_draw: ImageDraw.ImageDraw, x: int, y: int, color: str, size: int = 12, thicknes: int = 7) -> None:
     """
@@ -112,39 +111,3 @@ def scale_image(img: Image.Image, scale: float) -> Image.Image:
     scaled_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
     return scaled_img
-
-
-def add_images_to_sheet(sheet: Worksheet, map_images: dict[str, Image.Image]):
-    """
-    Adds scaled images to a worksheet at predefined cell positions based on a configuration dictionary.
-    This function processes a dictionary of PIL Image objects, scales each image according to the
-    specified scale factor, saves them temporarily as PNG files, and inserts them into the worksheet
-    at the designated cell locations. The configuration is hardcoded for specific image names.
-    Parameters:
-    - sheet (Worksheet): The openpyxl worksheet object where the images will be added.
-    - map_images (dict[str, Image.Image]): A dictionary mapping image names (e.g., "net_for", "ice_for")
-      to PIL Image objects that will be added to the sheet.
-    The image configuration includes:
-    - "net_for": Scaled to 0.81 and placed at cell "T20".
-    - "ice_for": Scaled to 0.73 and placed at cell "T34".
-    - "net_vs": Scaled to 0.81 and placed at cell "Y20".
-    - "ice_vs": Scaled to 0.73 and placed at cell "Y34".
-    Note: Temporary PNG files are created and not automatically deleted (delete=False in NamedTemporaryFile).
-    Ensure proper cleanup to avoid accumulating temporary files.
-    """
-
-    image_config = {
-        "net_for": {"scale": 0.81, "cell": "T20"}, 
-        "ice_for": {"scale": 0.73, "cell": "T34"},
-        "net_vs": {"scale": 0.81, "cell": "Y20"}, 
-        "ice_vs": {"scale": 0.73, "cell": "Y34"}} # fmt: skip
-
-    for img_name, config in image_config.items():
-        img = map_images[img_name]
-        scaled_img = scale_image(img, config["scale"])
-
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_img:
-            scaled_img.save(tmp_img.name)
-            excl_img = EXCLImage(tmp_img.name)
-
-        sheet.add_image(excl_img, config["cell"])

@@ -197,7 +197,8 @@ def get_current_user_and_team(db_session: Session = Depends(get_db_session), cur
 def generate_random_code() -> str:
     return "".join(random.choice(string.ascii_uppercase + string.digits + string.digits) for _ in range(6))
 
-def add_creator_code(admin: bool = False, identifier: str = None) -> RegCode:
+
+def add_creator_code(admin: bool = False, identifier: str | None = None) -> RegCode:
     engine = create_engine(DATABASE_URL)
     Session = sessionmaker(bind=engine)
     session = Session()

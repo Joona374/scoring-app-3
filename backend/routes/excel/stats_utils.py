@@ -20,15 +20,17 @@ MAP_RESULT_MAPPING: dict[ShotResultTypes, list[ShotResultTypes]] = {
 
 STATS_CELL_VALUES = "cell_values"
 STATS_MAP_COORDINATES = "coordinates"
+STATS_PER_GAME_STATS = "per_game_stats"
+STATS_SHOOTER_TAGS = "shooter_tags"
+STATS_ON_ICE_STATS = "on_ice_tags"
+
 MAPPED_DATA_FOR = "for"
 MAPPED_DATA_AGAINST = "against"
 
 
-def get_filtered_team_games(team: Team, game_id_str: str | None) -> list["Game"]:
-    if not game_id_str:
+def get_selected_games(team: Team, game_ids_str: str | None) -> list[Game]:
+    if not game_ids_str:
         return team.games
 
-    else:
-        split_ids = [int(game_id) for game_id in game_id_str.split(",")]
-        teams_games = [game for game in team.games if game.id in split_ids]
-        return teams_games
+    selected_ids = [int(game_id) for game_id in game_ids_str.split(",")]
+    return [game for game in team.games if game.id in selected_ids]

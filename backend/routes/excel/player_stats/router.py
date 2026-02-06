@@ -25,7 +25,12 @@ async def get_player_scoring_excel(game_ids: str | None = None, db_session: Sess
 
     # 3. Create the excel file and create + write a sheet with stats for each player
     workbook = load_workbook("excels/players_summary_template.xlsx")    
+
+    ################################################################
+    # TODO: THIS STEP SHOULD ALSO ADD SHOOTING MAPS TO PLAYER SHEETS
     write_player_sheets(workbook, players_to_analyze)
+    #################################################################
+
     output = workbook_to_bytesio(workbook)
 
     # 4. Send the output (excel file) as a response
