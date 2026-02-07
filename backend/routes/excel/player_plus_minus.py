@@ -10,6 +10,8 @@ from db.db_manager import get_db_session
 from db.models import Team, Player, GameInRoster, Game, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, User, ShotResultTypes
 from utils import get_current_user_and_team
 
+from routes.excel.excel_utils import sanitize_opponent_name
+
 router = APIRouter()
 
 
@@ -293,11 +295,8 @@ async def get_plusminus_excel(game_ids: str | None = None, db_session: Session =
     for game in data_for_games:
         game_sheet = workbook.copy_worksheet(template_sheet)
 
-        if "/" in game["opponent"]:
-            sanitized_opponent = game["opponent"].replace("/", "&")
-            game_sheet.title = f"{sanitized_opponent} {game['date']}"
-        else:
-            game_sheet.title = f"{game["opponent"]} {game["date"]}"
+        sanitized_opponent = sanitize_opponent_name(game["opponent"])
+        game_sheet.title = f"{sanitized_opponent} {game['date']}"
 
         for i, defender in enumerate(game["roster"]["defenders"]):
             row = FIRST_DEFENDER_ROW + i

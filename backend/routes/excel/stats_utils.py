@@ -29,6 +29,17 @@ MAPPED_DATA_AGAINST = "against"
 
 
 def get_selected_games(team: Team, game_ids_str: str | None) -> list[Game]:
+    """
+    Get a list of selected games for a team based on provided game IDs.
+
+    Args:
+        team (Team): The team object containing games.
+        game_ids_str (str | None): Comma-separated string of game IDs, or None for all games.
+
+    Returns:
+        list[Game]: List of selected games as Game objects.
+    """
+
     if not game_ids_str:
         return team.games
 

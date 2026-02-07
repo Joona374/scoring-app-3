@@ -66,9 +66,9 @@ def get_teams(db_session: Session = Depends(get_db_session), current_user_id: in
 @router.post("/create-code")
 def create_code(code_data: CreateCode, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
     user = db_session.query(User).filter(User.id == current_user_id).first()
-    if not user.is_admin:
+    if not user or not user.is_admin:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Non admin user")
-    
+
     # try:
     new_code = add_creator_code(admin=False, identifier=code_data.new_code_identifier)
     team_id = new_code.team_related_id
@@ -77,7 +77,7 @@ def create_code(code_data: CreateCode, db_session: Session = Depends(get_db_sess
         related_team_name = team.name
     else:
         related_team_name = None
-    
+
     response = CreateCodeResponse(
         code=new_code.code,
         used=new_code.used,
@@ -89,7 +89,7 @@ def create_code(code_data: CreateCode, db_session: Session = Depends(get_db_sess
     )
 
     return response
-    
+
     # except Exception as e:
     #     print(f"Error creating a code: {e}")
     #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Server side error creating the code.")

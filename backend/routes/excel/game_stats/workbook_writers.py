@@ -8,6 +8,7 @@ from PIL import Image
 
 from routes.excel.stats_utils import STATS_CELL_VALUES, STATS_MAP_COORDINATES
 from routes.excel.image_utils import get_map_images, scale_image
+from routes.excel.excel_utils import sanitize_opponent_name
 
 
 def write_stats_to_cells(sheet: Worksheet, cell_values: dict):
@@ -22,12 +23,6 @@ def write_total_sheet_for_game_stats(workbook: Workbook, total_stats: dict[str, 
     map_images = get_map_images(coordinates)
     add_images_to_sheet(total_sheet, map_images)
     write_stats_to_cells(total_sheet, total_stats[STATS_CELL_VALUES])
-
-
-def sanitize_opponent_name(name: str) -> str:
-    if "/" in name:
-        name = name.replace("/", "&")
-    return name
 
 
 def write_game_metadata(game_sheet: Worksheet, game: dict[str, Any]):
