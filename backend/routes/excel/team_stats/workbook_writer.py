@@ -1,8 +1,10 @@
 from collections import defaultdict
-from openpyxl import Workbook
+from email.policy import default
+from io import BytesIO
+from openpyxl import Workbook, load_workbook
 from db.models import TeamStatsTag
 from routes.excel.team_stats.constants import CHANCE_ROW_MAPPING, FINAL_COLUMNS, VALUE_TO_CHANCE_COLUMN, RESULT_TO_SHIFT_MAP
-from routes.excel.excel_utils import sanitize_opponent_name
+from routes.excel.excel_utils import sanitize_opponent_name, workbook_to_bytesio
 
 
 def get_chance_row(scoring_chance: TeamStatsTag):
@@ -159,3 +161,33 @@ def write_game_sheets(games_stats_dict: defaultdict[int, list[TeamStatsTag]], wo
         cell_values_for_game = calculate_numbers_for_cells(tags_list)
         for cell, value in cell_values_for_game.items():
             game_sheet[cell] = int(value)
+
+
+def build_team_stats_workbook(all_tags: list[TeamStatsTag], games_stats_dict: defaultdict[int, list[TeamStatsTag]]) -> BytesIO:
+    """
+    Builds an Excel workbook containing team statistics by loading a template, writing total stats and per-game stats,
+    removing the template sheet, and returning the workbook as a BytesIO object.
+    Args:
+        all_tags (list[TeamStatsTag]): A list of TeamStatsTag objects representing the total statistics to be written.
+        games_stats_dict (defaultdict[int, list[TeamStatsTag]]): A dictionary where keys are game identifiers (int) and
+            values are lists of TeamStatsTag objects for per-game statistics.
+    Returns:
+        BytesIO: A BytesIO object containing the generated Excel workbook with team stats.
+    """
+
+    # 1. Load the excel workbook
+    workbook = load_workbook("excels/team_stats_template.xlsx")
+
+    # 2. Write the totals stats to the workbook (edits workbook in place)
+    write_total_sheet(all_tags, workbook)
+
+    # 3. Write the per game stats on separate sheets to the workbook (edits workbook in place)
+    write_game_sheets(games_stats_dict, workbook)
+
+    # 4. Delete template sheet
+    workbook.remove(workbook.worksheets[0])
+
+    # 5. Convert the workbook to a BytesIO object to return
+    output = workbook_to_bytesio(workbook)
+
+    return output

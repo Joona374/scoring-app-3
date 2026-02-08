@@ -6,7 +6,7 @@ from db.db_manager import get_db_session
 from db.models import Team, User
 from utils import get_current_user_and_team
 
-from routes.excel.player_stats.workbook_writer import write_player_sheets
+from routes.excel.player_stats.workbook_writer import build_player_stats_workbook, write_player_sheets
 from routes.excel.excel_utils import workbook_to_bytesio
 from routes.excel.player_stats.stat_collectors import add_player_stats
 from routes.excel.player_stats.players_to_analyze import get_players_to_analyze
@@ -23,15 +23,8 @@ async def get_player_scoring_excel(game_ids: str | None = None, db_session: Sess
     # 2. Edit players_to_analyze in place to record their stats for the selected games
     add_player_stats(players_to_analyze)
 
-    # 3. Create the excel file and create + write a sheet with stats for each player
-    workbook = load_workbook("excels/players_summary_template.xlsx")    
-
-    ################################################################
-    # TODO: THIS STEP SHOULD ALSO ADD SHOOTING MAPS TO PLAYER SHEETS
-    write_player_sheets(workbook, players_to_analyze)
-    #################################################################
-
-    output = workbook_to_bytesio(workbook)
+    # 3. Builds the full player stats workbook, and returns it as BytesIO object.
+    output = build_player_stats_workbook(players_to_analyze)
 
     # 4. Send the output (excel file) as a response
     return Response(

@@ -1,3 +1,4 @@
+from io import BytesIO
 import tempfile
 from typing import Any
 
@@ -8,7 +9,7 @@ from PIL import Image
 
 from routes.excel.stats_utils import STATS_CELL_VALUES, STATS_MAP_COORDINATES
 from routes.excel.image_utils import get_map_images, scale_image
-from routes.excel.excel_utils import sanitize_opponent_name
+from routes.excel.excel_utils import sanitize_opponent_name, workbook_to_bytesio
 
 
 def write_stats_to_cells(sheet: Worksheet, cell_values: dict):
@@ -85,13 +86,20 @@ def write_per_game_sheets_for_game_stats(workbook: Workbook, per_game_stats: lis
         write_stats_to_cells(game_sheet, game[STATS_CELL_VALUES])
 
 
-def create_game_stats_workbook(total_stats: dict[str, dict[str, int]], per_game_stats: list[dict[str, Any]]) -> Workbook:
+def build_game_stats_workbook(total_stats: dict[str, dict[str, int]], per_game_stats: list[dict[str, Any]]) -> BytesIO:
+    # 1. Load the excel file into a workbook object
     workbook = load_workbook("excels/game_stats_template.xlsx")
 
+    # 2. Write the total sheet (edits workbook in place)
     write_total_sheet_for_game_stats(workbook, total_stats)
+
+    # 3. Write a separate sheet per game (edits workbook in place)
     write_per_game_sheets_for_game_stats(workbook, per_game_stats)
 
-    # Delete template sheet
+    # 4. Delete the empty template sheet from the workbook
     workbook.remove(workbook.worksheets[0])
 
-    return workbook
+    # 5. Convert the workbook to a BytesIO object to return
+    output = workbook_to_bytesio(workbook)
+
+    return output

@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 from fastapi import Depends, APIRouter, Response
-from openpyxl import load_workbook
 from sqlalchemy.orm import Session
 
 from utils import get_current_user_and_team
@@ -10,7 +9,7 @@ from db.models import User, Team
 from routes.excel.stats_utils import get_selected_games
 from routes.excel.excel_utils import workbook_to_bytesio
 from routes.excel.team_stats.get_stats import get_team_stats_tags, get_games_stats_dict
-from routes.excel.team_stats.workbook_writer import write_total_sheet, write_game_sheets
+from routes.excel.team_stats.workbook_writer import build_team_stats_workbook, write_total_sheet, write_game_sheets
 
 router = APIRouter()
 
@@ -28,20 +27,8 @@ async def get_teamstats_excel(game_ids: str, db_session: Session = Depends(get_d
     # 2. Build a data container for per game stats, shape: defaultdict[game_id, list[TeamStatsTag]
     games_stats_dict = get_games_stats_dict(all_tags)
 
-    # 3. Load the excel workbook
-    workbook = load_workbook("excels/team_stats_template.xlsx")
-
-    # 4. Write the totals stats to the workbook (edits workbook in place)
-    write_total_sheet(all_tags, workbook)
-
-    # 5. Write the per game stats on separate sheets to the workbook (edits workbook in place)
-    write_game_sheets(games_stats_dict, workbook)
-
-    # 6. Delete template sheet
-    workbook.remove(workbook.worksheets[0])
-
-    # 7. Convert the workbook to a BytesIO object to return
-    output = workbook_to_bytesio(workbook)
+    # 3. Builds the full team stats workbook, and returns it as BytesIO object.
+    output = build_team_stats_workbook(all_tags, games_stats_dict)
 
     return Response(
         content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=joukkuetilastot.xlsx"}
