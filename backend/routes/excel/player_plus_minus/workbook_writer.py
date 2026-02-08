@@ -2,6 +2,7 @@ from io import BytesIO
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
+from db.models import Positions
 from routes.excel.excel_utils import workbook_to_bytesio
 from routes.excel.excel_utils import sanitize_opponent_name, workbook_to_bytesio
 from routes.excel.player_plus_minus.constants import FIRST_DEFENDER_ROW, FIRST_FORWARD_ROW, NAME_COLUMNS, RESULT_TO_COLUMN_MAP, GameDataStructure, PlayerData
@@ -30,7 +31,7 @@ def copy_template_sheet(workbook: Workbook, sheet_title: str | None = None, idx:
 def write_totals_sheet(total_stats, workbook: Workbook):
     total_sheet = copy_template_sheet(workbook, sheet_title="YHTEENSÄ")
 
-    for i, defender in enumerate(total_stats["defenders"]):
+    for i, defender in enumerate(total_stats[Positions.DEFENDER]):
         row = FIRST_DEFENDER_ROW + i
         for name_col in NAME_COLUMNS:
             total_sheet[f"{name_col}{row}"] = defender["name"]
@@ -38,7 +39,7 @@ def write_totals_sheet(total_stats, workbook: Workbook):
             column = RESULT_TO_COLUMN_MAP[key]
             total_sheet[f"{column}{row}"] = value
 
-    for i, forward in enumerate(total_stats["forwards"]):
+    for i, forward in enumerate(total_stats[Positions.FORWARD]):
         row = FIRST_FORWARD_ROW + i
         for name_col in NAME_COLUMNS:
             total_sheet[f"{name_col}{row}"] = forward["name"]
@@ -50,7 +51,7 @@ def write_totals_sheet(total_stats, workbook: Workbook):
 def write_avg_sheet(total_stats, workbook: Workbook):
     total_avg_sheet = copy_template_sheet(workbook, sheet_title="KESKIARVOT")
 
-    for i, defender in enumerate(total_stats["defenders"]):
+    for i, defender in enumerate(total_stats[Positions.DEFENDER]):
         row = FIRST_DEFENDER_ROW + i
         games_played = defender["GP"]
         for name_col in NAME_COLUMNS:
@@ -59,7 +60,7 @@ def write_avg_sheet(total_stats, workbook: Workbook):
             column = RESULT_TO_COLUMN_MAP[key]
             total_avg_sheet[f"{column}{row}"] = value / games_played
 
-    for i, forward in enumerate(total_stats["forwards"]):
+    for i, forward in enumerate(total_stats[Positions.FORWARD]):
         games_played = forward["GP"]
         row = FIRST_FORWARD_ROW + i
         for name_col in NAME_COLUMNS:
@@ -89,7 +90,7 @@ def write_game_sheet(game: GameDataStructure, workbook: Workbook):
     sheet_title = f"{sanitize_opponent_name(game["opponent"])} {game['date']}"
     game_sheet = copy_template_sheet(workbook, sheet_title=sheet_title)
 
-    for i, defender in enumerate(game["roster_by_positions"]["defenders"]):
+    for i, defender in enumerate(game["roster_by_positions"][Positions.DEFENDER]):
         row = FIRST_DEFENDER_ROW + i
         for name_col in NAME_COLUMNS:
             game_sheet[f"{name_col}{row}"] = defender["name"]
@@ -97,7 +98,7 @@ def write_game_sheet(game: GameDataStructure, workbook: Workbook):
             column = RESULT_TO_COLUMN_MAP[key]
             game_sheet[f"{column}{row}"] = value
 
-    for i, forward in enumerate(game["roster_by_positions"]["forwards"]):
+    for i, forward in enumerate(game["roster_by_positions"][Positions.FORWARD]):
         row = FIRST_FORWARD_ROW + i
         for name_col in NAME_COLUMNS:
             game_sheet[f"{name_col}{row}"] = forward["name"]

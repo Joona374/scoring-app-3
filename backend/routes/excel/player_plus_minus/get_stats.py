@@ -4,7 +4,7 @@ import copy
 from sqlalchemy.orm import Session, joinedload
 
 from routes.excel.player_plus_minus.constants import EMPTY_STATS, SHOTRESULT_TO_CODE_MAP, GameDataStructure, PlayerData
-from db.models import Player, GameInRoster, Game, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, ShotResultTypes
+from db.models import Player, GameInRoster, Game, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, Positions, ShotResultTypes
 
 
 def format_player_name(player: Player, in_rosters: list[GameInRoster]) -> str:
@@ -46,10 +46,7 @@ def build_roster_dict(game: Game) -> dict[int, PlayerData]:
 
     for roster_spot in game.in_rosters:
         player = roster_spot.player
-        roster_dict[player.id] = {"name": format_player_name(player, game.in_rosters),
-                                  "position": player.position.name,
-                                  "GP": 0,
-                                  "stats": EMPTY_STATS.copy()}
+        roster_dict[player.id] = {"name": format_player_name(player, game.in_rosters), "position": player.position, "GP": 0, "stats": EMPTY_STATS.copy()}
 
     return roster_dict
 
@@ -74,13 +71,13 @@ def build_game_data_structure(game: Game) -> GameDataStructure:
 
 
 def convert_roster_to_lists_by_position(roster: dict) -> dict:
-    listed_roster = {"forwards": [], "defenders": []}
+    listed_roster = {Positions.FORWARD: [], Positions.DEFENDER: []}
 
     for player_dict in roster.values():
-        if player_dict["position"] == "FORWARD":
-            listed_roster["forwards"].append(player_dict)
-        elif player_dict["position"] == "DEFENDER":
-            listed_roster["defenders"].append(player_dict)
+        if player_dict["position"] == Positions.FORWARD:
+            listed_roster[Positions.FORWARD].append(player_dict)
+        elif player_dict["position"] == Positions.DEFENDER:
+            listed_roster[Positions.DEFENDER].append(player_dict)
 
     for group in listed_roster.values():
         group.sort(key=lambda player: player["name"])

@@ -1,5 +1,5 @@
 from typing import TypedDict
-from db.models import ShotResultTypes
+from db.models import Positions, ShotResultTypes
 from datetime import date as datetime_date
 
 
@@ -82,7 +82,7 @@ EMPTY_STATS = {key: 0 for key in STAT_KEYS}
 
 class PlayerData(TypedDict):
     name: str
-    position: str
+    position: Positions
     GP: int
     stats: dict[str, int] # This will take the values of STAT_KEYS
 
@@ -92,4 +92,4 @@ class GameDataStructure(TypedDict):
     home: bool
     date: datetime_date
     roster: dict[int, PlayerData]
-    roster_by_positions: dict[str, list[PlayerData]]
+    roster_by_positions: dict[Positions, list[PlayerData]]
