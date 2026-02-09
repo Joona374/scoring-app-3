@@ -1,4 +1,7 @@
+from enum import Enum
 from typing import TypedDict
+
+from numpy import empty
 from db.models import Positions, ShotResultTypes
 from datetime import date as datetime_date
 
@@ -80,11 +83,46 @@ STAT_KEYS = (
 
 EMPTY_STATS = {key: 0 for key in STAT_KEYS}
 
+
+class ParticipationTypes(Enum):
+    ON_ICE = "on_ice"
+    PARTICIPATING = "participating"
+
+
+class StrengthTypes(Enum):
+    EVEN_STRENGTH = "ES"
+    POWERPLAY = "PP"
+    PENALTY_KILL = "PK"
+
+
+def strenghts_str_to_enum(strength_str: str) -> StrengthTypes:
+    strength_mapping = {strength_type.value: strength_type for strength_type in StrengthTypes}
+    strength_enum = strength_mapping[strength_str]
+    print(strength_enum)
+    return strength_enum
+
+
+def build_empty_stats() -> dict:
+    """
+    Builds an empty statistics dictionary with nested keys for strength, participation type, and shot result, all initialized to 0.
+    """
+
+    empty_stats = {}
+    for strenght in StrengthTypes:
+        empty_stats[strenght.value] = {}
+        for participation_type in ParticipationTypes:
+            empty_stats[strenght.value][participation_type] = {}
+            for result in ShotResultTypes:
+                empty_stats[strenght.value][participation_type][result] = 0
+
+    return empty_stats
+
+
 class PlayerData(TypedDict):
     name: str
     position: Positions
     GP: int
-    stats: dict[str, int] # This will take the values of STAT_KEYS
+    stats: dict[StrengthTypes, dict[ParticipationTypes, dict[ShotResultTypes, int]]]
 
 class GameDataStructure(TypedDict):
     game_id: int 

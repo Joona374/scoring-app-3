@@ -3,7 +3,7 @@ import copy
 
 from sqlalchemy.orm import Session, joinedload
 
-from routes.excel.player_plus_minus.constants import EMPTY_STATS, SHOTRESULT_TO_CODE_MAP, GameDataStructure, PlayerData
+from routes.excel.player_plus_minus.constants import EMPTY_STATS, SHOTRESULT_TO_CODE_MAP, GameDataStructure, PlayerData, build_empty_stats, strenghts_str_to_enum, ParticipationTypes
 from db.models import Player, GameInRoster, Game, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, Positions, ShotResultTypes
 
 
@@ -46,7 +46,7 @@ def build_roster_dict(game: Game) -> dict[int, PlayerData]:
 
     for roster_spot in game.in_rosters:
         player = roster_spot.player
-        roster_dict[player.id] = {"name": format_player_name(player, game.in_rosters), "position": player.position, "GP": 0, "stats": EMPTY_STATS.copy()}
+        roster_dict[player.id] = {"name": format_player_name(player, game.in_rosters), "position": player.position, "GP": 0, "stats": build_empty_stats()}
 
     return roster_dict
 
@@ -175,6 +175,50 @@ def should_skip_tag(tag: PlayerStatsTag) -> bool:
     return False
 
 
+def handle_on_ice_tags(
+    tag: PlayerStatsTag,
+    on_ice_tags: defaultdict[int, list[PlayerStatsTagOnIce]],
+    game_data: GameDataStructure,
+    total_stats: dict[int, PlayerData],
+):
+    ######################################################################################################################
+    # TODO: This currently uses a refactoring bridge that needs to be fixed.
+    # The value in "tag.strenghts" in the db is just a magic string, and this needs to be refactored to use a enum instead
+    # Do this safely with alembic in the dev branch first
+    strengths = strenghts_str_to_enum(tag.strengths)
+    ######################################################################################################################
+
+    result = tag.shot_result.value
+
+    tags_on_ice = on_ice_tags[tag.id]
+    OI_player_ids = [tag.player.id for tag in tags_on_ice]
+    for id in OI_player_ids:
+        game_data["roster"][id]["stats"][strengths][ParticipationTypes.ON_ICE][result] += 1
+        total_stats[id]["stats"][strengths][ParticipationTypes.ON_ICE][result] += 1
+
+
+def handle_participating_tags(
+    tag: PlayerStatsTag,
+    participating_tags: defaultdict[int, list[PlayerStatsTagParticipating]],
+    game_data: GameDataStructure,
+    total_stats: dict[int, PlayerData],
+):
+    ######################################################################################################################
+    # TODO: This currently uses a refactoring bridge that needs to be fixed.
+    # The value in "tag.strenghts" in the db is just a magic string, and this needs to be refactored to use a enum instead
+    # Do this safely with alembic in the dev branch first
+    strengths = strenghts_str_to_enum(tag.strengths)
+    ######################################################################################################################
+
+    result = tag.shot_result.value
+
+    tags_participating = participating_tags[tag.id]
+    P_player_ids = [tag.player.id for tag in tags_participating]
+    for id in P_player_ids:
+        game_data["roster"][id]["stats"][strengths][ParticipationTypes.PARTICIPATING][result] += 1
+        total_stats[id]["stats"][strengths][ParticipationTypes.PARTICIPATING][result] += 1
+
+
 def handle_player_stats_tag(
     tag: PlayerStatsTag,
     on_ice_tags: defaultdict[int, list[PlayerStatsTagOnIce]],
@@ -191,24 +235,9 @@ def handle_player_stats_tag(
     - game_data (GameDataStructure): The game data structure to update.
     - total_stats (dict[int, PlayerData]): Total stats dictionary to update.
     """
-    ############################################################################
-    # TODO: Figure out better way to map these.
-    # Use some models etc instead of these weird parsed strings to track tags.
-    strengths = tag.strengths
-    result_part = SHOTRESULT_TO_CODE_MAP[tag.shot_result.value]
-
-    tags_on_ice = on_ice_tags[tag.id]
-    OI_player_ids = [tag.player.id for tag in tags_on_ice]
-    for id in OI_player_ids:
-        game_data["roster"][id]["stats"][f"{strengths}-OI{result_part}"] += 1
-        total_stats[id]["stats"][f"{strengths}-OI{result_part}"] += 1
-
-    tags_participating = participating_tags[tag.id]
-    P_player_ids = [tag.player.id for tag in tags_participating]
-    for id in P_player_ids:
-        game_data["roster"][id]["stats"][f"{strengths}-P{result_part}"] += 1
-        total_stats[id]["stats"][f"{strengths}-P{result_part}"] += 1
-    ############################################################################
+    # Both edit game_data and total_stats in place.
+    handle_on_ice_tags(tag, on_ice_tags, game_data, total_stats)
+    handle_participating_tags(tag, participating_tags, game_data, total_stats)
 
 
 def get_plusminus_games_data(games: list[Game], db_session: Session) -> tuple[list[GameDataStructure], dict[int, PlayerData]]:
