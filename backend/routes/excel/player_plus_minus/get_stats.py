@@ -70,7 +70,7 @@ def build_game_data_structure(game: Game) -> GameDataStructure:
     return data_structure
 
 
-def convert_roster_to_lists_by_position(roster: dict) -> dict:
+def convert_roster_to_lists_by_position(roster: dict[int, PlayerData]) -> dict[Positions, list[PlayerData]]:
     listed_roster = {Positions.FORWARD: [], Positions.DEFENDER: []}
 
     for player_dict in roster.values():
@@ -83,6 +83,7 @@ def convert_roster_to_lists_by_position(roster: dict) -> dict:
         group.sort(key=lambda player: player["name"])
 
     return listed_roster
+
 
 def get_player_stats_tags_for_games(games: list[Game], db_session: Session):
     game_ids = [game.id for game in games]
@@ -240,7 +241,7 @@ def handle_player_stats_tag(
     handle_participating_tags(tag, participating_tags, game_data, total_stats)
 
 
-def get_plusminus_games_data(games: list[Game], db_session: Session) -> tuple[list[GameDataStructure], dict[int, PlayerData]]:
+def get_plusminus_games_data(games: list[Game], db_session: Session) -> tuple[list[GameDataStructure], dict[Positions, list[PlayerData]]]:
     game_stats: list[GameDataStructure] = []
     total_stats: dict[int, PlayerData] = {}
 
@@ -266,3 +267,14 @@ def get_plusminus_games_data(games: list[Game], db_session: Session) -> tuple[li
     game_stats.sort(key=lambda game: game["date"], reverse=True)
     listed_total_data = convert_roster_to_lists_by_position(total_stats)
     return game_stats, listed_total_data
+
+
+# def get_plusminus_games_data2(games: list[Game], db_session: Session) -> tuple[list[GameDataStructure], dict[int, PlayerData]]:
+#     game_stats: list[GameDataStructure] = []
+#     total_stats: dict[int, PlayerData] = {}
+
+#     for game in games:
+#         pass
+
+#     listed_total_data = convert_roster_to_lists_by_position(total_stats)
+#     return game_stats, listed_total_data

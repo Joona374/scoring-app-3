@@ -16,40 +16,6 @@ SHOTRESULT_TO_CODE_MAP = {
 FIRST_DEFENDER_ROW = 4
 FIRST_FORWARD_ROW = 26
 
-RESULT_TO_COLUMN_MAP = {
-    "OIG+": "A",  # OIG+ = On ice Goal +
-    "OIG-": "B",  # OIG- = On ice Goal -
-    "OIC+": "D",  # OIC+ = On ice Chance +
-    "OIC-": "E",  # OIC- = On ice Chance -
-    "PG+": "H",  # PG+ = Participated Goal +
-    "PG-": "I",  # PG- = Participated Goal -
-    "PC+": "K",  # PC+ = Participated chance +
-    "PC-": "L",  # PC- = Participated chance -
-    "ES-OIG+": "A",  # ES = Even Strength
-    "ES-OIG-": "B",
-    "ES-OIC+": "D",
-    "ES-OIC-": "E",
-    "ES-PG+": "H",
-    "ES-PG-": "I",
-    "ES-PC+": "K",
-    "ES-PC-": "L",
-    "PP-OIG+": "O",  # PP = Powerplay
-    "PP-OIG-": "P",
-    "PP-OIC+": "R",
-    "PP-OIC-": "S",
-    "PP-PG+": "V",
-    "PP-PG-": "W",
-    "PP-PC+": "Y",
-    "PP-PC-": "Z",
-    "PK-OIG+": "AC",  # PK = Penaltykill
-    "PK-OIG-": "AD",
-    "PK-OIC+": "AF",
-    "PK-OIC-": "AG",
-    "PK-PG+": "AJ",
-    "PK-PG-": "AK",
-    "PK-PC+": "AM",
-    "PK-PC-": "AN",
-}
 
 NAME_COLUMNS = ["G", "U", "AI", "AW"]
 
@@ -98,8 +64,52 @@ class StrengthTypes(Enum):
 def strenghts_str_to_enum(strength_str: str) -> StrengthTypes:
     strength_mapping = {strength_type.value: strength_type for strength_type in StrengthTypes}
     strength_enum = strength_mapping[strength_str]
-    print(strength_enum)
     return strength_enum
+
+RESULT_TO_COLUMN_MAP = {
+    StrengthTypes.EVEN_STRENGTH: {
+        ParticipationTypes.ON_ICE: {
+            ShotResultTypes.GOAL_FOR: "A",
+            ShotResultTypes.GOAL_AGAINST: "B",
+            ShotResultTypes.CHANCE_FOR: "D",
+            ShotResultTypes.CHANCE_AGAINST: "E",
+        },
+        ParticipationTypes.PARTICIPATING: {
+            ShotResultTypes.GOAL_FOR: "H",
+            ShotResultTypes.GOAL_AGAINST: "I",
+            ShotResultTypes.CHANCE_FOR: "K",
+            ShotResultTypes.CHANCE_AGAINST: "L",
+        },
+    },
+    StrengthTypes.POWERPLAY: {
+        ParticipationTypes.ON_ICE: {
+            ShotResultTypes.GOAL_FOR: "O",
+            ShotResultTypes.GOAL_AGAINST: "P",
+            ShotResultTypes.CHANCE_FOR: "S",
+            ShotResultTypes.CHANCE_AGAINST: "R",
+        },
+        ParticipationTypes.PARTICIPATING: {
+            ShotResultTypes.GOAL_FOR: "V",
+            ShotResultTypes.GOAL_AGAINST: "W",
+            ShotResultTypes.CHANCE_FOR: "Y",
+            ShotResultTypes.CHANCE_AGAINST: "Z",
+        },
+    },
+    StrengthTypes.PENALTY_KILL: {
+        ParticipationTypes.ON_ICE: {
+            ShotResultTypes.GOAL_FOR: "AC",
+            ShotResultTypes.GOAL_AGAINST: "AD",
+            ShotResultTypes.CHANCE_FOR: "AF",
+            ShotResultTypes.CHANCE_AGAINST: "AG",
+        },
+        ParticipationTypes.PARTICIPATING: {
+            ShotResultTypes.GOAL_FOR: "AJ",
+            ShotResultTypes.GOAL_AGAINST: "AK",
+            ShotResultTypes.CHANCE_FOR: "AM",
+            ShotResultTypes.CHANCE_AGAINST: "AN",
+        },
+    },
+}
 
 
 def build_empty_stats() -> dict:
@@ -109,11 +119,11 @@ def build_empty_stats() -> dict:
 
     empty_stats = {}
     for strenght in StrengthTypes:
-        empty_stats[strenght.value] = {}
+        empty_stats[strenght] = {}
         for participation_type in ParticipationTypes:
-            empty_stats[strenght.value][participation_type] = {}
+            empty_stats[strenght][participation_type] = {}
             for result in ShotResultTypes:
-                empty_stats[strenght.value][participation_type][result] = 0
+                empty_stats[strenght][participation_type][result] = 0
 
     return empty_stats
 

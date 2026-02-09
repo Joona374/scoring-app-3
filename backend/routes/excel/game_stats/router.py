@@ -20,7 +20,7 @@ async def get_team_scoring_excel(game_ids: str | None = None, db_session: Sessio
     _, team = user_and_team
 
     # 1. Get the game objects based on the selected game_ids
-    teams_games = get_selected_games(team, game_ids)
+    teams_games = get_selected_games(game_ids, team, db_session)
 
     # 2. Fetch the gama data, and build the data containers
     per_game_stats, total_stats = get_game_stats(teams_games, db_session)

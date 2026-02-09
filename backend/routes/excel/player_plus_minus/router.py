@@ -19,7 +19,7 @@ async def get_plusminus_excel(game_ids: str | None = None, db_session: Session =
     _, team = user_and_team
 
     # 1. Get the game objects based on the selected game_ids
-    games = get_selected_games(team, game_ids)
+    games = get_selected_games(game_ids, team, db_session)
 
     # 2. Fetch the gama data, and build the data containers
     data_for_games, total_stats = get_plusminus_games_data(games, db_session)

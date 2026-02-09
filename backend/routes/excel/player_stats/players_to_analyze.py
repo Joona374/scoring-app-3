@@ -83,7 +83,7 @@ def add_players_tags(players_to_analyze: defaultdict[int, PlayerStats], player_s
 
 
 def get_players_to_analyze(game_ids_str: str | None, team: Team, db_session: Session) -> defaultdict[int, PlayerStats]:
-    selected_games = get_selected_games(team, game_ids_str)
+    selected_games = get_selected_games(game_ids_str, team, db_session)
     player_stats_tags = get_PSTs_for_games(selected_games, db_session)
     players_to_analyze = build_players_to_analyze_dict(selected_games)
     add_players_tags(players_to_analyze, player_stats_tags)  # edits palyers_to_analyze in place

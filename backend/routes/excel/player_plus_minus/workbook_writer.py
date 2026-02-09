@@ -2,7 +2,7 @@ from io import BytesIO
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from db.models import Positions
+from db.models import Positions, ShotResultTypes
 from routes.excel.excel_utils import workbook_to_bytesio
 from routes.excel.excel_utils import sanitize_opponent_name, workbook_to_bytesio
 from routes.excel.player_plus_minus.constants import FIRST_DEFENDER_ROW, FIRST_FORWARD_ROW, NAME_COLUMNS, RESULT_TO_COLUMN_MAP, GameDataStructure, PlayerData
@@ -28,27 +28,45 @@ def copy_template_sheet(workbook: Workbook, sheet_title: str | None = None, idx:
     return new_sheet
 
 
-def write_totals_sheet(total_stats, workbook: Workbook):
+def should_skip_because_only_a_shot(result: ShotResultTypes) -> bool:
+    if result in [ShotResultTypes.SHOT_FOR, ShotResultTypes.SHOT_AGAINST]:
+        return True
+    return False
+
+
+def write_totals_sheet(total_stats: dict[Positions, list[PlayerData]], workbook: Workbook):
     total_sheet = copy_template_sheet(workbook, sheet_title="YHTEENSÄ")
 
     for i, defender in enumerate(total_stats[Positions.DEFENDER]):
         row = FIRST_DEFENDER_ROW + i
         for name_col in NAME_COLUMNS:
             total_sheet[f"{name_col}{row}"] = defender["name"]
-        for key, value in defender["stats"].items():
-            column = RESULT_TO_COLUMN_MAP[key]
-            total_sheet[f"{column}{row}"] = value
+
+        for strength, stat1 in defender["stats"].items():
+            for participation_type, stat2 in stat1.items():
+                for result, value in stat2.items():
+                    if should_skip_because_only_a_shot(result):
+                        continue
+
+                    column = RESULT_TO_COLUMN_MAP[strength][participation_type][result]
+                    total_sheet[f"{column}{row}"] = value
 
     for i, forward in enumerate(total_stats[Positions.FORWARD]):
         row = FIRST_FORWARD_ROW + i
         for name_col in NAME_COLUMNS:
             total_sheet[f"{name_col}{row}"] = forward["name"]
-        for key, value in forward["stats"].items():
-            column = RESULT_TO_COLUMN_MAP[key]
-            total_sheet[f"{column}{row}"] = value
+
+        for strength, stat1 in forward["stats"].items():
+            for participation_type, stat2 in stat1.items():
+                for result, value in stat2.items():
+                    if should_skip_because_only_a_shot(result):
+                        continue
+
+                    column = RESULT_TO_COLUMN_MAP[strength][participation_type][result]
+                    total_sheet[f"{column}{row}"] = value
 
 
-def write_avg_sheet(total_stats, workbook: Workbook):
+def write_avg_sheet(total_stats: dict[Positions, list[PlayerData]], workbook: Workbook):
     total_avg_sheet = copy_template_sheet(workbook, sheet_title="KESKIARVOT")
 
     for i, defender in enumerate(total_stats[Positions.DEFENDER]):
@@ -56,18 +74,30 @@ def write_avg_sheet(total_stats, workbook: Workbook):
         games_played = defender["GP"]
         for name_col in NAME_COLUMNS:
             total_avg_sheet[f"{name_col}{row}"] = defender["name"]
-        for key, value in defender["stats"].items():
-            column = RESULT_TO_COLUMN_MAP[key]
-            total_avg_sheet[f"{column}{row}"] = value / games_played
+
+        for strength, stat1 in defender["stats"].items():
+            for participation_type, stat2 in stat1.items():
+                for result, value in stat2.items():
+                    if should_skip_because_only_a_shot(result):
+                        continue
+
+                    column = RESULT_TO_COLUMN_MAP[strength][participation_type][result]
+                    total_avg_sheet[f"{column}{row}"] = value / games_played
 
     for i, forward in enumerate(total_stats[Positions.FORWARD]):
         games_played = forward["GP"]
         row = FIRST_FORWARD_ROW + i
         for name_col in NAME_COLUMNS:
             total_avg_sheet[f"{name_col}{row}"] = forward["name"]
-        for key, value in forward["stats"].items():
-            column = RESULT_TO_COLUMN_MAP[key]
-            total_avg_sheet[f"{column}{row}"] = value / games_played
+
+        for strength, stat1 in forward["stats"].items():
+            for participation_type, stat2 in stat1.items():
+                for result, value in stat2.items():
+                    if should_skip_because_only_a_shot(result):
+                        continue
+
+                    column = RESULT_TO_COLUMN_MAP[strength][participation_type][result]
+                    total_avg_sheet[f"{column}{row}"] = value / games_played
 
 
 def write_game_sheet(game: GameDataStructure, workbook: Workbook):
@@ -94,17 +124,29 @@ def write_game_sheet(game: GameDataStructure, workbook: Workbook):
         row = FIRST_DEFENDER_ROW + i
         for name_col in NAME_COLUMNS:
             game_sheet[f"{name_col}{row}"] = defender["name"]
-        for key, value in defender["stats"].items():
-            column = RESULT_TO_COLUMN_MAP[key]
-            game_sheet[f"{column}{row}"] = value
+
+        for strength, stat1 in defender["stats"].items():
+            for participation_type, stat2 in stat1.items():
+                for result, value in stat2.items():
+                    if should_skip_because_only_a_shot(result):
+                        continue
+
+                    column = RESULT_TO_COLUMN_MAP[strength][participation_type][result]
+                    game_sheet[f"{column}{row}"] = value
 
     for i, forward in enumerate(game["roster_by_positions"][Positions.FORWARD]):
         row = FIRST_FORWARD_ROW + i
         for name_col in NAME_COLUMNS:
             game_sheet[f"{name_col}{row}"] = forward["name"]
-        for key, value in forward["stats"].items():
-            column = RESULT_TO_COLUMN_MAP[key]
-            game_sheet[f"{column}{row}"] = value
+
+        for strength, stat1 in forward["stats"].items():
+            for participation_type, stat2 in stat1.items():
+                for result, value in stat2.items():
+                    if should_skip_because_only_a_shot(result):
+                        continue
+
+                    column = RESULT_TO_COLUMN_MAP[strength][participation_type][result]
+                    game_sheet[f"{column}{row}"] = value
 
 
 def write_game_sheets(data_for_games: list[GameDataStructure], workbook: Workbook):
@@ -119,11 +161,11 @@ def write_game_sheets(data_for_games: list[GameDataStructure], workbook: Workboo
         write_game_sheet(game, workbook)
 
 
-def build_plusminus_workbook(total_stats: dict[int, PlayerData], data_for_games: list[GameDataStructure]) -> BytesIO:
+def build_plusminus_workbook(total_stats: dict[Positions, list[PlayerData]], data_for_games: list[GameDataStructure]) -> BytesIO:
     """
     Builds a plus-minus workbook by loading a template Excel file, populating it with total stats, average stats, and individual game sheets, then removing the template sheet and returning the workbook as a BytesIO object.
     Args:
-        total_stats (dict[int, PlayerData]): A dictionary mapping player IDs to their total statistics data.
+        total_stats (dict[Positions, list[PlayerData]]): A dictionary mapping player IDs to their total statistics data.
         data_for_games (list[GameDataStructure]): A list of game data structures, each containing information for a specific game.
     Returns:
         BytesIO: A BytesIO object containing the generated Excel workbook.

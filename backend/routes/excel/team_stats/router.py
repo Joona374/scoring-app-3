@@ -17,9 +17,7 @@ router = APIRouter()
 @router.get("/teamstats")
 async def get_teamstats_excel(game_ids: str, db_session: Session = Depends(get_db_session), user_and_team: tuple["User", "Team"] = Depends(get_current_user_and_team)):
     _, team = user_and_team
-    games = get_selected_games(team, game_ids)
-
-    print("games: ", game_ids)
+    games = get_selected_games(game_ids, team, db_session)
 
     # 1. Get the team_stats_tags for the selected games
     all_tags = get_team_stats_tags(games, db_session)
