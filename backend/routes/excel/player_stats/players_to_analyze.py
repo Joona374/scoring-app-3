@@ -22,7 +22,7 @@ def build_players_to_analyze_dict(selected_games: list[Game]) -> defaultdict[int
     """
 
     players_to_analyze: defaultdict[int, PlayerStats] = defaultdict(
-        lambda: {"games": 0, "first_name": "", "last_name": "", "shooter_tags": [], "on_ice_tags": [], "cell_values": {}, "per_game_stats": []}
+        lambda: {"games": 0, "first_name": "", "last_name": "", "shooter_tags": [], "on_ice_tags": [], "cell_values": {}, "per_game_stats": [], "coordinates": {}}
     )
 
     for game in selected_games:

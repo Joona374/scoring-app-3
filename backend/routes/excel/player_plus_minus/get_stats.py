@@ -1,280 +1,67 @@
-from collections import defaultdict
-import copy
+from sqlalchemy.orm import Session, selectinload
 
-from sqlalchemy.orm import Session, joinedload
-
-from routes.excel.player_plus_minus.constants import EMPTY_STATS, SHOTRESULT_TO_CODE_MAP, GameDataStructure, PlayerData, build_empty_stats, strenghts_str_to_enum, ParticipationTypes
-from db.models import Player, GameInRoster, Game, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, Positions, ShotResultTypes
+from db.models import Game, GameInRoster, Player, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, Team
+from routes.excel.player_plus_minus.plus_minus_utils import ParticipationTypes, PlusMinusPlayer, PlusMinusTag, should_skip_tag, split_game_ids, strenghts_str_to_enum
 
 
-def format_player_name(player: Player, in_rosters: list[GameInRoster]) -> str:
-    """
-    Formats the player's name as just "LASTNAME" by default.
-    If 2 players share the same last name in the given roster,
-    format as "LASTNAME F." where F is the first (or multiple if needed) initial.
-    """
+def get_players_in_games(game_ids_str: str | None, team: Team, db: Session) -> dict[int, PlusMinusPlayer]:
+    """Fetch all players who participated in the specified games."""
+    if not game_ids_str:
+        return {}
 
-    players_with_same_lastname = []
-    for roster_spot in in_rosters:
-        other_player = roster_spot.player
-        if other_player.last_name == player.last_name and other_player.id != player.id:
-            players_with_same_lastname.append(other_player)
+    selected_ids = [int(game_id) for game_id in game_ids_str.split(",")]
+    players = db.query(Player).join(GameInRoster).filter(GameInRoster.game_id.in_(selected_ids), Player.team_id == team.id).distinct().all()
 
-    if not players_with_same_lastname:
-        return f"{player.last_name.upper()}"
-
-    initials = player.first_name[0]
-    for other_player in players_with_same_lastname:
-        for i in range(0, len(other_player.first_name)):
-            if initials[i] == other_player.first_name[i]:
-                initials += player.first_name[i + 1]
-            else:
-                break
-    return f"{player.last_name.upper()} {initials}."
+    plus_minus_players = {player.id: PlusMinusPlayer(player) for player in players}
+    return plus_minus_players
 
 
-def build_roster_dict(game: Game) -> dict[int, PlayerData]:
-    """
-    Builds a dictionary mapping player IDs to their data (name, position, empty stats) from the game's rosters.
-    Args:
-        game (Game): The game object containing rosters.
-    Returns:
-        dict[int, PlayerData]: Dictionary with player IDs as keys and PlayerData as values.
-    """
-
-    roster_dict: dict[int, PlayerData] = {}
-
-    for roster_spot in game.in_rosters:
-        player = roster_spot.player
-        roster_dict[player.id] = {"name": format_player_name(player, game.in_rosters), "position": player.position, "GP": 0, "stats": build_empty_stats()}
-
-    return roster_dict
-
-def build_game_data_structure(game: Game) -> GameDataStructure:
-    """
-    Builds a game data structure from a Game object.
-    Args:
-        game (Game): The game object to process.
-    Returns:
-        GameDataStructure: A dictionary containing game details and roster.
-    """
-
-    game_roster = build_roster_dict(game)
-    data_structure: GameDataStructure = {"game_id": game.id, 
-                                         "opponent": game.opponent, 
-                                         "home": game.home, 
-                                         "date": game.date, 
-                                         "roster": game_roster,
-                                         "roster_by_positions": {}}
-
-    return data_structure
-
-
-def convert_roster_to_lists_by_position(roster: dict[int, PlayerData]) -> dict[Positions, list[PlayerData]]:
-    listed_roster = {Positions.FORWARD: [], Positions.DEFENDER: []}
-
-    for player_dict in roster.values():
-        if player_dict["position"] == Positions.FORWARD:
-            listed_roster[Positions.FORWARD].append(player_dict)
-        elif player_dict["position"] == Positions.DEFENDER:
-            listed_roster[Positions.DEFENDER].append(player_dict)
-
-    for group in listed_roster.values():
-        group.sort(key=lambda player: player["name"])
-
-    return listed_roster
-
-
-def get_player_stats_tags_for_games(games: list[Game], db_session: Session):
-    game_ids = [game.id for game in games]
-
-    player_stats_tags = (
-        db_session.query(PlayerStatsTag)
-        .options(
-            joinedload(PlayerStatsTag.shot_result),
-            joinedload(PlayerStatsTag.players_on_ice).joinedload(PlayerStatsTagOnIce.player),
-            joinedload(PlayerStatsTag.players_participating).joinedload(PlayerStatsTagParticipating.player),
-        )
+def get_participating_tags(game_ids_str: str | None, db: Session) -> list[PlayerStatsTagOnIce | PlayerStatsTagParticipating]:
+    """Retrieve all on-ice and participating stats tags for the specified games."""
+    game_ids = split_game_ids(game_ids_str)
+    oi_tags = (
+        db.query(PlayerStatsTagOnIce)
+        .join(PlayerStatsTagOnIce.tag)
+        .options(selectinload(PlayerStatsTagOnIce.tag).selectinload(PlayerStatsTag.shot_result))
         .filter(PlayerStatsTag.game_id.in_(game_ids))
         .all()
     )
-
-    return player_stats_tags
-
-def get_on_ice_tags_for_games(games: list[Game], db_session: Session) -> defaultdict[int, list[PlayerStatsTagOnIce]]:
-    """
-    Retrieves on-ice tags for a list of games and groups them by player stats tag ID.
-    Args:
-        games (list[Game]): List of Game objects to query tags for.
-        db_session (Session): Database session for querying.
-    Returns:
-        defaultdict(list): Dictionary with PlayerStatsTag IDs as keys and lists of PlayerStatsTagOnIce objects as values.
-    """
-    game_ids = [game.id for game in games]
-
-    on_ice_tags = db_session.query(PlayerStatsTagOnIce).join(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()
-    on_ice_tags_by_PST_id = defaultdict(list)
-    for on_ice_tag in on_ice_tags:
-        on_ice_tags_by_PST_id[on_ice_tag.tag_id].append(on_ice_tag)
-
-    return on_ice_tags_by_PST_id
-
-def get_participating_tags_for_games(games: list[Game], db_session: Session) -> defaultdict[int, list[PlayerStatsTagParticipating]]:
-    """
-    Retrieves participation tags for a list of games and groups them by player stats tag ID.
-    Args:
-        games (list[Game]): List of Game objects to query tags for.
-        db_session (Session): Database session for querying.
-    Returns:
-        defaultdict(list): Dictionary with PlayerStatsTag IDs as keys and lists of PlayerStatsTagParticipating objects as values.
-    """
-    game_ids = [game.id for game in games]
-
-    participating_tags = db_session.query(PlayerStatsTagParticipating).join(PlayerStatsTag).filter(PlayerStatsTag.game_id.in_(game_ids)).all()
-    participating_tags_by_PST_id = defaultdict(list)
-    for partic_link in participating_tags:
-        participating_tags_by_PST_id[partic_link.tag_id].append(partic_link)
-
-    return participating_tags_by_PST_id
-
-def group_tags_by_game(player_stats_tags: list[PlayerStatsTag]) -> defaultdict[int, list[PlayerStatsTag]]:
-    """
-    Groups player stats tags by their game ID.
-    Args:
-        player_stats_tags (list[PlayerStatsTag]): List of PlayerStatsTag objects to group.
-    Returns:
-        defaultdict[int, list[PlayerStatsTag]]: Dictionary with game IDs as keys and lists of tags as values.
-    """
-    
-    tag_container = defaultdict(list)
-    for tag in player_stats_tags:
-        tag_container[tag.game_id].append(tag)
-    
-    return tag_container
-
-def add_new_players_to_total_stats(game_data: GameDataStructure, total_stats: dict):
-    # Iterate over each player in the roster
-    for id, player_data in game_data["roster"].items():
-
-        # If the player (id) is not already in the total_stats dict, copy this games data as the first game and update GP to 1
-        if id not in total_stats:
-            total_data = copy.deepcopy(player_data)
-            total_data["GP"] = 1
-            total_stats[id] = total_data
-
-        # if player (id) already in the total_stats, just update the games played
-        else:
-            total_stats[id]["GP"] += 1
-
-def should_skip_tag(tag: PlayerStatsTag) -> bool:
-    if tag.strengths not in ["ES", "PP", "PK"]:
-        return True  # Skip "Empty net tags"
-
-    if tag.shot_result.value in [ShotResultTypes.SHOT_FOR, ShotResultTypes.SHOT_AGAINST]:
-        return True  # Skip shot tags, only process chances and goals
-
-    return False
+    p_tags = (
+        db.query(PlayerStatsTagParticipating)
+        .join(PlayerStatsTagParticipating.tag)
+        .options(selectinload(PlayerStatsTagParticipating.tag).selectinload(PlayerStatsTag.shot_result))
+        .filter(PlayerStatsTag.game_id.in_(game_ids))
+        .all()
+    )
+    return oi_tags + p_tags
 
 
-def handle_on_ice_tags(
-    tag: PlayerStatsTag,
-    on_ice_tags: defaultdict[int, list[PlayerStatsTagOnIce]],
-    game_data: GameDataStructure,
-    total_stats: dict[int, PlayerData],
-):
-    ######################################################################################################################
-    # TODO: This currently uses a refactoring bridge that needs to be fixed.
-    # The value in "tag.strenghts" in the db is just a magic string, and this needs to be refactored to use a enum instead
-    # Do this safely with alembic in the dev branch first
-    strengths = strenghts_str_to_enum(tag.strengths)
-    ######################################################################################################################
-
-    result = tag.shot_result.value
-
-    tags_on_ice = on_ice_tags[tag.id]
-    OI_player_ids = [tag.player.id for tag in tags_on_ice]
-    for id in OI_player_ids:
-        game_data["roster"][id]["stats"][strengths][ParticipationTypes.ON_ICE][result] += 1
-        total_stats[id]["stats"][strengths][ParticipationTypes.ON_ICE][result] += 1
+def add_tags_to_players(players: dict[int, PlusMinusPlayer], tags: list[PlayerStatsTagOnIce | PlayerStatsTagParticipating]) -> None:
+    """Associate stats tags with their corresponding players."""
+    for tag in tags:
+        if should_skip_tag(tag.tag):  # Skip if empty net or shot tag (not needed for +/- stats)
+            continue
+        type_of_tag = ParticipationTypes.ON_ICE if type(tag) == PlayerStatsTagOnIce else ParticipationTypes.PARTICIPATING
+        pm_tag = PlusMinusTag(tag.tag.game_id, type_of_tag, strenghts_str_to_enum(tag.tag.strengths), tag.tag.shot_result.value)
+        players[tag.player_id].add_tag(tag.tag.game_id, pm_tag)
 
 
-def handle_participating_tags(
-    tag: PlayerStatsTag,
-    participating_tags: defaultdict[int, list[PlayerStatsTagParticipating]],
-    game_data: GameDataStructure,
-    total_stats: dict[int, PlayerData],
-):
-    ######################################################################################################################
-    # TODO: This currently uses a refactoring bridge that needs to be fixed.
-    # The value in "tag.strenghts" in the db is just a magic string, and this needs to be refactored to use a enum instead
-    # Do this safely with alembic in the dev branch first
-    strengths = strenghts_str_to_enum(tag.strengths)
-    ######################################################################################################################
+def get_players_with_stats(game_ids: str, team: Team, db_session: Session) -> dict[int, PlusMinusPlayer]:
+    """Load players and their associated plus/minus stats for the specified games."""
+    players: dict[int, PlusMinusPlayer] = get_players_in_games(game_ids, team, db_session)
+    tags = get_participating_tags(game_ids, db_session)
+    add_tags_to_players(players, tags)
 
-    result = tag.shot_result.value
-
-    tags_participating = participating_tags[tag.id]
-    P_player_ids = [tag.player.id for tag in tags_participating]
-    for id in P_player_ids:
-        game_data["roster"][id]["stats"][strengths][ParticipationTypes.PARTICIPATING][result] += 1
-        total_stats[id]["stats"][strengths][ParticipationTypes.PARTICIPATING][result] += 1
+    return players
 
 
-def handle_player_stats_tag(
-    tag: PlayerStatsTag,
-    on_ice_tags: defaultdict[int, list[PlayerStatsTagOnIce]],
-    participating_tags: defaultdict[int, list[PlayerStatsTagParticipating]],
-    game_data: GameDataStructure,
-    total_stats: dict[int, PlayerData],
-):
-    """
-    Handles player statistics for a given tag by updating on-ice and participating player stats in game_data and total_stats.
-    Parameters:
-    - tag (PlayerStatsTag): The player stats tag to process.
-    - on_ice_tags (defaultdict[int, list[PlayerStatsTagOnIce]]): Mapping of tag IDs to on-ice tags.
-    - participating_tags (defaultdict[int, list[PlayerStatsTagParticipating]]): Mapping of tag IDs to participating tags.
-    - game_data (GameDataStructure): The game data structure to update.
-    - total_stats (dict[int, PlayerData]): Total stats dictionary to update.
-    """
-    # Both edit game_data and total_stats in place.
-    handle_on_ice_tags(tag, on_ice_tags, game_data, total_stats)
-    handle_participating_tags(tag, participating_tags, game_data, total_stats)
+def get_games_with_rosters(game_ids_str: str, team: Team, db: Session):
+    """Fetch game objects with rosters for the specified game IDs."""
+    db_query = db.query(Game).options(selectinload(Game.in_rosters)).filter(Game.team_id == team.id)
 
+    if game_ids_str:
+        selected_ids = [int(game_id) for game_id in game_ids_str.split(",")]
+        db_query = db_query.filter(Game.id.in_(selected_ids))
 
-def get_plusminus_games_data(games: list[Game], db_session: Session) -> tuple[list[GameDataStructure], dict[Positions, list[PlayerData]]]:
-    game_stats: list[GameDataStructure] = []
-    total_stats: dict[int, PlayerData] = {}
-
-    tags_for_games = get_player_stats_tags_for_games(games, db_session)
-    player_stats_tags_by_game_id = group_tags_by_game(tags_for_games)
-    on_ice_tags_by_player_stats_tag_id = get_on_ice_tags_for_games(games, db_session)
-    participating_tags_by_player_stats_tag_id = get_participating_tags_for_games(games, db_session)
-
-    for game in games:
-        game_data = build_game_data_structure(game)
-        add_new_players_to_total_stats(game_data, total_stats) # Edits total_stats in place, by adding new players, and updating Games PLayed for before seen players
-
-        tags = player_stats_tags_by_game_id[game.id]
-        for tag in tags:
-            if should_skip_tag(tag): # Skip ff empty-net tag or just a shot (not goal or scoring chance) 
-                continue
-            handle_player_stats_tag(tag, on_ice_tags_by_player_stats_tag_id, participating_tags_by_player_stats_tag_id, game_data, total_stats)
-
-        game_data["roster_by_positions"] = convert_roster_to_lists_by_position(game_data["roster"])
-
-        game_stats.append(game_data)
-
-    game_stats.sort(key=lambda game: game["date"], reverse=True)
-    listed_total_data = convert_roster_to_lists_by_position(total_stats)
-    return game_stats, listed_total_data
-
-
-# def get_plusminus_games_data2(games: list[Game], db_session: Session) -> tuple[list[GameDataStructure], dict[int, PlayerData]]:
-#     game_stats: list[GameDataStructure] = []
-#     total_stats: dict[int, PlayerData] = {}
-
-#     for game in games:
-#         pass
-
-#     listed_total_data = convert_roster_to_lists_by_position(total_stats)
-#     return game_stats, listed_total_data
+    games = db_query.all()
+    return games
