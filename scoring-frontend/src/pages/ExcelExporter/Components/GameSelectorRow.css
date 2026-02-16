@@ -46,6 +46,10 @@
   border-bottom: none;
 }
 
+.game-row {
+  cursor: pointer;
+}
+
 .game-row td input[type="checkbox"] {
   accent-color: var(--accent-color);
   width: 1em;
