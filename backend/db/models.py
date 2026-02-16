@@ -108,7 +108,7 @@ class ShotTypeTypes(Enum):
     TAKEAWAY_SHOT = "Riistosta"
     REBOUND_SHOT = "Rebound"
     DEFLECTION_SHOT = "Ohjaus"
-
+    PENALTY_SHOT = "Rangaistuslaukaus"
 
     @classmethod
     def from_string(cls, str_value: str):
