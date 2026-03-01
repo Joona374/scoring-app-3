@@ -2,6 +2,8 @@ from enum import Enum
 from typing import TypeAlias
 from collections import defaultdict
 from db.models import ShotResultTypes, Team, Game
+from sqlalchemy.orm import Session
+
 
 class MapCategories(str, Enum):
     ICE = "ice"
@@ -28,9 +30,24 @@ MAPPED_DATA_FOR = "for"
 MAPPED_DATA_AGAINST = "against"
 
 
-def get_selected_games(team: Team, game_ids_str: str | None) -> list[Game]:
-    if not game_ids_str:
-        return team.games
+def get_selected_games(game_ids_str: str | None, team: Team, db: Session) -> list[Game]:
+    """
+    Get a list of selected games for a team based on provided game IDs.
 
-    selected_ids = [int(game_id) for game_id in game_ids_str.split(",")]
-    return [game for game in team.games if game.id in selected_ids]
+    Args:
+        game_ids_str (str | None): Comma-separated string of game IDs, or None for all games.
+        team (Team): The users team object to validate permission to access these games.
+        db: (session): db handle to query for games
+
+    Returns:
+        list[Game]: List of selected games as Game objects.
+    """
+
+    db_query = db.query(Game).filter(Game.team_id == team.id)
+
+    if game_ids_str:
+        selected_ids = [int(game_id) for game_id in game_ids_str.split(",")]
+        db_query = db_query.filter(Game.id.in_(selected_ids))
+
+    games = db_query.all()
+    return games

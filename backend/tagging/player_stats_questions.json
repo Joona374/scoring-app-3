@@ -121,6 +121,12 @@
                     "answer_text": "Ohjaus",
                     "next_question_id": 7,
                     "last_question": false
+                },
+                {
+                    "answer": "Rangaistuslaukaus",
+                    "answer_text": "Rangaistuslaukaus",
+                    "next_question_id": 7,
+                    "last_question": false
                 }
             ],
             "next_question_id": null,

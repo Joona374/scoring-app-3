@@ -1,6 +1,6 @@
 from sqlalchemy import String, ForeignKey, Enum as SQLEnum, func, DateTime, Date
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from datetime import datetime
+from datetime import datetime, date as datetime_date
 from typing import Optional, List
 from enum import Enum
 
@@ -56,7 +56,7 @@ class Positions(Enum):
     FORWARD = "Hyökkääjä"
     DEFENDER = "Puolustaja"
     GOALIE = "Maalivahti"
-   
+
 class Player(Base):
     __tablename__ = "players"
 
@@ -108,7 +108,7 @@ class ShotTypeTypes(Enum):
     TAKEAWAY_SHOT = "Riistosta"
     REBOUND_SHOT = "Rebound"
     DEFLECTION_SHOT = "Ohjaus"
-
+    PENALTY_SHOT = "Rangaistuslaukaus"
 
     @classmethod
     def from_string(cls, str_value: str):
@@ -152,7 +152,7 @@ class ShotArea(Base):
 class Game(Base):
     __tablename__ = "games"
 
-    date: Mapped[Date] = mapped_column(Date, nullable=False)
+    date: Mapped[datetime_date] = mapped_column(Date, nullable=False)
     opponent: Mapped[str] = mapped_column(String(128), nullable=False)
     home: Mapped[bool] = mapped_column(nullable=False)
     powerplays: Mapped[Optional[int]] = mapped_column(nullable=True, default=None, server_default=None)
@@ -234,7 +234,7 @@ class TeamStatsTag(Base):
         repr_string = repr_string[:-2] + ")\n"
 
         return repr_string
-    
+
 class PlayerStatsTag(Base):
     __tablename__ = "player_stats_tags"
 

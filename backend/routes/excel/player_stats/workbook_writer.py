@@ -1,10 +1,13 @@
 from collections import defaultdict
+from io import BytesIO
 import tempfile
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.drawing.image import Image as EXCLImage
+from openpyxl import load_workbook
 from PIL import Image
 
+from routes.excel.excel_utils import workbook_to_bytesio
 from routes.excel.stats_utils import STATS_CELL_VALUES, STATS_MAP_COORDINATES, STATS_PER_GAME_STATS
 from routes.excel.player_stats.player_stats_utils import PlayerStats
 from routes.excel.image_utils import get_map_images, scale_image
@@ -90,3 +93,26 @@ def write_player_sheets(workbook: Workbook, players_to_analyze: defaultdict[int,
 
     # Delete template sheet
     workbook.remove(workbook.worksheets[0])
+
+
+def build_player_stats_workbook(players_to_analyze: defaultdict[int, PlayerStats]) -> BytesIO:
+    """
+    Builds an Excel workbook with player statistics.
+    Loads a template workbook, writes individual player stats sheets,
+    and returns the workbook as a BytesIO object.
+    Args:
+        players_to_analyze (defaultdict[int, PlayerStats]): Dictionary of player stats keyed by player ID.
+    Returns:
+        BytesIO: The generated Excel workbook as a BytesIO object.
+    """
+
+    # 1. Create the excel file
+    workbook = load_workbook("excels/players_summary_template.xlsx")
+
+    # 2. Create + write a sheet with stats for each player
+    write_player_sheets(workbook, players_to_analyze)
+
+    # 3. Convert the workbook to a BytesIO object to return
+    output = workbook_to_bytesio(workbook)
+
+    return output

@@ -1,8 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from routes.dashboard import dashboard_router
+from routes.games_router import games_router
+from routes.players import players_router
+from routes.tagging import tagging_router
+from routes.teams import teams_router
+from routes.analysis import analysis_router
+from routes.auth import auth_router
+from routes.admin import admin_router
 from routes.excel import excel_router
-from routes import users, auth, teams, players, tagging, admin, games, analysis, dashboard
+from routes.users import users_router
 import logging
 # Load the environment variables from the .env file
 load_dotenv()
@@ -11,16 +19,16 @@ load_dotenv()
 app = FastAPI()
 
 # Include all the routers. REMEMBER TO ADD HERE ANY NEW ROUTERS.
-app.include_router(users.router)
-app.include_router(auth.router)
-app.include_router(teams.router)
-app.include_router(players.router)
-app.include_router(tagging.router)
-app.include_router(admin.router)
-app.include_router(games.router)
+app.include_router(users_router.router)
+app.include_router(auth_router.router)
+app.include_router(teams_router.router)
+app.include_router(players_router.router)
+app.include_router(tagging_router.router)
+app.include_router(admin_router.router)
+app.include_router(games_router.router)
 app.include_router(excel_router.router)
-app.include_router(analysis.router)
-app.include_router(dashboard.router)
+app.include_router(analysis_router.router)
+app.include_router(dashboard_router.router)
 
 
 # Middleware to handle CORS.

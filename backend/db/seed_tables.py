@@ -2,6 +2,9 @@ from db.models import ShotResult, ShotResultTypes, ShotType, ShotTypeTypes,ShotA
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def seed_shot_results(db_session: Session):
     new_results = []

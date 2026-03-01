@@ -68,6 +68,7 @@ def collect_shot_type_data(player_stats_tags: list[PlayerStatsTag]) -> dict:
         ShotTypeTypes.TAKEAWAY_SHOT: "P",
         ShotTypeTypes.REBOUND_SHOT: "R",
         ShotTypeTypes.DEFLECTION_SHOT: "T",
+        ShotTypeTypes.PENALTY_SHOT: "V",
     }
 
     BASE_ROW = 12

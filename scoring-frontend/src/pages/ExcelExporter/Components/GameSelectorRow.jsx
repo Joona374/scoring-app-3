@@ -17,7 +17,7 @@ export default function GameSelectorRow({
   };
 
   return (
-    <tr className="game-row">
+    <tr className="game-row" onClick={() => changeCheckbox(game.id)}>
       <td>
         <input
           type="checkbox"

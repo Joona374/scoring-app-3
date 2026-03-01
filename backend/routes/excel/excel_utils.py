@@ -3,6 +3,13 @@ from openpyxl import Workbook
 
 from db.models import PlayerStatsTag, ShotResultTypes
 
+
+def sanitize_opponent_name(name: str) -> str:
+    if "/" in name:
+        name = name.replace("/", "&")
+    return name
+
+
 def workbook_to_bytesio(workbook: Workbook) -> BytesIO:
     """
     Converts a Workbook object to a BytesIO stream.

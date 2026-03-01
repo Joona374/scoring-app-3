@@ -1,6 +1,7 @@
 # utils.py
 from passlib.context import CryptContext
 from jose import jwt
+from jose.exceptions import JWTError
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import os
@@ -26,15 +27,9 @@ from db.models import (
     User,
 )
 
-# =========================
-# Analysis / enum utilities
-# =========================
-
-def to_label(v: Optional[Union[Enum, str]]) -> Optional[str]:
-    """Return the display string for enums; pass through strings/None."""
-    if v is None:
-        return None
-    return v.value if isinstance(v, Enum) else v
+# ========================================================= #
+# Analysis / enum utilities                                 #
+# ========================================================= #
 
 # Build classification sets dynamically so it works
 # even before you add Laukaus ± to ShotResultTypes.
@@ -43,7 +38,7 @@ AGAINST_SET = {ShotResultTypes.GOAL_AGAINST, ShotResultTypes.CHANCE_AGAINST}
 GOAL_SET = {ShotResultTypes.GOAL_FOR, ShotResultTypes.GOAL_AGAINST}
 
 # Optional enums (will exist once you extend ShotResultTypes)
-SHOT_FOR = getattr(ShotResultTypes, "SHOT_FOR", None)          # "Laukaus +"
+SHOT_FOR = getattr(ShotResultTypes, "SHOT_FOR", None)  # "Laukaus +"
 SHOT_AGAINST = getattr(ShotResultTypes, "SHOT_AGAINST", None)  # "Laukaus -"
 
 if SHOT_FOR:
@@ -52,12 +47,22 @@ if SHOT_AGAINST:
     AGAINST_SET.add(SHOT_AGAINST)
 # GOAL_SET intentionally remains goals only
 
+
+def to_label(v: Optional[Union[Enum, str]]) -> Optional[str]:
+    """Return the display string for enums; pass through strings/None."""
+    if v is None:
+        return None
+    return v.value if isinstance(v, Enum) else v
+
+
 def side_of_enum(res: ShotResultTypes) -> str:
     """'FOR' if result is for your team, else 'AGAINST'."""
     return "FOR" if res in FOR_SET else "AGAINST"
 
+
 def is_goal_enum(res: ShotResultTypes) -> bool:
     return res in GOAL_SET
+
 
 def allow_result_enum(
     res: ShotResultTypes,
@@ -84,6 +89,7 @@ def allow_result_enum(
         return show_sa
     return False
 
+
 def is_chance_enum(res: ShotResultTypes) -> bool:
     return res in {ShotResultTypes.CHANCE_FOR, ShotResultTypes.CHANCE_AGAINST}
 
@@ -106,9 +112,9 @@ def parse_shot_type_values(values: Optional[Iterable[str]]) -> List[ShotTypeType
     return out
 
 
-# =========================
-# Auth / infra utilities
-# =========================
+# =========================================================== #
+# Auth / infra utilities                                      #
+# =========================================================== #
 
 load_dotenv()
 
@@ -123,6 +129,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -143,11 +150,17 @@ def create_jwt(data: dict, expires_delta: int | None = None):
 
 
 def decode_jwt(token: str) -> dict:
+    if SECRET_KEY == None:
+        raise ValueError("SECRET_KEY missing in decode_jwt")
+    if ALGORITHM == None:
+        raise ValueError("ALGORITHM missing in decode_jwt")
+
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except jwt.JWTError as e:
+    except JWTError as e:
         print("Error decoding JWT")
         raise e
+
 
 def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
     try:
@@ -159,7 +172,7 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
                 detail="Could not validate credentials",
             )
         return user_id
-    except jwt.JWTError:
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -199,6 +212,8 @@ def generate_random_code() -> str:
 
 
 def add_creator_code(admin: bool = False, identifier: str | None = None) -> RegCode:
+    if DATABASE_URL == None:
+        raise ValueError("DATABASE_URL not set in add_creator_code")
     engine = create_engine(DATABASE_URL)
     Session = sessionmaker(bind=engine)
     session = Session()
