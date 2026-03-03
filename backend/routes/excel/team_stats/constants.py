@@ -10,9 +10,9 @@ CHANCE_ROW_MAPPING = {
     "pp_shot_deflection_low_type1": {"Päädystä": 40, "Siiveltä": 41, "Keskeltä": 42, "Viivasta": 43},
     "pp_blueline_shot_type": {"Suora": 45, "Ohjuri": 45, "Rebound": 45},
     "pp_pressure_brokenplay_type": {"Paine": 47, "Riisto": 47, "Brokenplay": 47},
-    "pp_other_type": {"Kuljetus": 49, "Punnerrus": 49, "Rebound": 49},
+    "pp_other_type": {"Kuljetus YV": 49, "Punnerrus": 49, "Rebound": 49},
     "pp_5vs3_type": {"Suora": 51, "Ohjuri": 51, "Rebound": 51},
-    "pp_av_yv_type": {"Läpiajo YV": 53, "YV": 53, "TV": 53},
+    "pp_av_yv_type": {"Läpiajo": 53, "YV": 53, "TV": 53},
     "v3vs3_type": {"Aloitus": 58, "Hallinta": 58, "Riisto / Menetys": 58},
     "ps_type": {"Laukaus": 60, "Harhautus": 60, "Muu": 60},
 }
