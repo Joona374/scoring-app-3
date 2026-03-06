@@ -10,7 +10,8 @@ from db.models import (
 from db.pydantic_schemas import (
     PlayerStatsResponse, SeasonSummaryKPIs, ZoneData, MarkerData, 
     PlayerTagData, PlayerGameMetadata, ShotTypeStats, GameTrendPoint,
-    SpiderChartData, SpiderChartKPI, SynergyData, SynergyDataPoint
+    SpiderChartData, SpiderChartKPI, SynergyData, SynergyDataPoint,
+    ChemistrySectionData, ChemistryTeammate
 )
 from utils import get_current_user_and_team
 
@@ -241,62 +242,107 @@ def calculate_synergy_data(
 ) -> SynergyData:
     game_ids = [g.game_id for g in all_games]
     shared_rosters = db.query(GameInRoster).filter(GameInRoster.game_id.in_(game_ids)).all()
-    
     teammate_shared_games = {}
     for entry in shared_rosters:
         if entry.player_id == player_id: continue
         if entry.player_id not in teammate_shared_games: teammate_shared_games[entry.player_id] = []
         teammate_shared_games[entry.player_id].append(entry.game_id)
-        
     teammate_impact = {t_id: {"for": 0, "against": 0} for t_id in teammate_shared_games}
     hero_on_ice_tags = db.query(PlayerStatsTag.id, PlayerStatsTag.shot_result_id, PlayerStatsTag.game_id).join(PlayerStatsTagOnIce).filter(
-        PlayerStatsTagOnIce.player_id == player_id,
-        PlayerStatsTag.game_id.in_(game_ids)
+        PlayerStatsTagOnIce.player_id == player_id, PlayerStatsTag.game_id.in_(game_ids)
     ).all()
-    
     hero_on_ice_tag_ids = [t.id for t in hero_on_ice_tags]
     if not hero_on_ice_tag_ids: return SynergyData(points=[])
-        
-    teammates_on_ice = db.query(PlayerStatsTagOnIce.tag_id, PlayerStatsTagOnIce.player_id).filter(
-        PlayerStatsTagOnIce.tag_id.in_(hero_on_ice_tag_ids)
-    ).all()
-    
+    teammates_on_ice = db.query(PlayerStatsTagOnIce.tag_id, PlayerStatsTagOnIce.player_id).filter(PlayerStatsTagOnIce.tag_id.in_(hero_on_ice_tag_ids)).all()
     on_ice_map = {}
     for tag_id, t_id in teammates_on_ice:
         if tag_id not in on_ice_map: on_ice_map[tag_id] = set()
         on_ice_map[tag_id].add(t_id)
-        
     res_map = {r.id: r.value for r in db.query(ShotResult).all()}
     for tag_id, res_id, game_id in hero_on_ice_tags:
         res = res_map[res_id]
         is_for = res in [ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR]
         is_against = res in [ShotResultTypes.GOAL_AGAINST, ShotResultTypes.CHANCE_AGAINST]
         if not is_for and not is_against: continue
-        
         teammates = on_ice_map.get(tag_id, set())
         for t_id in teammates:
             if t_id == player_id: continue
             if is_for: teammate_impact[t_id]["for"] += 1
             else: teammate_impact[t_id]["against"] += 1
-            
     points = []
     players = db.query(Player).filter(Player.id.in_(list(teammate_shared_games.keys()))).all()
     p_map = {p.id: p for p in players}
-    
     for t_id, games in teammate_shared_games.items():
         if t_id not in p_map or p_map[t_id].position == Positions.GOALIE: continue
-        num_shared = len(games)
-        impact = teammate_impact[t_id]
+        num_shared = len(games); impact = teammate_impact[t_id]
         net_mp = (impact["for"] - impact["against"]) / num_shared
-        points.append(SynergyDataPoint(
-            teammate_id=t_id,
-            teammate_name=f"{p_map[t_id].first_name} {p_map[t_id].last_name}",
-            jersey_number=p_map[t_id].jersey_number,
-            net_mp_per_game=round(net_mp, 2),
-            shared_games=num_shared
-        ))
+        points.append(SynergyDataPoint(teammate_id=t_id, teammate_name=f"{p_map[t_id].first_name} {p_map[t_id].last_name}", jersey_number=p_map[t_id].jersey_number, net_mp_per_game=round(net_mp, 2), shared_games=num_shared))
     points.sort(key=lambda x: x.net_mp_per_game, reverse=True)
     return SynergyData(points=points)
+
+def calculate_chemistry_data(
+    db: Session, team_id: int, player_id: int, all_games: List[PlayerGameMetadata]
+) -> ChemistrySectionData:
+    game_ids = [g.game_id for g in all_games]
+    # Shared roster games count
+    rosters = db.query(GameInRoster).filter(GameInRoster.game_id.in_(game_ids)).all()
+    shared_games_map = {} # teammate_id -> count
+    for r in rosters:
+        if r.player_id == player_id: continue
+        shared_games_map[r.player_id] = shared_games_map.get(r.player_id, 0) + 1
+        
+    # Shared participations: Hero and teammate both in `players_participating` for same tag
+    # Get all tags hero participated in
+    hero_p_tags = db.query(PlayerStatsTag.id, PlayerStatsTag.shot_result_id).join(PlayerStatsTagParticipating).filter(
+        PlayerStatsTagParticipating.player_id == player_id,
+        PlayerStatsTag.game_id.in_(game_ids)
+    ).all()
+    hero_p_tag_ids = [t.id for t in hero_p_tags]
+    if not hero_p_tag_ids: return ChemistrySectionData(teammates=[], team_avg_volume=0, team_avg_efficiency=0)
+    
+    # Teammate participations in those tags
+    teammate_p = db.query(PlayerStatsTagParticipating.tag_id, PlayerStatsTagParticipating.player_id).filter(
+        PlayerStatsTagParticipating.tag_id.in_(hero_p_tag_ids)
+    ).all()
+    
+    # teammate_id -> {participations: X, goals: Y}
+    stats_map = {} 
+    # Quick lookup for goal tags
+    res_map = {r.id: r.value for r in db.query(ShotResult).all()}
+    goal_tag_ids = {t.id for t in hero_p_tags if res_map[t.shot_result_id] == ShotResultTypes.GOAL_FOR}
+    
+    for tag_id, t_id in teammate_p:
+        if t_id == player_id: continue
+        if t_id not in stats_map: stats_map[t_id] = {"p": 0, "g": 0}
+        stats_map[t_id]["p"] += 1
+        if tag_id in goal_tag_ids: stats_map[t_id]["g"] += 1
+        
+    # Compile teammates list
+    teammates = []
+    players = db.query(Player).filter(Player.id.in_(list(stats_map.keys()))).all()
+    p_map = {p.id: p for p in players}
+    
+    for t_id, s in stats_map.items():
+        if t_id not in p_map or p_map[t_id].position == Positions.GOALIE: continue
+        shared_games = shared_games_map.get(t_id, 1)
+        p_per_game = s["p"] / shared_games
+        eff = (s["g"] / s["p"] * 100) if s["p"] > 0 else 0
+        teammates.append(ChemistryTeammate(
+            teammate_id=t_id, name=f"{p_map[t_id].first_name} {p_map[t_id].last_name}",
+            jersey_number=p_map[t_id].jersey_number, shared_games=shared_games,
+            shared_participations=s["p"], shared_goals=s["g"],
+            participations_per_game=round(p_per_game, 2), efficiency=round(eff, 1)
+        ))
+        
+    # Team averages for quadrants
+    avg_volume = sum(t.participations_per_game for t in teammates) / len(teammates) if teammates else 0
+    avg_eff = sum(t.efficiency for t in teammates) / len(teammates) if teammates else 0
+    
+    return ChemistrySectionData(
+        teammates=teammates, 
+        team_avg_volume=round(avg_volume, 2), 
+        team_avg_efficiency=round(avg_eff, 1)
+    )
 
 def calculate_team_averages(db: Session, team_id: int, player_position: Positions) -> Tuple[float, float]:
     peers = db.query(Player).filter(Player.team_id == team_id, Player.position == player_position).all()
@@ -346,10 +392,12 @@ def get_player_stats(player_id: int, db: Session = Depends(get_db_session), user
     team_avg_goals, team_avg_chances = calculate_team_averages(db, team.id, player.position)
     spider_data = calculate_spider_data(db, team.id, player.id, shooter_tags, on_ice_tags, participating_tags, all_games)
     synergy_data = calculate_synergy_data(db, team.id, player.id, all_games)
+    chemistry_data = calculate_chemistry_data(db, team.id, player.id, all_games)
     return PlayerStatsResponse(
         player_id=player.id, first_name=player.first_name, last_name=player.last_name, jersey_number=player.jersey_number,
         position=player.position.name, team_name=player.team.name if player.team else "No Team",
         summary=summary, ice_zones=ice_zones, net_zones=net_zones, ice_markers=ice_markers, net_markers=net_markers,
         all_tags=all_tags, all_games=all_games, shot_type_stats=shot_type_stats, trend_data=trend_data,
-        team_avg_goals=team_avg_goals, team_avg_chances=team_avg_chances, spider_data=spider_data, synergy_data=synergy_data
+        team_avg_goals=team_avg_goals, team_avg_chances=team_avg_chances, spider_data=spider_data, 
+        synergy_data=synergy_data, chemistry_data=chemistry_data
     )

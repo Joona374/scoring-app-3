@@ -272,6 +272,21 @@ class SynergyDataPoint(BaseModel):
 class SynergyData(BaseModel):
     points: List[SynergyDataPoint]
 
+class ChemistryTeammate(BaseModel):
+    teammate_id: int
+    name: str
+    jersey_number: int
+    shared_games: int
+    shared_participations: int
+    shared_goals: int
+    participations_per_game: float
+    efficiency: float
+
+class ChemistrySectionData(BaseModel):
+    teammates: List[ChemistryTeammate]
+    team_avg_volume: float
+    team_avg_efficiency: float
+
 class PlayerStatsResponse(BaseModel):
     player_id: int
     first_name: str
@@ -292,6 +307,7 @@ class PlayerStatsResponse(BaseModel):
     team_avg_chances: float
     spider_data: SpiderChartData
     synergy_data: SynergyData
+    chemistry_data: ChemistrySectionData
     # Future components will add more fields here
 
 class SeasonSummaryKPIs(BaseModel):

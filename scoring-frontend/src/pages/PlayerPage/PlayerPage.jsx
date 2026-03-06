@@ -12,6 +12,7 @@ import ShotTypeTable from "./components/ShotTypeTable";
 import RollingAverageChart from "./components/RollingAverageChart";
 import PlayerSpiderChart from "./components/PlayerSpiderChart";
 import OnIceSynergyChart from "./components/OnIceSynergyChart";
+import ChemistrySection from "./components/ChemistrySection";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -357,6 +358,11 @@ export default function PlayerPage() {
              synergyData={playerData.synergy_data}
            />
         </div>
+        
+        {/* Full width Bottom Section */}
+        <ChemistrySection 
+          chemistryData={playerData.chemistry_data}
+        />
       </div>
     </ScrollContainer>
   );
