@@ -13,6 +13,7 @@ import RollingAverageChart from "./components/RollingAverageChart";
 import PlayerSpiderChart from "./components/PlayerSpiderChart";
 import OnIceSynergyChart from "./components/OnIceSynergyChart";
 import ChemistrySection from "./components/ChemistrySection";
+import GameLogTable from "./components/GameLogTable";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -193,6 +194,10 @@ export default function PlayerPage() {
     const trend_data = playerData.trend_data.filter(tp => activeGameIds.has(tp.game_id))
                         .sort((a, b) => a.date.localeCompare(b.date));
 
+    // 6. Filter Game Log
+    const game_log = playerData.game_log.filter(gl => activeGameIds.has(gl.game_id))
+                        .sort((a, b) => b.date.localeCompare(a.date));
+
     return { 
       summary, 
       ice_zones,
@@ -201,6 +206,7 @@ export default function PlayerPage() {
       net_markers,
       shot_type_stats,
       trend_data, 
+      game_log,
       availableGamesCount: games.length
     };
   }, [playerData, filters, mapMode]);
@@ -359,9 +365,13 @@ export default function PlayerPage() {
            />
         </div>
         
-        {/* Full width Bottom Section */}
         <ChemistrySection 
           chemistryData={playerData.chemistry_data}
+        />
+
+        <GameLogTable 
+          gameLog={filteredData.game_log}
+          summary={playerData.summary}
         />
       </div>
     </ScrollContainer>

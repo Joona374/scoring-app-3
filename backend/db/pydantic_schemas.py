@@ -276,7 +276,7 @@ class ChemistryTeammate(BaseModel):
     teammate_id: int
     name: str
     jersey_number: int
-    position: str # FORWARD, DEFENDER
+    position: str
     shared_games: int
     shared_participations: int
     shared_goals: int
@@ -287,6 +287,27 @@ class ChemistrySectionData(BaseModel):
     teammates: List[ChemistryTeammate]
     team_avg_volume: float
     team_avg_efficiency: float
+
+class GameLogEntry(BaseModel):
+    game_id: int
+    date: str
+    opponent: str
+    home: bool
+    goals: int
+    chances: int
+    efficiency: float
+    part_m_plus: int
+    part_m_minus: int
+    part_m_diff: int
+    part_mp_plus: int
+    part_mp_minus: int
+    part_mp_diff: int
+    onice_m_plus: int
+    onice_m_minus: int
+    onice_m_diff: int
+    onice_mp_plus: int
+    onice_mp_minus: int
+    onice_mp_diff: int
 
 class PlayerStatsResponse(BaseModel):
     player_id: int
@@ -309,6 +330,7 @@ class PlayerStatsResponse(BaseModel):
     spider_data: SpiderChartData
     synergy_data: SynergyData
     chemistry_data: ChemistrySectionData
+    game_log: List[GameLogEntry]
     # Future components will add more fields here
 
 class SeasonSummaryKPIs(BaseModel):
