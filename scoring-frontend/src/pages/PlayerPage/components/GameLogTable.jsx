@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import "./GameLogTable.css";
+import InfoTooltip from "./InfoTooltip";
 
 export default function GameLogTable({ gameLog, summary }) {
   const [sortConfig, setSortConfig] = useState({ key: "date", direction: "desc" });
@@ -30,7 +31,6 @@ export default function GameLogTable({ gameLog, summary }) {
     return sortConfig.direction === "desc" ? " ▼" : " ▲";
   };
 
-  // Performance indicators (compared to season average)
   const getPerfClass = (val, avg) => {
     if (val > avg) return "perf-above";
     if (val < avg) return "perf-below";
@@ -39,7 +39,11 @@ export default function GameLogTable({ gameLog, summary }) {
 
   return (
     <section className="game-log-section">
-      <h3 className="section-title-small">Otteluhistoria</h3>
+      <div className="section-header-row info-row">
+        <h3 className="section-title-small">Otteluhistoria</h3>
+        <InfoTooltip text="Yksityiskohtainen historia pelaajan otteluista. Värikoodaus (vihreä/punainen) kertoo onko suoritus ollut pelaajan kauden keskiarvoa parempi vai huonompi." />
+      </div>
+      
       <div className="table-container">
         <table className="game-log-table">
           <thead>

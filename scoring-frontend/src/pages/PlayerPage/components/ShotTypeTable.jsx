@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import "./ShotTypeTable.css";
+import InfoTooltip from "./InfoTooltip";
 
 export default function ShotTypeTable({ shotTypeStats, totalGoals, totalChances }) {
   const [sortConfig, setSortConfig] = useState({ key: "goals", direction: "desc" });
@@ -50,7 +51,11 @@ export default function ShotTypeTable({ shotTypeStats, totalGoals, totalChances 
 
   return (
     <section className="shot-type-section">
-      <h3 className="section-title-small">Laukaustyypit</h3>
+      <div className="section-header-row info-row">
+        <h3 className="section-title-small">Laukaustyypit</h3>
+        <InfoTooltip text="Tilastot eri laukaustyypeistä. % M kertoo osuuden kaikista tehdyistä maaleista ja % P osuuden kaikista maalipaikoista." />
+      </div>
+      
       <div className="table-container-small">
         <table className="shot-type-table">
           <thead>

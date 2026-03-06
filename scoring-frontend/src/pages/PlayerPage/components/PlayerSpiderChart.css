@@ -11,6 +11,29 @@
   margin-top: 1rem;
 }
 
+.spider-labels-guide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.label-guide-item {
+  display: flex;
+  align-items: center;
+}
+
+.label-text {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted-text);
+  text-transform: uppercase;
+}
+
 .spider-tooltip {
   background-color: #1e1d22;
   border: 1px solid rgba(255, 255, 255, 0.1);

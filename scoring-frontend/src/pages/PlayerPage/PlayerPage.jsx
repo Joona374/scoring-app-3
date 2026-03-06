@@ -14,6 +14,7 @@ import PlayerSpiderChart from "./components/PlayerSpiderChart";
 import OnIceSynergyChart from "./components/OnIceSynergyChart";
 import ChemistrySection from "./components/ChemistrySection";
 import GameLogTable from "./components/GameLogTable";
+import InfoTooltip from "./components/InfoTooltip";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -147,12 +148,13 @@ export default function PlayerPage() {
       }
     });
 
+    const denom = Math.max(summary.games_played, 1);
     summary.efficiency = summary.chances > 0 ? Math.round((summary.goals / summary.chances) * 1000) / 10 : 0;
     summary.chances_per_game = summary.games_played > 0 ? Math.round((summary.chances / summary.games_played) * 10) / 10 : 0;
-    summary.participation_m_diff = p_m_plus - p_m_minus;
-    summary.participation_mp_diff = p_mp_plus - p_mp_minus;
-    summary.on_ice_m_diff = o_m_plus - o_m_minus;
-    summary.on_ice_mp_diff = o_mp_plus - o_mp_minus;
+    summary.participation_m_diff = Math.round((p_m_plus - p_m_minus) / denom * 100) / 100;
+    summary.participation_mp_diff = Math.round((p_mp_plus - p_mp_minus) / denom * 100) / 100;
+    summary.on_ice_m_diff = Math.round((o_m_plus - o_m_minus) / denom * 100) / 100;
+    summary.on_ice_mp_diff = Math.round((o_mp_plus - o_mp_minus) / denom * 100) / 100;
 
     const shot_type_stats = Object.values(shotTypesMap).map(s => ({
       ...s,
@@ -194,7 +196,6 @@ export default function PlayerPage() {
     const trend_data = playerData.trend_data.filter(tp => activeGameIds.has(tp.game_id))
                         .sort((a, b) => a.date.localeCompare(b.date));
 
-    // 6. Filter Game Log
     const game_log = playerData.game_log.filter(gl => activeGameIds.has(gl.game_id))
                         .sort((a, b) => b.date.localeCompare(a.date));
 
@@ -253,7 +254,10 @@ export default function PlayerPage() {
       <section className="player-visualizations-section">
         <div className="player-visualizations-grid">
           <div className="player-map-wrapper ice-map-large">
-            <h3 className="player-map-title">Laukaisupaikat</h3>
+            <div className="map-header-with-info">
+              <h3 className="player-map-title">Laukaisupaikat</h3>
+              <InfoTooltip text="Pelaajan omien laukausten sijainnit kaukalossa. Paikoittain näyttää yksittäiset vedot, alueittain näyttää tiheyden ja tehokkuuden vyöhykkeittäin." />
+            </div>
             <PlayerIceMap 
               zoneStats={filteredData.ice_zones} 
               markers={filteredData.ice_markers}
@@ -330,7 +334,10 @@ export default function PlayerPage() {
           </div>
 
           <div className="player-map-wrapper net-map-large">
-            <h3 className="player-map-title">Maalipaikat</h3>
+            <div className="map-header-with-info">
+              <h3 className="player-map-title">Maalipaikat</h3>
+              <InfoTooltip text="Laukaukset maalia kohti. Näyttää mihin kohti maalia pelaajan vedot suuntautuvat ja mistä maalit on tehty." />
+            </div>
             <PlayerNetMap 
               zoneStats={filteredData.net_zones} 
               markers={filteredData.net_markers}

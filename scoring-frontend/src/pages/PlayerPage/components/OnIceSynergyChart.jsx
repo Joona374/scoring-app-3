@@ -11,6 +11,7 @@ import {
   ReferenceLine
 } from "recharts";
 import "./OnIceSynergyChart.css";
+import InfoTooltip from "./InfoTooltip";
 
 export default function OnIceSynergyChart({ synergyData }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -21,14 +22,10 @@ export default function OnIceSynergyChart({ synergyData }) {
     sharedGames: p.shared_games
   }));
 
-  // Logic for collapsed view (Top 5 and Bottom 5)
   const getDisplayData = () => {
     if (isExpanded || fullData.length <= 10) return fullData;
-    
     const top5 = fullData.slice(0, 5);
     const bottom5 = fullData.slice(-5);
-    
-    // Add a placeholder for the middle
     return [...top5, { name: "...", value: 0, isPlaceholder: true }, ...bottom5];
   };
 
@@ -38,7 +35,6 @@ export default function OnIceSynergyChart({ synergyData }) {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       if (data.isPlaceholder) return null;
-      
       const val = payload[0].value;
       return (
         <div className="synergy-tooltip">
@@ -55,13 +51,13 @@ export default function OnIceSynergyChart({ synergyData }) {
 
   return (
     <section className="synergy-chart-section">
-      <div className="section-header-row">
-        <h3 className="section-title-small">Kentällä yhdessä (On-Ice +/-)</h3>
+      <div className="section-header-row info-row">
+        <div className="header-with-info">
+          <h3 className="section-title-small">Kentällä yhdessä (On-Ice +/-)</h3>
+          <InfoTooltip text="Pelaajan vaikutus maalipaikkojen erotukseen (omat MP - vastustajan MP) pelatessa yhdessä kunkin joukkuekaverin kanssa." />
+        </div>
         {fullData.length > 10 && (
-          <button 
-            className="expand-btn" 
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
+          <button className="expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
             {isExpanded ? "Näytä vähemmän" : "Näytä kaikki"}
           </button>
         )}
@@ -69,45 +65,22 @@ export default function OnIceSynergyChart({ synergyData }) {
       
       <div className={`synergy-container ${isExpanded ? "expanded" : "collapsed"}`}>
         <ResponsiveContainer width="100%" height={displayData.length * 35}>
-          <BarChart
-            data={displayData}
-            layout="vertical"
-            margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
-            style={{ outline: 'none' }}
-          >
+          <BarChart data={displayData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }} style={{ outline: 'none' }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
             <XAxis type="number" stroke="var(--muted-text)" fontSize={10} tickLine={false} />
             <YAxis 
-              dataKey="name" 
-              type="category" 
-              stroke="var(--muted-text)" 
-              fontSize={11} 
-              tickLine={false}
-              width={130}
+              dataKey="name" type="category" stroke="var(--muted-text)" fontSize={11} tickLine={false} width={130}
               tick={(props) => {
                 const { x, y, payload } = props;
-                if (payload.value === "...") {
-                  return (
-                    <text x={x} y={y} dy={4} fill="var(--muted-text)" fontSize={16} fontWeight="bold" textAnchor="end">
-                      ...
-                    </text>
-                  );
-                }
-                return (
-                  <text x={x} y={y} dy={4} fill="var(--muted-text)" fontSize={11} textAnchor="end">
-                    {payload.value}
-                  </text>
-                );
+                if (payload.value === "...") return <text x={x} y={y} dy={4} fill="var(--muted-text)" fontSize={16} fontWeight="bold" textAnchor="end">...</text>;
+                return <text x={x} y={y} dy={4} fill="var(--muted-text)" fontSize={11} textAnchor="end">{payload.value}</text>;
               }}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.05)" }} />
             <ReferenceLine x={0} stroke="rgba(255,255,255,0.2)" />
             <Bar dataKey="value" radius={[0, 4, 4, 0]} animationDuration={500}>
               {displayData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={entry.isPlaceholder ? "transparent" : (entry.value >= 0 ? "#22c55e" : "#ef4444")} 
-                />
+                <Cell key={`cell-${index}`} fill={entry.isPlaceholder ? "transparent" : (entry.value >= 0 ? "#22c55e" : "#ef4444")} />
               ))}
             </Bar>
           </BarChart>

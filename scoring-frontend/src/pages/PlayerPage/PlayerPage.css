@@ -28,6 +28,12 @@
   gap: 1rem;
 }
 
+.map-header-with-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Larger maps */
 .ice-map-large .zone-map-container {
   max-width: 550px;

@@ -3,11 +3,12 @@
   padding: 1.5rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: visible; /* Ensure tooltips are not cut */
 }
 
 .section-title-small {
   font-size: 0.85rem;
-  color: var(--accent-color);
+  color: var(--muted-text);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 1rem;
@@ -15,7 +16,7 @@
 }
 
 .table-container-small {
-  overflow-x: auto;
+  overflow: visible; /* Changed from overflow-x: auto to prevent clipping */
 }
 
 .shot-type-table {

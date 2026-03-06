@@ -1,4 +1,5 @@
 import "./PlayerKPIs.css";
+import InfoTooltip from "./InfoTooltip";
 
 export default function PlayerKPIs({ summary }) {
   const kpis = [
@@ -10,10 +11,10 @@ export default function PlayerKPIs({ summary }) {
   ];
 
   const plusMinus = [
-    { label: "M +/- (osall.)", value: summary.participation_m_diff },
-    { label: "MP +/- (osall.)", value: summary.participation_mp_diff },
-    { label: "M +/- (jää)", value: summary.on_ice_m_diff },
-    { label: "MP +/- (jää)", value: summary.on_ice_mp_diff },
+    { label: "M +/- (osall.) / peli", value: summary.participation_m_diff },
+    { label: "MP +/- (osall.) / peli", value: summary.participation_mp_diff },
+    { label: "M +/- (jää) / peli", value: summary.on_ice_m_diff },
+    { label: "MP +/- (jää) / peli", value: summary.on_ice_mp_diff },
   ];
 
   const getPlusMinusClass = (val) => {
@@ -29,6 +30,11 @@ export default function PlayerKPIs({ summary }) {
 
   return (
     <section className="player-kpis-section">
+      <div className="section-header-row info-row">
+        <h3 className="section-title-small">Kauden yhteenveto</h3>
+        <InfoTooltip text="Keskeiset suoritusarvot valitulla aikavälillä. +/- tilastot on suhteutettu pelattujen otteluiden määrään (per peli)." />
+      </div>
+      
       <div className="kpi-row main-stats">
         {kpis.map((kpi, i) => (
           <div key={i} className="player-kpi-card">

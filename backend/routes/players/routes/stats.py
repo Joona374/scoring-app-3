@@ -54,16 +54,22 @@ def calculate_summary_kpis(games_played: int, shooter_tags: List[PlayerStatsTag]
         elif result == ShotResultTypes.GOAL_AGAINST: summary.participation_m_minus += 1; summary.participation_mp_minus += 1
         elif result == ShotResultTypes.CHANCE_FOR: summary.participation_mp_plus += 1
         elif result == ShotResultTypes.CHANCE_AGAINST: summary.participation_mp_minus += 1
-    summary.participation_m_diff = summary.participation_m_plus - summary.participation_m_minus
-    summary.participation_mp_diff = summary.participation_mp_plus - summary.participation_mp_minus
+    
+    # +/- Per Game
+    denom = max(games_played, 1)
+    summary.participation_m_diff = round((summary.participation_m_plus - summary.participation_m_minus) / denom, 2)
+    summary.participation_mp_diff = round((summary.participation_mp_plus - summary.participation_mp_minus) / denom, 2)
+    
     for tag in on_ice_tags:
         result = tag.shot_result.value
         if result == ShotResultTypes.GOAL_FOR: summary.on_ice_m_plus += 1; summary.on_ice_mp_plus += 1
         elif result == ShotResultTypes.GOAL_AGAINST: summary.on_ice_m_minus += 1; summary.on_ice_mp_minus += 1
         elif result == ShotResultTypes.CHANCE_FOR: summary.on_ice_mp_plus += 1
         elif result == ShotResultTypes.CHANCE_AGAINST: summary.on_ice_mp_minus += 1
-    summary.on_ice_m_diff = summary.on_ice_m_plus - summary.on_ice_m_minus
-    summary.on_ice_mp_diff = summary.on_ice_mp_plus - summary.on_ice_mp_minus
+    
+    summary.on_ice_m_diff = round((summary.on_ice_m_plus - summary.on_ice_m_minus) / denom, 2)
+    summary.on_ice_mp_diff = round((summary.on_ice_mp_plus - summary.on_ice_mp_minus) / denom, 2)
+    
     return summary
 
 def get_zone_names(tag: PlayerStatsTag) -> Tuple[str, str]:
@@ -203,10 +209,7 @@ def calculate_chemistry_data(db: Session, team_id: int, player_id: int, all_game
     return ChemistrySectionData(teammates=teammates, team_avg_volume=round(avg_volume, 2), team_avg_efficiency=round(avg_eff, 1))
 
 def calculate_game_log(shooter_tags: List[PlayerStatsTag], on_ice_tags: List[PlayerStatsTag], participating_tags: List[PlayerStatsTag], all_games: List[PlayerGameMetadata]) -> List[GameLogEntry]:
-    game_stats = {g.game_id: {
-        "goals": 0, "chances": 0, "part_m_plus": 0, "part_m_minus": 0, "part_mp_plus": 0, "part_mp_minus": 0,
-        "onice_m_plus": 0, "onice_m_minus": 0, "onice_mp_plus": 0, "onice_mp_minus": 0
-    } for g in all_games}
+    game_stats = {g.game_id: { "goals": 0, "chances": 0, "part_m_plus": 0, "part_m_minus": 0, "part_mp_plus": 0, "part_mp_minus": 0, "onice_m_plus": 0, "onice_m_minus": 0, "onice_mp_plus": 0, "onice_mp_minus": 0 } for g in all_games}
     for t in shooter_tags:
         if t.game_id in game_stats:
             if t.shot_result.value == ShotResultTypes.GOAL_FOR: game_stats[t.game_id]["goals"] += 1; game_stats[t.game_id]["chances"] += 1
@@ -227,15 +230,8 @@ def calculate_game_log(shooter_tags: List[PlayerStatsTag], on_ice_tags: List[Pla
             elif res == ShotResultTypes.CHANCE_AGAINST: game_stats[t.game_id]["onice_mp_minus"] += 1
     log = []
     for g in all_games:
-        s = game_stats[g.game_id]
-        eff = (s["goals"] / s["chances"] * 100) if s["chances"] > 0 else 0
-        log.append(GameLogEntry(
-            game_id=g.game_id, date=g.date, opponent=g.opponent, home=g.home, goals=s["goals"], chances=s["chances"], efficiency=round(eff, 1),
-            part_m_plus=s["part_m_plus"], part_m_minus=s["part_m_minus"], part_m_diff=s["part_m_plus"] - s["part_m_minus"],
-            part_mp_plus=s["part_mp_plus"], part_mp_minus=s["part_mp_minus"], part_mp_diff=s["part_mp_plus"] - s["part_mp_minus"],
-            onice_m_plus=s["onice_m_plus"], onice_m_minus=s["onice_m_minus"], onice_m_diff=s["onice_m_plus"] - s["onice_m_minus"],
-            onice_mp_plus=s["onice_mp_plus"], onice_mp_minus=s["onice_mp_minus"], onice_mp_diff=s["onice_mp_plus"] - s["onice_mp_minus"]
-        ))
+        s = game_stats[g.game_id]; eff = (s["goals"] / s["chances"] * 100) if s["chances"] > 0 else 0
+        log.append(GameLogEntry(game_id=g.game_id, date=g.date, opponent=g.opponent, home=g.home, goals=s["goals"], chances=s["chances"], efficiency=round(eff, 1), part_m_plus=s["part_m_plus"], part_m_minus=s["part_m_minus"], part_m_diff=s["part_m_plus"] - s["part_m_minus"], part_mp_plus=s["part_mp_plus"], part_mp_minus=s["part_mp_minus"], part_mp_diff=s["part_mp_plus"] - s["part_mp_minus"], onice_m_plus=s["onice_m_plus"], onice_m_minus=s["onice_m_minus"], onice_m_diff=s["onice_m_plus"] - s["onice_m_minus"], onice_mp_plus=s["onice_mp_plus"], onice_mp_minus=s["onice_mp_minus"], onice_mp_diff=s["onice_mp_plus"] - s["onice_mp_minus"]))
     return log
 
 def calculate_team_averages(db: Session, team_id: int, player_position: Positions) -> Tuple[float, float]:

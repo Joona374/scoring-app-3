@@ -13,6 +13,11 @@
   margin-bottom: 1rem;
 }
 
+.header-with-info {
+  display: flex;
+  align-items: center;
+}
+
 .section-header-row .section-title-small {
   margin-bottom: 0;
 }
