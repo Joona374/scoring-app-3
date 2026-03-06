@@ -276,6 +276,7 @@ class ChemistryTeammate(BaseModel):
     teammate_id: int
     name: str
     jersey_number: int
+    position: str # FORWARD, DEFENDER
     shared_games: int
     shared_participations: int
     shared_goals: int

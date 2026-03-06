@@ -284,44 +284,30 @@ def calculate_chemistry_data(
     db: Session, team_id: int, player_id: int, all_games: List[PlayerGameMetadata]
 ) -> ChemistrySectionData:
     game_ids = [g.game_id for g in all_games]
-    # Shared roster games count
     rosters = db.query(GameInRoster).filter(GameInRoster.game_id.in_(game_ids)).all()
-    shared_games_map = {} # teammate_id -> count
+    shared_games_map = {}
     for r in rosters:
         if r.player_id == player_id: continue
         shared_games_map[r.player_id] = shared_games_map.get(r.player_id, 0) + 1
-        
-    # Shared participations: Hero and teammate both in `players_participating` for same tag
-    # Get all tags hero participated in
     hero_p_tags = db.query(PlayerStatsTag.id, PlayerStatsTag.shot_result_id).join(PlayerStatsTagParticipating).filter(
-        PlayerStatsTagParticipating.player_id == player_id,
-        PlayerStatsTag.game_id.in_(game_ids)
+        PlayerStatsTagParticipating.player_id == player_id, PlayerStatsTag.game_id.in_(game_ids)
     ).all()
     hero_p_tag_ids = [t.id for t in hero_p_tags]
     if not hero_p_tag_ids: return ChemistrySectionData(teammates=[], team_avg_volume=0, team_avg_efficiency=0)
-    
-    # Teammate participations in those tags
     teammate_p = db.query(PlayerStatsTagParticipating.tag_id, PlayerStatsTagParticipating.player_id).filter(
         PlayerStatsTagParticipating.tag_id.in_(hero_p_tag_ids)
     ).all()
-    
-    # teammate_id -> {participations: X, goals: Y}
     stats_map = {} 
-    # Quick lookup for goal tags
     res_map = {r.id: r.value for r in db.query(ShotResult).all()}
     goal_tag_ids = {t.id for t in hero_p_tags if res_map[t.shot_result_id] == ShotResultTypes.GOAL_FOR}
-    
     for tag_id, t_id in teammate_p:
         if t_id == player_id: continue
         if t_id not in stats_map: stats_map[t_id] = {"p": 0, "g": 0}
         stats_map[t_id]["p"] += 1
         if tag_id in goal_tag_ids: stats_map[t_id]["g"] += 1
-        
-    # Compile teammates list
     teammates = []
     players = db.query(Player).filter(Player.id.in_(list(stats_map.keys()))).all()
     p_map = {p.id: p for p in players}
-    
     for t_id, s in stats_map.items():
         if t_id not in p_map or p_map[t_id].position == Positions.GOALIE: continue
         shared_games = shared_games_map.get(t_id, 1)
@@ -329,20 +315,13 @@ def calculate_chemistry_data(
         eff = (s["g"] / s["p"] * 100) if s["p"] > 0 else 0
         teammates.append(ChemistryTeammate(
             teammate_id=t_id, name=f"{p_map[t_id].first_name} {p_map[t_id].last_name}",
-            jersey_number=p_map[t_id].jersey_number, shared_games=shared_games,
-            shared_participations=s["p"], shared_goals=s["g"],
+            jersey_number=p_map[t_id].jersey_number, position=p_map[t_id].position.name,
+            shared_games=shared_games, shared_participations=s["p"], shared_goals=s["g"],
             participations_per_game=round(p_per_game, 2), efficiency=round(eff, 1)
         ))
-        
-    # Team averages for quadrants
     avg_volume = sum(t.participations_per_game for t in teammates) / len(teammates) if teammates else 0
     avg_eff = sum(t.efficiency for t in teammates) / len(teammates) if teammates else 0
-    
-    return ChemistrySectionData(
-        teammates=teammates, 
-        team_avg_volume=round(avg_volume, 2), 
-        team_avg_efficiency=round(avg_eff, 1)
-    )
+    return ChemistrySectionData(teammates=teammates, team_avg_volume=round(avg_volume, 2), team_avg_efficiency=round(avg_eff, 1))
 
 def calculate_team_averages(db: Session, team_id: int, player_position: Positions) -> Tuple[float, float]:
     peers = db.query(Player).filter(Player.team_id == team_id, Player.position == player_position).all()
