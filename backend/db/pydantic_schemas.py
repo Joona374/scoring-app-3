@@ -5,9 +5,8 @@ from datetime import date
 
 class UserCreate(BaseModel):
     model_config = {"extra": "forbid"}
-
-    username: str
     email: EmailStr
+    username: str
     password: str
     code: str
 
@@ -35,13 +34,11 @@ class UserCreate(BaseModel):
 
 class UserLogin(BaseModel):
     model_config = {"extra": "forbid"}
-
     user: str
     password: str
 
 class LoginResponse(BaseModel):
     model_config = {"extra": "forbid"}
-
     username: str
     user_id: int
     is_admin: bool
@@ -50,14 +47,12 @@ class LoginResponse(BaseModel):
 
 class UserData(BaseModel):
     model_config = {"extra": "forbid"}
-
     id: int
     username: str
     email: str
 
 class TeamCreate(BaseModel):
     model_config = {"extra": "forbid"}
-
     name: str
 
 class TeamCreateResponse(BaseModel):
@@ -66,7 +61,6 @@ class TeamCreateResponse(BaseModel):
 
 class PlayerCreate(BaseModel):
     model_config = {"extra": "forbid"}
-
     first_name: str
     last_name: str
     jersey_number: int
@@ -83,7 +77,7 @@ class PlayerResponse(BaseModel):
     first_name: str
     last_name: str
     jersey_number: int
-    position: str  # This would be "FORWARD", "DEFENDER", etc.
+    position: str
 
 class TagSchema(BaseModel):
     location: dict
@@ -93,7 +87,6 @@ class TagSchema(BaseModel):
 
 class AddTag(BaseModel):
     model_config = {"extra": "forbid"}
-
     tag: dict
 
 class TeamResponse(BaseModel):
@@ -138,7 +131,7 @@ class CreateCodeResponse(BaseModel):
     creation_code: bool
     join_code: bool
     admin_code: bool
-    team_related: str | None # Just the name of the team
+    team_related: str | None
 
 
 # =====================
@@ -147,17 +140,13 @@ class CreateCodeResponse(BaseModel):
 
 
 class ZoneData(BaseModel):
-    """Per-zone statistics for all metrics"""
-
     goals_for: int = 0
     goals_against: int = 0
-    chances_for: int = 0  # includes goals
-    chances_against: int = 0  # includes goals
+    chances_for: int = 0
+    chances_against: int = 0
 
 
 class GamePlayerStats(BaseModel):
-    """Per-game stats for a single player"""
-
     player_id: int
     first_name: str
     last_name: str
@@ -175,8 +164,6 @@ class GamePlayerStats(BaseModel):
 
 
 class SituationKPI(BaseModel):
-    """Aggregated KPIs for a specific situation (e.g., ES/PP/PK or total)."""
-
     goals_for: int
     goals_against: int
     chances_for: int
@@ -197,18 +184,17 @@ class GameKPI(BaseModel):
     goals_against: int
     chances_for: int
     chances_against: int
-    efficiency_for: float  # goals_for / chances_for * 100
-    efficiency_against: float  # goals_against / chances_against * 100
-    ice_zones: Dict[str, ZoneData]  # Zone breakdown for this game
-    net_zones: Dict[str, ZoneData]  # Net zone breakdown for this game
-    player_stats: List[GamePlayerStats]  # Per-player stats for this game
-    # Optional per-situation aggregates (keys: 'yht', '5v5', 'YV', 'AV')
+    efficiency_for: float
+    efficiency_against: float
+    ice_zones: Dict[str, ZoneData]
+    net_zones: Dict[str, ZoneData]
+    player_stats: List[GamePlayerStats]
     situations: Optional[Dict[str, "SituationKPI"]] = None
 
 
 class DashboardResponse(BaseModel):
     team_name: str
-    games: List[GameKPI]  # All games with per-game zone and player stats
+    games: List[GameKPI]
 
 
 # =====================
@@ -261,6 +247,16 @@ class GameTrendPoint(BaseModel):
     chances: int
     rolling_goals: float
     rolling_chances: float
+    team_rolling_goals: float
+    team_rolling_chances: float
+
+class SpiderChartKPI(BaseModel):
+    label: str
+    player_value: float
+    team_avg: float
+
+class SpiderChartData(BaseModel):
+    kpis: List[SpiderChartKPI]
 
 class PlayerStatsResponse(BaseModel):
     player_id: int
@@ -280,6 +276,7 @@ class PlayerStatsResponse(BaseModel):
     trend_data: List[GameTrendPoint]
     team_avg_goals: float
     team_avg_chances: float
+    spider_data: SpiderChartData
     # Future components will add more fields here
 
 class SeasonSummaryKPIs(BaseModel):

@@ -10,6 +10,7 @@ import PlayerNetMap from "./components/PlayerNetMap";
 import PlayerFilters from "./components/PlayerFilters";
 import ShotTypeTable from "./components/ShotTypeTable";
 import RollingAverageChart from "./components/RollingAverageChart";
+import PlayerSpiderChart from "./components/PlayerSpiderChart";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -65,6 +66,7 @@ export default function PlayerPage() {
   const filteredData = useMemo(() => {
     if (!playerData) return null;
 
+    // 1. Filter games
     let games = [...playerData.all_games];
     if (filters.venue !== "ALL") {
       const isHome = filters.venue === "HOME";
@@ -80,11 +82,13 @@ export default function PlayerPage() {
     const gamesInSelection = games.slice(0, filters.lastGames || games.length);
     const activeGameIds = new Set(gamesInSelection.map(g => g.game_id));
 
+    // 2. Filter tags
     let tags = playerData.all_tags.filter(t => activeGameIds.has(t.game_id));
     if (filters.situation !== "ALL") {
       tags = tags.filter(t => t.strengths === filters.situation);
     }
 
+    // 3. Calculate Summary KPIs
     const summary = {
       games_played: gamesInSelection.length,
       goals: 0,
@@ -152,18 +156,17 @@ export default function PlayerPage() {
       efficiency: s.chances > 0 ? Math.round((s.goals / s.chances) * 1000) / 10 : 0
     }));
 
+    // 4. Calculate Map Data
     const ice_zones = {};
     const net_zones = {};
     const ice_markers = [];
     const net_markers = [];
 
     const mapTags = tags.filter(t => t.is_shooter);
-    
     mapTags.forEach(tag => {
       const res = tag.shot_result;
       const isGoal = res === "Maali +";
       const isChance = res === "MP +";
-
       if (!isGoal && !isChance) return;
 
       const showInMarkers = mapMode === "kaikki" || (mapMode === "goals" && isGoal) || (mapMode === "chances" && !isGoal);
@@ -181,10 +184,12 @@ export default function PlayerPage() {
           zones[name].chances_for++;
         }
       };
-
       addToZone(ice_zones, tag.ice_zone, isGoal);
       addToZone(net_zones, tag.net_zone, isGoal);
     });
+
+    const trend_data = playerData.trend_data.filter(tp => activeGameIds.has(tp.game_id))
+                        .sort((a, b) => a.date.localeCompare(b.date));
 
     return { 
       summary, 
@@ -193,9 +198,7 @@ export default function PlayerPage() {
       ice_markers, 
       net_markers,
       shot_type_stats,
-      trend_data: playerData.trend_data, // Trend data remains unfiltered for now as it's a full season view, but could be filtered too
-      team_avg_goals: playerData.team_avg_goals,
-      team_avg_chances: playerData.team_avg_chances,
+      trend_data, 
       availableGamesCount: games.length
     };
   }, [playerData, filters, mapMode]);
@@ -338,12 +341,16 @@ export default function PlayerPage() {
              totalGoals={filteredData.summary.goals}
              totalChances={filteredData.summary.chances}
            />
+           <PlayerSpiderChart 
+             spiderData={playerData.spider_data}
+             playerName={`${playerData.first_name} ${playerData.last_name}`}
+           />
         </div>
         <div className="player-page-column right-column">
            <RollingAverageChart 
              trendData={filteredData.trend_data} 
-             teamAvgGoals={filteredData.team_avg_goals} 
-             teamAvgChances={filteredData.team_avg_chances} 
+             playerName={`${playerData.first_name} ${playerData.last_name}`}
+             playerPosition={playerData.position}
            />
         </div>
       </div>
