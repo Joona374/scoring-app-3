@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./PlayerPage.css";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
@@ -7,6 +7,7 @@ import PlayerHeader from "./components/PlayerHeader";
 import PlayerKPIs from "./components/PlayerKPIs";
 import PlayerIceMap from "./components/PlayerIceMap";
 import PlayerNetMap from "./components/PlayerNetMap";
+import PlayerFilters from "./components/PlayerFilters";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -14,11 +15,17 @@ export default function PlayerPage() {
   const [error, setError] = useState(null);
   const [playerData, setPlayerData] = useState(null);
   
-  // mapMode: kaikki, goals, chances, efficiency
   const [mapMode, setMapMode] = useState("kaikki"); 
-  // vizType: markers (Paikoittain), zones (Alueittain)
   const [vizType, setVizType] = useState("markers"); 
   
+  const [filters, setFilters] = useState({
+    situation: "ALL",
+    venue: "ALL",
+    startDate: null,
+    endDate: null,
+    lastGames: null,
+  });
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,17 +41,14 @@ export default function PlayerPage() {
         });
 
         if (!response.ok) {
-          if (response.status === 404) {
-             throw new Error("Pelaajaa ei löytynyt");
-          }
-          if (response.status === 403) {
-             throw new Error("Ei oikeutta pelaajan tietoihin");
-          }
+          if (response.status === 404) throw new Error("Pelaajaa ei löytynyt");
+          if (response.status === 403) throw new Error("Ei oikeutta pelaajan tietoihin");
           throw new Error("Virhe tietojen haussa");
         }
 
         const data = await response.json();
         setPlayerData(data);
+        setFilters(prev => ({ ...prev, lastGames: data.all_games.length }));
       } catch (err) {
         console.error("PlayerPage error:", err);
         setError(err.message);
@@ -55,6 +59,121 @@ export default function PlayerPage() {
 
     fetchPlayerStats();
   }, [id]);
+
+  const filteredData = useMemo(() => {
+    if (!playerData) return null;
+
+    let games = [...playerData.all_games];
+    if (filters.venue !== "ALL") {
+      const isHome = filters.venue === "HOME";
+      games = games.filter(g => g.home === isHome);
+    }
+    if (filters.startDate) {
+      games = games.filter(g => g.date >= filters.startDate);
+    }
+    if (filters.endDate) {
+      games = games.filter(g => g.date <= filters.endDate);
+    }
+
+    const gamesInSelection = games.slice(0, filters.lastGames || games.length);
+    const activeGameIds = new Set(gamesInSelection.map(g => g.game_id));
+
+    let tags = playerData.all_tags.filter(t => activeGameIds.has(t.game_id));
+    if (filters.situation !== "ALL") {
+      tags = tags.filter(t => t.strengths === filters.situation);
+    }
+
+    const summary = {
+      games_played: gamesInSelection.length,
+      goals: 0,
+      chances: 0,
+      efficiency: 0,
+      chances_per_game: 0,
+      participation_m_diff: 0,
+      participation_mp_diff: 0,
+      on_ice_m_diff: 0,
+      on_ice_mp_diff: 0,
+    };
+
+    let p_m_plus = 0, p_m_minus = 0, p_mp_plus = 0, p_mp_minus = 0;
+    let o_m_plus = 0, o_m_minus = 0, o_mp_plus = 0, o_mp_minus = 0;
+
+    tags.forEach(t => {
+      const isGoalFor = t.shot_result === "Maali +";
+      const isGoalAgainst = t.shot_result === "Maali -";
+      const isChanceFor = t.shot_result === "MP +";
+      const isChanceAgainst = t.shot_result === "MP -";
+
+      if (t.is_shooter) {
+        if (isGoalFor) { summary.goals++; summary.chances++; }
+        else if (isChanceFor) { summary.chances++; }
+      }
+
+      if (t.is_participating) {
+        if (isGoalFor) { p_m_plus++; p_mp_plus++; }
+        else if (isGoalAgainst) { p_m_minus++; p_mp_minus++; }
+        else if (isChanceFor) { p_mp_plus++; }
+        else if (isChanceAgainst) { p_mp_minus++; }
+      }
+
+      if (t.is_on_ice) {
+        if (isGoalFor) { o_m_plus++; o_mp_plus++; }
+        else if (isGoalAgainst) { o_m_minus++; o_mp_minus++; }
+        else if (isChanceFor) { o_mp_plus++; }
+        else if (isChanceAgainst) { o_mp_minus++; }
+      }
+    });
+
+    summary.efficiency = summary.chances > 0 ? Math.round((summary.goals / summary.chances) * 1000) / 10 : 0;
+    summary.chances_per_game = summary.games_played > 0 ? Math.round((summary.chances / summary.games_played) * 10) / 10 : 0;
+    summary.participation_m_diff = p_m_plus - p_m_minus;
+    summary.participation_mp_diff = p_mp_plus - p_mp_minus;
+    summary.on_ice_m_diff = o_m_plus - o_m_minus;
+    summary.on_ice_mp_diff = o_mp_plus - o_mp_minus;
+
+    const ice_zones = {};
+    const net_zones = {};
+    const ice_markers = [];
+    const net_markers = [];
+
+    const mapTags = tags.filter(t => t.is_shooter);
+    
+    mapTags.forEach(tag => {
+      const res = tag.shot_result;
+      const isGoal = res === "Maali +";
+      const isChance = res === "MP +";
+
+      if (!isGoal && !isChance) return;
+
+      const showInMarkers = mapMode === "kaikki" || (mapMode === "goals" && isGoal) || (mapMode === "chances" && !isGoal);
+      if (showInMarkers) {
+        ice_markers.push({ x: tag.ice_x, y: tag.ice_y, result: res });
+        net_markers.push({ x: tag.net_x, y: tag.net_y, result: res });
+      }
+
+      const addToZone = (zones, name, isGoal) => {
+        if (!zones[name]) zones[name] = { goals_for: 0, chances_for: 0 };
+        if (isGoal) {
+          zones[name].goals_for++;
+          zones[name].chances_for++;
+        } else {
+          zones[name].chances_for++;
+        }
+      };
+
+      addToZone(ice_zones, tag.ice_zone, isGoal);
+      addToZone(net_zones, tag.net_zone, isGoal);
+    });
+
+    return { 
+      summary, 
+      ice_zones,
+      net_zones,
+      ice_markers, 
+      net_markers,
+      availableGamesCount: games.length
+    };
+  }, [playerData, filters, mapMode]);
 
   if (loading) {
     return (
@@ -81,35 +200,21 @@ export default function PlayerPage() {
     );
   }
 
-  // Filter markers and zones based on mapMode
-  const getFilteredData = () => {
-    if (!playerData) return { ice_zones: {}, net_zones: {}, ice_markers: [], net_markers: [] };
-
-    let ice_markers = playerData.ice_markers;
-    let net_markers = playerData.net_markers;
-    let ice_zones = { ...playerData.ice_zones };
-    let net_zones = { ...playerData.net_zones };
-
-    if (mapMode === "goals") {
-      ice_markers = ice_markers.filter(m => m.result === "Maali +");
-      net_markers = net_markers.filter(m => m.result === "Maali +");
-      // For zones, we only care about goals_for in this mode
-    } else if (mapMode === "chances") {
-      ice_markers = ice_markers.filter(m => m.result !== "Maali +");
-      net_markers = net_markers.filter(m => m.result !== "Maali +");
-    }
-
-    return { ice_zones, net_zones, ice_markers, net_markers };
-  };
-
-  const filteredData = getFilteredData();
+  // Handle visual exclusivity: Efficiency always shows zones
+  const finalVizType = mapMode === "efficiency" ? "zones" : vizType;
 
   return (
     <ScrollContainer className="player-page-wrapper">
       <PlayerHeader player={playerData} />
-      <PlayerKPIs summary={playerData.summary} />
+      
+      <PlayerFilters 
+        filters={filters} 
+        setFilters={setFilters} 
+        availableGamesCount={filteredData.availableGamesCount}
+      />
 
-      {/* Visualizations Section */}
+      <PlayerKPIs summary={filteredData.summary} />
+
       <section className="player-visualizations-section">
         <div className="player-visualizations-grid">
           <div className="player-map-wrapper ice-map-large">
@@ -118,8 +223,8 @@ export default function PlayerPage() {
               zoneStats={filteredData.ice_zones} 
               markers={filteredData.ice_markers}
               mode={mapMode === "kaikki" ? "chances_for" : (mapMode === "goals" ? "goals_for" : (mapMode === "chances" ? "chances_for_no_goals" : "efficiency_for"))}
-              showMarkers={vizType === "markers"}
-              showZones={vizType === "zones"}
+              showMarkers={finalVizType === "markers"}
+              showZones={finalVizType === "zones"}
             />
           </div>
 
@@ -129,13 +234,14 @@ export default function PlayerPage() {
                   <span className="control-label">Näkymä</span>
                   <div className="viz-type-toggle">
                     <button 
-                      className={`toggle-btn ${vizType === "markers" ? "active" : ""}`}
+                      className={`toggle-btn ${finalVizType === "markers" ? "active" : ""}`}
                       onClick={() => setVizType("markers")}
+                      disabled={mapMode === "efficiency"}
                     >
                       Paikoittain
                     </button>
                     <button 
-                      className={`toggle-btn ${vizType === "zones" ? "active" : ""}`}
+                      className={`toggle-btn ${finalVizType === "zones" ? "active" : ""}`}
                       onClick={() => setVizType("zones")}
                     >
                       Alueittain
@@ -173,15 +279,17 @@ export default function PlayerPage() {
                   </div>
                 </div>
 
-                <div className="map-legend">
-                   <div className="legend-item">
-                      <span className="legend-dot goal"></span>
-                      <span>Maali</span>
-                   </div>
-                   <div className="legend-item">
-                      <span className="legend-dot chance"></span>
-                      <span>Maalipaikka</span>
-                   </div>
+                <div className={`map-legend-container ${finalVizType === "markers" ? "visible" : "hidden"}`}>
+                  <div className="map-legend">
+                    <div className="legend-item">
+                        <span className="legend-dot goal"></span>
+                        <span>Maali</span>
+                    </div>
+                    <div className="legend-item">
+                        <span className="legend-dot chance"></span>
+                        <span>Maalipaikka</span>
+                    </div>
+                  </div>
                 </div>
              </div>
           </div>
@@ -192,8 +300,8 @@ export default function PlayerPage() {
               zoneStats={filteredData.net_zones} 
               markers={filteredData.net_markers}
               mode={mapMode === "kaikki" ? "chances_for" : (mapMode === "goals" ? "goals_for" : (mapMode === "chances" ? "chances_for_no_goals" : "efficiency_for"))}
-              showMarkers={vizType === "markers"}
-              showZones={vizType === "zones"}
+              showMarkers={finalVizType === "markers"}
+              showZones={finalVizType === "zones"}
             />
           </div>
         </div>

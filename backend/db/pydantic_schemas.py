@@ -220,6 +220,33 @@ class MarkerData(BaseModel):
     y: int
     result: str
 
+class PlayerTagData(BaseModel):
+    id: int
+    game_id: int
+    date: str
+    opponent: str
+    home: bool
+    strengths: str
+    ice_x: int
+    ice_y: int
+    ice_zone: str
+    net_x: int
+    net_y: int
+    net_zone: str
+    net_height: str
+    net_width: str
+    shot_result: str
+    shot_type: str
+    is_shooter: bool
+    is_participating: bool
+    is_on_ice: bool
+
+class PlayerGameMetadata(BaseModel):
+    game_id: int
+    date: str
+    opponent: str
+    home: bool
+
 class PlayerStatsResponse(BaseModel):
     player_id: int
     first_name: str
@@ -232,6 +259,8 @@ class PlayerStatsResponse(BaseModel):
     net_zones: Dict[str, ZoneData]
     ice_markers: List[MarkerData]
     net_markers: List[MarkerData]
+    all_tags: List[PlayerTagData]
+    all_games: List[PlayerGameMetadata]
     # Future components will add more fields here
 
 class SeasonSummaryKPIs(BaseModel):
