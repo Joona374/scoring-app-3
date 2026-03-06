@@ -215,6 +215,11 @@ class DashboardResponse(BaseModel):
 # Player Page Schemas
 # =====================
 
+class MarkerData(BaseModel):
+    x: int
+    y: int
+    result: str
+
 class PlayerStatsResponse(BaseModel):
     player_id: int
     first_name: str
@@ -223,6 +228,10 @@ class PlayerStatsResponse(BaseModel):
     position: str
     team_name: str
     summary: "SeasonSummaryKPIs"
+    ice_zones: Dict[str, ZoneData]
+    net_zones: Dict[str, ZoneData]
+    ice_markers: List[MarkerData]
+    net_markers: List[MarkerData]
     # Future components will add more fields here
 
 class SeasonSummaryKPIs(BaseModel):

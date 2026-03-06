@@ -1,44 +1,189 @@
 .player-page-wrapper {
-  padding: 2rem;
+  padding: 1.5rem 3rem;
   background-color: var(--background-color);
   color: var(--text-color);
-  min-height: 100%;
+  height: 100%;
 }
 
-.player-page-header {
-  margin-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 1rem;
+/* Visualization Section */
+.player-visualizations-section {
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 2.5rem;
 }
 
-.player-page-title {
-  font-size: 2.5rem;
+.player-visualizations-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.player-map-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Larger maps */
+.ice-map-large .zone-map-container {
+  max-width: 550px;
+}
+
+.net-map-large .zone-map-container {
+  max-width: 550px;
+}
+
+.player-map-title {
+  font-size: 0.9rem;
   color: var(--accent-color);
-  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 800;
 }
 
-.player-page-subtitle {
-  font-size: 1.2rem;
+.player-map-controls-wrapper {
+  background-color: rgba(255, 255, 255, 0.03);
+  padding: 2rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.player-map-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.control-label {
+  font-size: 0.75rem;
+  color: var(--muted-text);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* Toggle buttons (Paikoittain / Alueittain) */
+.viz-type-toggle {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.toggle-btn {
+  flex: 1;
+  background: transparent;
+  color: var(--muted-text);
+  border: none;
+  padding: 0.6rem 0.4rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn.active {
+  background-color: var(--accent-color);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Mode options (Kaikki, Maalit, etc) */
+.mode-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted-text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.6rem 0.4rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.control-btn.active {
+  background-color: rgba(var(--accent-color-rgb), 0.15);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Legend */
+.map-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
   color: var(--muted-text);
 }
 
-.player-page-error {
-  color: #ef4444;
-  margin: 1rem 0;
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid white;
 }
 
-.back-btn {
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: opacity 0.2s;
+.legend-dot.goal {
+  background-color: #fbbf24;
+  box-shadow: 0 0 8px #fbbf24;
 }
 
-.back-btn:hover {
-  opacity: 0.9;
+.legend-dot.chance {
+  background-color: #22c55e;
+}
+
+/* Main 2-column grid for other components */
+.player-page-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+}
+
+.placeholder-card {
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-text);
+  height: 200px;
 }
 
 .loading-container {
@@ -46,6 +191,23 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 300px;
+  height: 400px;
   gap: 1rem;
+}
+
+@media (max-width: 1400px) {
+  .player-visualizations-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .player-map-controls-wrapper {
+    order: -1;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .player-page-grid {
+    grid-template-columns: 1fr;
+  }
 }
