@@ -140,6 +140,8 @@ class CreateCodeResponse(BaseModel):
 
 
 class ZoneData(BaseModel):
+    """Per-zone statistics for all metrics"""
+
     goals_for: int = 0
     goals_against: int = 0
     chances_for: int = 0
@@ -147,6 +149,8 @@ class ZoneData(BaseModel):
 
 
 class GamePlayerStats(BaseModel):
+    """Per-game stats for a single player"""
+
     player_id: int
     first_name: str
     last_name: str
@@ -258,6 +262,15 @@ class SpiderChartKPI(BaseModel):
 class SpiderChartData(BaseModel):
     kpis: List[SpiderChartKPI]
 
+class SynergyDataPoint(BaseModel):
+    teammate_id: int
+    teammate_name: str
+    jersey_number: int
+    net_mp_per_game: float
+
+class SynergyData(BaseModel):
+    points: List[SynergyDataPoint]
+
 class PlayerStatsResponse(BaseModel):
     player_id: int
     first_name: str
@@ -277,6 +290,7 @@ class PlayerStatsResponse(BaseModel):
     team_avg_goals: float
     team_avg_chances: float
     spider_data: SpiderChartData
+    synergy_data: SynergyData
     # Future components will add more fields here
 
 class SeasonSummaryKPIs(BaseModel):

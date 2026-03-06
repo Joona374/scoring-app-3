@@ -11,6 +11,7 @@ import PlayerFilters from "./components/PlayerFilters";
 import ShotTypeTable from "./components/ShotTypeTable";
 import RollingAverageChart from "./components/RollingAverageChart";
 import PlayerSpiderChart from "./components/PlayerSpiderChart";
+import OnIceSynergyChart from "./components/OnIceSynergyChart";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -351,6 +352,9 @@ export default function PlayerPage() {
              trendData={filteredData.trend_data} 
              playerName={`${playerData.first_name} ${playerData.last_name}`}
              playerPosition={playerData.position}
+           />
+           <OnIceSynergyChart 
+             synergyData={playerData.synergy_data}
            />
         </div>
       </div>

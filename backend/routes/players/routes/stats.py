@@ -10,7 +10,7 @@ from db.models import (
 from db.pydantic_schemas import (
     PlayerStatsResponse, SeasonSummaryKPIs, ZoneData, MarkerData, 
     PlayerTagData, PlayerGameMetadata, ShotTypeStats, GameTrendPoint,
-    SpiderChartData, SpiderChartKPI
+    SpiderChartData, SpiderChartKPI, SynergyData, SynergyDataPoint
 )
 from utils import get_current_user_and_team
 
@@ -184,69 +184,40 @@ def calculate_trend_data(db: Session, team_id: int, player_id: int, player_posit
     return result
 
 def calculate_spider_data(
-    db: Session,
-    team_id: int,
-    player_id: int,
-    shooter_tags: List[PlayerStatsTag],
-    on_ice_tags: List[PlayerStatsTag],
-    participating_tags: List[PlayerStatsTag],
-    all_games: List[PlayerGameMetadata]
+    db: Session, team_id: int, player_id: int, shooter_tags: List[PlayerStatsTag], 
+    on_ice_tags: List[PlayerStatsTag], participating_tags: List[PlayerStatsTag], all_games: List[PlayerGameMetadata]
 ) -> SpiderChartData:
     num_games = len(all_games)
-    if num_games == 0:
-        return SpiderChartData(kpis=[])
-
-    # 1. Goals per game
+    if num_games == 0: return SpiderChartData(kpis=[])
     player_goals = sum(1 for t in shooter_tags if t.shot_result.value == ShotResultTypes.GOAL_FOR)
     gpg = player_goals / num_games
-
-    # 2. Chances participating per game
     player_chances_p = sum(1 for t in participating_tags if t.shot_result.value in [ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR])
     cpg = player_chances_p / num_games
-
-    # 3. 5v5 Corsi
     v5v5_for = sum(1 for t in on_ice_tags if t.strengths == "ES" and t.shot_result.value in [ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR])
     v5v5_against = sum(1 for t in on_ice_tags if t.strengths == "ES" and t.shot_result.value in [ShotResultTypes.GOAL_AGAINST, ShotResultTypes.CHANCE_AGAINST])
     total_5v5 = v5v5_for + v5v5_against
     corsi = (v5v5_for / total_5v5 * 100) if total_5v5 > 0 else 50.0
-
-    # 4. PP Efficiency (on ice)
     pp_goals = sum(1 for t in on_ice_tags if t.strengths == "PP" and t.shot_result.value == ShotResultTypes.GOAL_FOR)
     pp_chances = sum(1 for t in on_ice_tags if t.strengths == "PP" and t.shot_result.value in [ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR])
     pp_eff = (pp_goals / pp_chances * 100) if pp_chances > 0 else 0.0
-
-    # 5. PK workload
     pk_chances = sum(1 for t in on_ice_tags if t.strengths == "PK" and t.shot_result.value in [ShotResultTypes.GOAL_AGAINST, ShotResultTypes.CHANCE_AGAINST])
     pk_workload = pk_chances / num_games
-
-    # Calculate Team Averages
     all_team_players = db.query(Player).filter(Player.team_id == team_id, Player.position != Positions.GOALIE).all()
     player_ids = [p.id for p in all_team_players]
     team_roster_count = db.query(func.count(GameInRoster.game_id)).filter(GameInRoster.player_id.in_(player_ids)).scalar() or 1
     team_shooter_tags = db.query(PlayerStatsTag).filter(PlayerStatsTag.shooter_id.in_(player_ids)).all()
     team_goals = sum(1 for t in team_shooter_tags if t.shot_result.value == ShotResultTypes.GOAL_FOR)
     team_gpg = team_goals / team_roster_count
-
     team_participating_count = db.query(func.count(PlayerStatsTagParticipating.player_id)).select_from(PlayerStatsTagParticipating).join(PlayerStatsTag).filter(
         PlayerStatsTagParticipating.player_id.in_(player_ids),
-        PlayerStatsTag.shot_result_id.in_(
-            db.query(ShotResult.id).filter(ShotResult.value.in_([ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR]))
-        )
+        PlayerStatsTag.shot_result_id.in_(db.query(ShotResult.id).filter(ShotResult.value.in_([ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR])))
     ).scalar() or 0
     team_cpg = team_participating_count / team_roster_count
-
     team_on_ice_metrics = db.query(
-        PlayerStatsTag.strengths,
-        ShotResult.value,
-        func.count(PlayerStatsTagOnIce.player_id)
-    ).select_from(PlayerStatsTagOnIce).join(PlayerStatsTag).join(ShotResult).filter(
-        PlayerStatsTagOnIce.player_id.in_(player_ids)
-    ).group_by(PlayerStatsTag.strengths, ShotResult.value).all()
-
+        PlayerStatsTag.strengths, ShotResult.value, func.count(PlayerStatsTagOnIce.player_id)
+    ).select_from(PlayerStatsTagOnIce).join(PlayerStatsTag).join(ShotResult).filter(PlayerStatsTagOnIce.player_id.in_(player_ids)).group_by(PlayerStatsTag.strengths, ShotResult.value).all()
     stats = {}
-    for s, r, count in team_on_ice_metrics:
-        stats[(s, r)] = count
-
+    for s, r, count in team_on_ice_metrics: stats[(s, r)] = count
     team_v5v5_for = stats.get(("ES", ShotResultTypes.GOAL_FOR), 0) + stats.get(("ES", ShotResultTypes.CHANCE_FOR), 0)
     team_v5v5_against = stats.get(("ES", ShotResultTypes.GOAL_AGAINST), 0) + stats.get(("ES", ShotResultTypes.CHANCE_AGAINST), 0)
     team_corsi = (team_v5v5_for / (team_v5v5_for + team_v5v5_against) * 100) if (team_v5v5_for + team_v5v5_against) > 0 else 50.0
@@ -255,7 +226,6 @@ def calculate_spider_data(
     team_pp_eff = (team_pp_goals / team_pp_chances * 100) if team_pp_chances > 0 else 0.0
     team_pk_against = stats.get(("PK", ShotResultTypes.GOAL_AGAINST), 0) + stats.get(("PK", ShotResultTypes.CHANCE_AGAINST), 0)
     team_pk_workload = team_pk_against / team_roster_count
-
     return SpiderChartData(kpis=[
         SpiderChartKPI(label="Maalit / peli", player_value=round(gpg, 2), team_avg=round(team_gpg, 2)),
         SpiderChartKPI(label="Osallisuudet / peli", player_value=round(cpg, 2), team_avg=round(team_cpg, 2)),
@@ -263,6 +233,84 @@ def calculate_spider_data(
         SpiderChartKPI(label="YV Tehokkuus %", player_value=round(pp_eff, 1), team_avg=round(team_pp_eff, 1)),
         SpiderChartKPI(label="AV Työkuorma", player_value=round(pk_workload, 2), team_avg=round(team_pk_workload, 2)),
     ])
+
+def calculate_synergy_data(
+    db: Session, team_id: int, player_id: int, all_games: List[PlayerGameMetadata]
+) -> SynergyData:
+    game_ids = [g.game_id for g in all_games]
+    # Find all shared roster entries
+    shared_rosters = db.query(GameInRoster).filter(GameInRoster.game_id.in_(game_ids)).all()
+    
+    # Map teammate_id -> list of shared game_ids
+    teammate_shared_games = {}
+    for entry in shared_rosters:
+        if entry.player_id == player_id: continue
+        if entry.player_id not in teammate_shared_games:
+            teammate_shared_games[entry.player_id] = []
+        teammate_shared_games[entry.player_id].append(entry.game_id)
+        
+    # teammate_id -> {for: X, against: Y}
+    teammate_impact = {t_id: {"for": 0, "against": 0} for t_id in teammate_shared_games}
+    
+    # Efficiently fetch all tags where BOTH player and teammate were on ice
+    # (Using a simpler approach: get all tags where hero was on ice, then filter by teammate)
+    hero_on_ice_tags = db.query(PlayerStatsTag.id, PlayerStatsTag.shot_result_id, PlayerStatsTag.game_id).join(PlayerStatsTagOnIce).filter(
+        PlayerStatsTagOnIce.player_id == player_id,
+        PlayerStatsTag.game_id.in_(game_ids)
+    ).all()
+    
+    hero_on_ice_tag_ids = [t.id for t in hero_on_ice_tags]
+    if not hero_on_ice_tag_ids:
+        return SynergyData(points=[])
+        
+    # Get teammate on-ice status for these tags
+    teammates_on_ice = db.query(PlayerStatsTagOnIce.tag_id, PlayerStatsTagOnIce.player_id).filter(
+        PlayerStatsTagOnIce.tag_id.in_(hero_on_ice_tag_ids)
+    ).all()
+    
+    # tag_id -> set of teammate_ids on ice
+    on_ice_map = {}
+    for tag_id, t_id in teammates_on_ice:
+        if tag_id not in on_ice_map: on_ice_map[tag_id] = set()
+        on_ice_map[tag_id].add(t_id)
+        
+    # Shot result values for quick lookup
+    res_map = {r.id: r.value for r in db.query(ShotResult).all()}
+    
+    # Process hero on-ice tags and check for teammate presence
+    for tag_id, res_id, game_id in hero_on_ice_tags:
+        res = res_map[res_id]
+        is_for = res in [ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR]
+        is_against = res in [ShotResultTypes.GOAL_AGAINST, ShotResultTypes.CHANCE_AGAINST]
+        
+        if not is_for and not is_against: continue
+        
+        teammates = on_ice_map.get(tag_id, set())
+        for t_id in teammates:
+            if t_id == player_id: continue
+            if is_for: teammate_impact[t_id]["for"] += 1
+            else: teammate_impact[t_id]["against"] += 1
+            
+    # Compile final points
+    points = []
+    # Fetch teammate names/jerseys
+    players = db.query(Player).filter(Player.id.in_(list(teammate_shared_games.keys()))).all()
+    p_map = {p.id: p for p in players}
+    
+    for t_id, games in teammate_shared_games.items():
+        if t_id not in p_map or p_map[t_id].position == Positions.GOALIE: continue
+        num_shared = len(games)
+        impact = teammate_impact[t_id]
+        net_mp = (impact["for"] - impact["against"]) / num_shared
+        points.append(SynergyDataPoint(
+            teammate_id=t_id,
+            teammate_name=f"{p_map[t_id].first_name} {p_map[t_id].last_name}",
+            jersey_number=p_map[t_id].jersey_number,
+            net_mp_per_game=round(net_mp, 2)
+        ))
+        
+    points.sort(key=lambda x: x.net_mp_per_game, reverse=True)
+    return SynergyData(points=points)
 
 def calculate_team_averages(db: Session, team_id: int, player_position: Positions) -> Tuple[float, float]:
     peers = db.query(Player).filter(Player.team_id == team_id, Player.position == player_position).all()
@@ -278,17 +326,14 @@ def calculate_team_averages(db: Session, team_id: int, player_position: Position
     return round(total_goals / total_peer_games, 2), round(total_chances / total_peer_games, 2)
 
 def build_all_player_tags(shooter_tags: List[PlayerStatsTag], on_ice_tags: List[PlayerStatsTag], participating_tags: List[PlayerStatsTag]) -> List[PlayerTagData]:
-    shooter_ids = {t.id for t in shooter_tags}
-    on_ice_ids = {t.id for t in on_ice_tags}
-    participating_ids = {t.id for t in participating_tags}
+    shooter_ids = {t.id for t in shooter_tags}; on_ice_ids = {t.id for t in on_ice_tags}; participating_ids = {t.id for t in participating_tags}
     unique_tags: Dict[int, PlayerStatsTag] = {}
     for t in shooter_tags: unique_tags[t.id] = t
     for t in on_ice_tags: unique_tags[t.id] = t
     for t in participating_tags: unique_tags[t.id] = t
     result = []
     for tag_id, tag in unique_tags.items():
-        game = tag.game
-        ice_zone, net_zone = get_zone_names(tag)
+        game = tag.game; ice_zone, net_zone = get_zone_names(tag)
         result.append(PlayerTagData(
             id=tag.id, game_id=game.id, date=str(game.date), opponent=game.opponent, home=game.home, strengths=tag.strengths or "ES",
             ice_x=tag.ice_x, ice_y=tag.ice_y, ice_zone=ice_zone, net_x=tag.net_x, net_y=tag.net_y, net_zone=net_zone,
@@ -314,10 +359,11 @@ def get_player_stats(player_id: int, db: Session = Depends(get_db_session), user
     trend_data = calculate_trend_data(db, team.id, player.id, player.position, all_games, shooter_tags)
     team_avg_goals, team_avg_chances = calculate_team_averages(db, team.id, player.position)
     spider_data = calculate_spider_data(db, team.id, player.id, shooter_tags, on_ice_tags, participating_tags, all_games)
+    synergy_data = calculate_synergy_data(db, team.id, player.id, all_games)
     return PlayerStatsResponse(
         player_id=player.id, first_name=player.first_name, last_name=player.last_name, jersey_number=player.jersey_number,
         position=player.position.name, team_name=player.team.name if player.team else "No Team",
         summary=summary, ice_zones=ice_zones, net_zones=net_zones, ice_markers=ice_markers, net_markers=net_markers,
         all_tags=all_tags, all_games=all_games, shot_type_stats=shot_type_stats, trend_data=trend_data,
-        team_avg_goals=team_avg_goals, team_avg_chances=team_avg_chances, spider_data=spider_data
+        team_avg_goals=team_avg_goals, team_avg_chances=team_avg_chances, spider_data=spider_data, synergy_data=synergy_data
     )

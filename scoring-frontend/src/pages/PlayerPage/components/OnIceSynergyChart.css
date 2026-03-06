@@ -1,0 +1,48 @@
+.synergy-chart-section {
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.synergy-container {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.synergy-tooltip {
+  background-color: #1e1d22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.tooltip-teammate {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.4rem;
+}
+
+.tooltip-value {
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.tooltip-value span {
+  font-weight: 700;
+}
+
+.tooltip-value.positive span {
+  color: #22c55e;
+}
+
+.tooltip-value.negative span {
+  color: #ef4444;
+}
+
+.synergy-container .recharts-wrapper:focus, 
+.synergy-container .recharts-surface:focus {
+  outline: none !important;
+}
