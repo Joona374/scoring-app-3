@@ -1,0 +1,27 @@
+.rolling-avg-section {
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chart-container {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: var(--muted-text);
+  font-weight: 500;
+}
+
+.recharts-legend-item-text {
+  color: var(--text-color) !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.recharts-default-tooltip {
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}

@@ -8,6 +8,8 @@ import PlayerKPIs from "./components/PlayerKPIs";
 import PlayerIceMap from "./components/PlayerIceMap";
 import PlayerNetMap from "./components/PlayerNetMap";
 import PlayerFilters from "./components/PlayerFilters";
+import ShotTypeTable from "./components/ShotTypeTable";
+import RollingAverageChart from "./components/RollingAverageChart";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -98,6 +100,8 @@ export default function PlayerPage() {
     let p_m_plus = 0, p_m_minus = 0, p_mp_plus = 0, p_mp_minus = 0;
     let o_m_plus = 0, o_m_minus = 0, o_mp_plus = 0, o_mp_minus = 0;
 
+    const shotTypesMap = {};
+
     tags.forEach(t => {
       const isGoalFor = t.shot_result === "Maali +";
       const isGoalAgainst = t.shot_result === "Maali -";
@@ -107,6 +111,18 @@ export default function PlayerPage() {
       if (t.is_shooter) {
         if (isGoalFor) { summary.goals++; summary.chances++; }
         else if (isChanceFor) { summary.chances++; }
+
+        if (isGoalFor || isChanceFor) {
+          if (!shotTypesMap[t.shot_type]) {
+            shotTypesMap[t.shot_type] = { shot_type: t.shot_type, goals: 0, chances: 0, efficiency: 0 };
+          }
+          if (isGoalFor) {
+            shotTypesMap[t.shot_type].goals++;
+            shotTypesMap[t.shot_type].chances++;
+          } else {
+            shotTypesMap[t.shot_type].chances++;
+          }
+        }
       }
 
       if (t.is_participating) {
@@ -130,6 +146,11 @@ export default function PlayerPage() {
     summary.participation_mp_diff = p_mp_plus - p_mp_minus;
     summary.on_ice_m_diff = o_m_plus - o_m_minus;
     summary.on_ice_mp_diff = o_mp_plus - o_mp_minus;
+
+    const shot_type_stats = Object.values(shotTypesMap).map(s => ({
+      ...s,
+      efficiency: s.chances > 0 ? Math.round((s.goals / s.chances) * 1000) / 10 : 0
+    }));
 
     const ice_zones = {};
     const net_zones = {};
@@ -171,6 +192,10 @@ export default function PlayerPage() {
       net_zones,
       ice_markers, 
       net_markers,
+      shot_type_stats,
+      trend_data: playerData.trend_data, // Trend data remains unfiltered for now as it's a full season view, but could be filtered too
+      team_avg_goals: playerData.team_avg_goals,
+      team_avg_chances: playerData.team_avg_chances,
       availableGamesCount: games.length
     };
   }, [playerData, filters, mapMode]);
@@ -200,7 +225,6 @@ export default function PlayerPage() {
     );
   }
 
-  // Handle visual exclusivity: Efficiency always shows zones
   const finalVizType = mapMode === "efficiency" ? "zones" : vizType;
 
   return (
@@ -309,14 +333,18 @@ export default function PlayerPage() {
 
       <div className="player-page-grid">
         <div className="player-page-column left-column">
-           <div className="placeholder-card">
-              <p>Lisää tilastoja tulossa (vasen)...</p>
-           </div>
+           <ShotTypeTable 
+             shotTypeStats={filteredData.shot_type_stats} 
+             totalGoals={filteredData.summary.goals}
+             totalChances={filteredData.summary.chances}
+           />
         </div>
         <div className="player-page-column right-column">
-           <div className="placeholder-card">
-              <p>Lisää tilastoja tulossa (oikea)...</p>
-           </div>
+           <RollingAverageChart 
+             trendData={filteredData.trend_data} 
+             teamAvgGoals={filteredData.team_avg_goals} 
+             teamAvgChances={filteredData.team_avg_chances} 
+           />
         </div>
       </div>
     </ScrollContainer>

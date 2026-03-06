@@ -247,6 +247,21 @@ class PlayerGameMetadata(BaseModel):
     opponent: str
     home: bool
 
+class ShotTypeStats(BaseModel):
+    shot_type: str
+    goals: int = 0
+    chances: int = 0
+    efficiency: float = 0.0
+
+class GameTrendPoint(BaseModel):
+    game_id: int
+    opponent: str
+    date: str
+    goals: int
+    chances: int
+    rolling_goals: float
+    rolling_chances: float
+
 class PlayerStatsResponse(BaseModel):
     player_id: int
     first_name: str
@@ -261,6 +276,10 @@ class PlayerStatsResponse(BaseModel):
     net_markers: List[MarkerData]
     all_tags: List[PlayerTagData]
     all_games: List[PlayerGameMetadata]
+    shot_type_stats: List[ShotTypeStats]
+    trend_data: List[GameTrendPoint]
+    team_avg_goals: float
+    team_avg_chances: float
     # Future components will add more fields here
 
 class SeasonSummaryKPIs(BaseModel):
