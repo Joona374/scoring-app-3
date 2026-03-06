@@ -405,6 +405,13 @@
     align-items: center;
     gap: 8px;
     font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dashboard-player-info:hover .dashboard-player-name {
+    color: var(--accent-color);
+    text-decoration: underline;
 }
 
 .dashboard-player-number {

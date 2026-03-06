@@ -209,3 +209,37 @@ class GameKPI(BaseModel):
 class DashboardResponse(BaseModel):
     team_name: str
     games: List[GameKPI]  # All games with per-game zone and player stats
+
+
+# =====================
+# Player Page Schemas
+# =====================
+
+class PlayerStatsResponse(BaseModel):
+    player_id: int
+    first_name: str
+    last_name: str
+    jersey_number: int
+    position: str
+    team_name: str
+    summary: "SeasonSummaryKPIs"
+    # Future components will add more fields here
+
+class SeasonSummaryKPIs(BaseModel):
+    games_played: int = 0
+    goals: int = 0
+    chances: int = 0
+    efficiency: float = 0.0
+    chances_per_game: float = 0.0
+    participation_m_plus: int = 0
+    participation_m_minus: int = 0
+    participation_m_diff: int = 0
+    participation_mp_plus: int = 0
+    participation_mp_minus: int = 0
+    participation_mp_diff: int = 0
+    on_ice_m_plus: int = 0
+    on_ice_m_minus: int = 0
+    on_ice_m_diff: int = 0
+    on_ice_mp_plus: int = 0
+    on_ice_mp_minus: int = 0
+    on_ice_mp_diff: int = 0

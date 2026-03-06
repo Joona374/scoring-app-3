@@ -12,6 +12,7 @@ import CreateGame from "./pages/CreateGame/CreateGame";
 import ExcelExporter from "./pages/ExcelExporter/ExcelExporter";
 import RosterManagement from "./pages/RosterManagement/RosterManagement";
 import AnalysisPage from "./pages/Analysis/AnalysisPage";
+import PlayerPage from "./pages/PlayerPage/PlayerPage";
 
 function App() {
   return (
@@ -78,6 +79,14 @@ function App() {
             element={
               <ProtectRoute>
                 <AnalysisPage />
+              </ProtectRoute>
+            }
+          />
+          <Route
+            path="/player/:id"
+            element={
+              <ProtectRoute>
+                <PlayerPage />
               </ProtectRoute>
             }
           />

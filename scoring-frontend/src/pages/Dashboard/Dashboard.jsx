@@ -697,7 +697,11 @@ export default function TeamDashboard() {
                 {sortedPlayers.length > 0 ? (
                   sortedPlayers.map((player) => (
                     <tr key={player.player_id}>
-                      <td className="dashboard-player-info">
+                      <td
+                        className="dashboard-player-info"
+                        onClick={() => navigate(`/player/${player.player_id}`)}
+                        style={{ cursor: "pointer" }}
+                      >
                         <span className="dashboard-player-number">
                           #{player.jersey_number}
                         </span>
