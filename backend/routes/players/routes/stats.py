@@ -215,7 +215,9 @@ def calculate_spider_data(
     team_cpg = team_participating_count / team_roster_count
     team_on_ice_metrics = db.query(
         PlayerStatsTag.strengths, ShotResult.value, func.count(PlayerStatsTagOnIce.player_id)
-    ).select_from(PlayerStatsTagOnIce).join(PlayerStatsTag).join(ShotResult).filter(PlayerStatsTagOnIce.player_id.in_(player_ids)).group_by(PlayerStatsTag.strengths, ShotResult.value).all()
+    ).select_from(PlayerStatsTagOnIce).join(PlayerStatsTag).join(ShotResult).filter(
+        PlayerStatsTagOnIce.player_id.in_(player_ids)
+    ).group_by(PlayerStatsTag.strengths, ShotResult.value).all()
     stats = {}
     for s, r, count in team_on_ice_metrics: stats[(s, r)] = count
     team_v5v5_for = stats.get(("ES", ShotResultTypes.GOAL_FOR), 0) + stats.get(("ES", ShotResultTypes.CHANCE_FOR), 0)
@@ -238,51 +240,37 @@ def calculate_synergy_data(
     db: Session, team_id: int, player_id: int, all_games: List[PlayerGameMetadata]
 ) -> SynergyData:
     game_ids = [g.game_id for g in all_games]
-    # Find all shared roster entries
     shared_rosters = db.query(GameInRoster).filter(GameInRoster.game_id.in_(game_ids)).all()
     
-    # Map teammate_id -> list of shared game_ids
     teammate_shared_games = {}
     for entry in shared_rosters:
         if entry.player_id == player_id: continue
-        if entry.player_id not in teammate_shared_games:
-            teammate_shared_games[entry.player_id] = []
+        if entry.player_id not in teammate_shared_games: teammate_shared_games[entry.player_id] = []
         teammate_shared_games[entry.player_id].append(entry.game_id)
         
-    # teammate_id -> {for: X, against: Y}
     teammate_impact = {t_id: {"for": 0, "against": 0} for t_id in teammate_shared_games}
-    
-    # Efficiently fetch all tags where BOTH player and teammate were on ice
-    # (Using a simpler approach: get all tags where hero was on ice, then filter by teammate)
     hero_on_ice_tags = db.query(PlayerStatsTag.id, PlayerStatsTag.shot_result_id, PlayerStatsTag.game_id).join(PlayerStatsTagOnIce).filter(
         PlayerStatsTagOnIce.player_id == player_id,
         PlayerStatsTag.game_id.in_(game_ids)
     ).all()
     
     hero_on_ice_tag_ids = [t.id for t in hero_on_ice_tags]
-    if not hero_on_ice_tag_ids:
-        return SynergyData(points=[])
+    if not hero_on_ice_tag_ids: return SynergyData(points=[])
         
-    # Get teammate on-ice status for these tags
     teammates_on_ice = db.query(PlayerStatsTagOnIce.tag_id, PlayerStatsTagOnIce.player_id).filter(
         PlayerStatsTagOnIce.tag_id.in_(hero_on_ice_tag_ids)
     ).all()
     
-    # tag_id -> set of teammate_ids on ice
     on_ice_map = {}
     for tag_id, t_id in teammates_on_ice:
         if tag_id not in on_ice_map: on_ice_map[tag_id] = set()
         on_ice_map[tag_id].add(t_id)
         
-    # Shot result values for quick lookup
     res_map = {r.id: r.value for r in db.query(ShotResult).all()}
-    
-    # Process hero on-ice tags and check for teammate presence
     for tag_id, res_id, game_id in hero_on_ice_tags:
         res = res_map[res_id]
         is_for = res in [ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR]
         is_against = res in [ShotResultTypes.GOAL_AGAINST, ShotResultTypes.CHANCE_AGAINST]
-        
         if not is_for and not is_against: continue
         
         teammates = on_ice_map.get(tag_id, set())
@@ -291,9 +279,7 @@ def calculate_synergy_data(
             if is_for: teammate_impact[t_id]["for"] += 1
             else: teammate_impact[t_id]["against"] += 1
             
-    # Compile final points
     points = []
-    # Fetch teammate names/jerseys
     players = db.query(Player).filter(Player.id.in_(list(teammate_shared_games.keys()))).all()
     p_map = {p.id: p for p in players}
     
@@ -306,9 +292,9 @@ def calculate_synergy_data(
             teammate_id=t_id,
             teammate_name=f"{p_map[t_id].first_name} {p_map[t_id].last_name}",
             jersey_number=p_map[t_id].jersey_number,
-            net_mp_per_game=round(net_mp, 2)
+            net_mp_per_game=round(net_mp, 2),
+            shared_games=num_shared
         ))
-        
     points.sort(key=lambda x: x.net_mp_per_game, reverse=True)
     return SynergyData(points=points)
 

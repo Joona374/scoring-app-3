@@ -267,6 +267,7 @@ class SynergyDataPoint(BaseModel):
     teammate_name: str
     jersey_number: int
     net_mp_per_game: float
+    shared_games: int
 
 class SynergyData(BaseModel):
     points: List[SynergyDataPoint]
