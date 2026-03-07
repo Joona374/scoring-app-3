@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 
-from db.pydantic_schemas import UserData
+from db.pydantic_schema.user import UserData
 from db.db_manager import get_db_session
 from db.models import User
 from utils import decode_jwt

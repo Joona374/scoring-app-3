@@ -7,12 +7,25 @@ from db.models import (
     Player, Team, PlayerStatsTag, PlayerStatsTagOnIce, 
     PlayerStatsTagParticipating, ShotResultTypes, GameInRoster, User, Game, Positions, ShotResult
 )
-from db.pydantic_schemas import (
-    PlayerStatsResponse, SeasonSummaryKPIs, ZoneData, MarkerData, 
-    PlayerTagData, PlayerGameMetadata, ShotTypeStats, GameTrendPoint,
-    SpiderChartData, SpiderChartKPI, SynergyData, SynergyDataPoint,
-    ChemistrySectionData, ChemistryTeammate, GameLogEntry
+from db.pydantic_schema.player_page import (
+    PlayerStatsResponse,
+    SeasonSummaryKPIs,
+    MarkerData,
+    PlayerTagData,
+    PlayerGameMetadata,
+    ShotTypeStats,
+    GameTrendPoint,
+    SpiderChartData,
+    SpiderChartKPI,
+    SynergyData,
+    SynergyDataPoint,
+    ChemistrySectionData,
+    ChemistryTeammate,
+    GameLogEntry,
 )
+
+from db.pydantic_schema.shared import ZoneData
+
 from utils import get_current_user_and_team
 
 router = APIRouter()

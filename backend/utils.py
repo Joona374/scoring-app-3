@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from db.db_manager import get_db_session
 from db.models import (
+    Game,
     RegCode,
     ShotResultTypes,
     ShotTypeTypes,
@@ -236,3 +237,23 @@ def add_creator_code(admin: bool = False, identifier: str | None = None) -> RegC
 
     print(f"Seeded creator code: {random_code}")
     return new_code
+
+
+def ensure_team_exists(team: Team):
+    if not team:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You must be assigned to a team to tag games.")
+
+
+def ensure_game_exists(game_id: int, db_session: Session):
+    game = db_session.query(Game).filter(Game.id == game_id).first()
+    if not game:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found.")
+    return game
+
+
+def ensure_team_owns_game(game: Game, team: Team):
+    if not game:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found.")
+
+    if game.team_id != team.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to modify games belonging to another team.")

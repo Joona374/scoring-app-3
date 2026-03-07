@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from redis import Redis
 
-from db.pydantic_schemas import PlayerResponse, PlayerUpdate
+from db.pydantic_schema.player import PlayerResponse, PlayerUpdate
 from routes.players.players_utils import invalidate_team_cache
 from db.db_manager import get_db_session
 from db.models import Player, User, Team

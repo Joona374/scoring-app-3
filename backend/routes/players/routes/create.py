@@ -2,7 +2,8 @@ import logging
 from redis import Redis
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from db.pydantic_schemas import PlayerCreate
+
+from db.pydantic_schema.player import PlayerCreate
 from db.db_manager import get_db_session
 from db.models import Player, Team, User
 from db.redis_client import get_redis
