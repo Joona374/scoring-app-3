@@ -33,28 +33,10 @@ export default function PlayerPage() {
     endDate: null,
     lastGames: null,
   });
-  const [collapsedSections, setCollapsedSections] = useState({
-    filters: false,
-    summary: false,
-    maps: false,
-    shotTypes: false,
-    spider: false,
-    trend: false,
-    synergy: false,
-    chemistry: false,
-    gameLog: false,
-  });
 
   const navigate = useNavigate();
   const initialPlayerPreview = location.state?.playerPreview || null;
   const displayedPlayer = playerData || initialPlayerPreview;
-
-  const toggleSection = (sectionKey) => {
-    setCollapsedSections((prev) => ({
-      ...prev,
-      [sectionKey]: !prev[sectionKey],
-    }));
-  };
 
   useEffect(() => {
     const fetchPlayerStats = async () => {
@@ -268,226 +250,158 @@ export default function PlayerPage() {
     <ScrollContainer className="player-page-wrapper">
       <PlayerHeader player={displayedPlayer} />
 
-      <CollapsibleSection
-        title="Suodattimet"
-        isCollapsed={collapsedSections.filters}
-        onToggle={() => toggleSection("filters")}
-      >
-        <PlayerFilters
-          filters={filters}
-          setFilters={setFilters}
-          availableGamesCount={filteredData.availableGamesCount}
-        />
-      </CollapsibleSection>
+      <PlayerFilters
+        filters={filters}
+        setFilters={setFilters}
+        availableGamesCount={filteredData.availableGamesCount}
+      />
 
-      <CollapsibleSection
-        title="Kauden yhteenveto"
-        isCollapsed={collapsedSections.summary}
-        onToggle={() => toggleSection("summary")}
-      >
-        <PlayerKPIs summary={filteredData.summary} />
-      </CollapsibleSection>
+      <PlayerKPIs summary={filteredData.summary} />
 
-      <CollapsibleSection
-        title="Laukauskartat"
-        isCollapsed={collapsedSections.maps}
-        onToggle={() => toggleSection("maps")}
-      >
-        <section className="player-visualizations-section">
-          <div className="player-visualizations-grid">
-            <div className="player-map-wrapper ice-map-large">
-              <div className="map-header-with-info">
-                <h3 className="player-map-title">Laukaisupaikat</h3>
-                <InfoTooltip text="Pelaajan omien laukausten sijainnit kaukalossa. Paikoittain näyttää yksittäiset vedot, alueittain näyttää tiheyden ja tehokkuuden vyöhykkeittäin." />
-              </div>
-              <PlayerIceMap
-                zoneStats={filteredData.ice_zones}
-                markers={filteredData.ice_markers}
-                mode={
-                  mapMode === "kaikki"
-                    ? "chances_for"
-                    : mapMode === "goals"
-                      ? "goals_for"
-                      : mapMode === "chances"
-                        ? "chances_for_no_goals"
-                        : "efficiency_for"
-                }
-                showMarkers={finalVizType === "markers"}
-                showZones={finalVizType === "zones"}
-              />
+      <section className="player-visualizations-section">
+        <div className="player-visualizations-grid">
+          <div className="player-map-wrapper ice-map-large">
+            <div className="map-header-with-info">
+              <h3 className="player-map-title">Laukaisupaikat</h3>
+              <InfoTooltip text="Pelaajan omien laukausten sijainnit kaukalossa. Paikoittain näyttää yksittäiset vedot, alueittain näyttää tiheyden ja tehokkuuden vyöhykkeittäin." />
             </div>
+            <PlayerIceMap
+              zoneStats={filteredData.ice_zones}
+              markers={filteredData.ice_markers}
+              mode={
+                mapMode === "kaikki"
+                  ? "chances_for"
+                  : mapMode === "goals"
+                    ? "goals_for"
+                    : mapMode === "chances"
+                      ? "chances_for_no_goals"
+                      : "efficiency_for"
+              }
+              showMarkers={finalVizType === "markers"}
+              showZones={finalVizType === "zones"}
+            />
+          </div>
 
-            <div className="player-map-controls-wrapper">
-              <div className="player-map-controls">
-                <div className="control-group">
-                  <span className="control-label">Näkymä</span>
-                  <div className="viz-type-toggle">
-                    <button
-                      className={`toggle-btn ${finalVizType === "markers" ? "active" : ""}`}
-                      onClick={() => setVizType("markers")}
-                      disabled={mapMode === "efficiency"}
-                    >
-                      Paikoittain
-                    </button>
-                    <button
-                      className={`toggle-btn ${finalVizType === "zones" ? "active" : ""}`}
-                      onClick={() => setVizType("zones")}
-                    >
-                      Alueittain
-                    </button>
-                  </div>
+          <div className="player-map-controls-wrapper">
+            <div className="player-map-controls">
+              <div className="control-group">
+                <span className="control-label">Näkymä</span>
+                <div className="viz-type-toggle">
+                  <button
+                    className={`toggle-btn ${finalVizType === "markers" ? "active" : ""}`}
+                    onClick={() => setVizType("markers")}
+                    disabled={mapMode === "efficiency"}
+                  >
+                    Paikoittain
+                  </button>
+                  <button
+                    className={`toggle-btn ${finalVizType === "zones" ? "active" : ""}`}
+                    onClick={() => setVizType("zones")}
+                  >
+                    Alueittain
+                  </button>
                 </div>
+              </div>
 
-                <div className="control-group">
-                  <span className="control-label">Tilasto</span>
-                  <div className="mode-options-grid">
-                    <button
-                      className={`control-btn ${mapMode === "kaikki" ? "active" : ""}`}
-                      onClick={() => setMapMode("kaikki")}
-                    >
-                      Kaikki
-                    </button>
-                    <button
-                      className={`control-btn ${mapMode === "goals" ? "active" : ""}`}
-                      onClick={() => setMapMode("goals")}
-                    >
-                      Maalit
-                    </button>
-                    <button
-                      className={`control-btn ${mapMode === "chances" ? "active" : ""}`}
-                      onClick={() => setMapMode("chances")}
-                    >
-                      Paikat
-                    </button>
-                    <button
-                      className={`control-btn ${mapMode === "efficiency" ? "active" : ""}`}
-                      onClick={() => setMapMode("efficiency")}
-                    >
-                      Tehokkuus
-                    </button>
-                  </div>
+              <div className="control-group">
+                <span className="control-label">Tilasto</span>
+                <div className="mode-options-grid">
+                  <button
+                    className={`control-btn ${mapMode === "kaikki" ? "active" : ""}`}
+                    onClick={() => setMapMode("kaikki")}
+                  >
+                    Kaikki
+                  </button>
+                  <button
+                    className={`control-btn ${mapMode === "goals" ? "active" : ""}`}
+                    onClick={() => setMapMode("goals")}
+                  >
+                    Maalit
+                  </button>
+                  <button
+                    className={`control-btn ${mapMode === "chances" ? "active" : ""}`}
+                    onClick={() => setMapMode("chances")}
+                  >
+                    Paikat
+                  </button>
+                  <button
+                    className={`control-btn ${mapMode === "efficiency" ? "active" : ""}`}
+                    onClick={() => setMapMode("efficiency")}
+                  >
+                    Tehokkuus
+                  </button>
                 </div>
+              </div>
 
-                <div
-                  className={`map-legend-container ${finalVizType === "markers" ? "visible" : "hidden"}`}
-                >
-                  <div className="map-legend">
-                    <div className="legend-item">
-                      <span className="legend-dot goal"></span>
-                      <span>Maali</span>
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-dot chance"></span>
-                      <span>Maalipaikka</span>
-                    </div>
+              <div
+                className={`map-legend-container ${finalVizType === "markers" ? "visible" : "hidden"}`}
+              >
+                <div className="map-legend">
+                  <div className="legend-item">
+                    <span className="legend-dot goal"></span>
+                    <span>Maali</span>
+                  </div>
+                  <div className="legend-item">
+                    <span className="legend-dot chance"></span>
+                    <span>Maalipaikka</span>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="player-map-wrapper net-map-large">
-              <div className="map-header-with-info">
-                <h3 className="player-map-title">Maalipaikat</h3>
-                <InfoTooltip text="Laukaukset maalia kohti. Näyttää mihin kohti maalia pelaajan vedot suuntautuvat ja mistä maalit on tehty." />
-              </div>
-              <PlayerNetMap
-                zoneStats={filteredData.net_zones}
-                markers={filteredData.net_markers}
-                mode={
-                  mapMode === "kaikki"
-                    ? "chances_for"
-                    : mapMode === "goals"
-                      ? "goals_for"
-                      : mapMode === "chances"
-                        ? "chances_for_no_goals"
-                        : "efficiency_for"
-                }
-                showMarkers={finalVizType === "markers"}
-                showZones={finalVizType === "zones"}
-              />
             </div>
           </div>
-        </section>
-      </CollapsibleSection>
+
+          <div className="player-map-wrapper net-map-large">
+            <div className="map-header-with-info">
+              <h3 className="player-map-title">Maalipaikat</h3>
+              <InfoTooltip text="Laukaukset maalia kohti. Näyttää mihin kohti maalia pelaajan vedot suuntautuvat ja mistä maalit on tehty." />
+            </div>
+            <PlayerNetMap
+              zoneStats={filteredData.net_zones}
+              markers={filteredData.net_markers}
+              mode={
+                mapMode === "kaikki"
+                  ? "chances_for"
+                  : mapMode === "goals"
+                    ? "goals_for"
+                    : mapMode === "chances"
+                      ? "chances_for_no_goals"
+                      : "efficiency_for"
+              }
+              showMarkers={finalVizType === "markers"}
+              showZones={finalVizType === "zones"}
+            />
+          </div>
+        </div>
+      </section>
 
       <div className="player-page-grid">
         <div className="player-page-column left-column">
-          <CollapsibleSection
-            title="Laukaustyypit"
-            isCollapsed={collapsedSections.shotTypes}
-            onToggle={() => toggleSection("shotTypes")}
-          >
-            <ShotTypeTable
-              shotTypeStats={filteredData.shot_type_stats}
-              totalGoals={filteredData.summary.goals}
-              totalChances={filteredData.summary.chances}
-            />
-          </CollapsibleSection>
-          <CollapsibleSection
-            title="Suorituskyky vs. Joukkue"
-            isCollapsed={collapsedSections.spider}
-            onToggle={() => toggleSection("spider")}
-          >
-            <PlayerSpiderChart
-              spiderData={playerData.spider_data}
-              playerName={`${playerData.first_name} ${playerData.last_name}`}
-            />
-          </CollapsibleSection>
+          <ShotTypeTable
+            shotTypeStats={filteredData.shot_type_stats}
+            totalGoals={filteredData.summary.goals}
+            totalChances={filteredData.summary.chances}
+          />
+          <PlayerSpiderChart
+            spiderData={playerData.spider_data}
+            playerName={`${playerData.first_name} ${playerData.last_name}`}
+          />
         </div>
         <div className="player-page-column right-column">
-          <CollapsibleSection
-            title="Vire"
-            isCollapsed={collapsedSections.trend}
-            onToggle={() => toggleSection("trend")}
-          >
-            <RollingAverageChart
-              trendData={filteredData.trend_data}
-              playerName={`${playerData.first_name} ${playerData.last_name}`}
-              playerPosition={playerData.position}
-            />
-          </CollapsibleSection>
-          <CollapsibleSection
-            title="Kentällä yhdessä"
-            isCollapsed={collapsedSections.synergy}
-            onToggle={() => toggleSection("synergy")}
-          >
-            <OnIceSynergyChart synergyData={playerData.synergy_data} />
-          </CollapsibleSection>
+          <RollingAverageChart
+            trendData={filteredData.trend_data}
+            playerName={`${playerData.first_name} ${playerData.last_name}`}
+            playerPosition={playerData.position}
+          />
+          <OnIceSynergyChart synergyData={playerData.synergy_data} />
         </div>
 
-        <CollapsibleSection
-          title="Kemia"
-          isCollapsed={collapsedSections.chemistry}
-          onToggle={() => toggleSection("chemistry")}
-        >
-          <ChemistrySection chemistryData={playerData.chemistry_data} />
-        </CollapsibleSection>
+        <ChemistrySection chemistryData={playerData.chemistry_data} />
 
-        <CollapsibleSection
-          title="Otteluhistoria"
-          isCollapsed={collapsedSections.gameLog}
-          onToggle={() => toggleSection("gameLog")}
-        >
-          <GameLogTable
-            gameLog={filteredData.game_log}
-            summary={filteredData.summary}
-          />
-        </CollapsibleSection>
+        <GameLogTable
+          gameLog={filteredData.game_log}
+          summary={filteredData.summary}
+        />
       </div>
     </ScrollContainer>
-  );
-}
-
-function CollapsibleSection({ title, isCollapsed, onToggle, children }) {
-  return (
-    <section className="page-collapsible-section">
-      <div className="page-collapsible-header">
-        <h2 className="page-collapsible-title">{title}</h2>
-        <button className="page-collapse-btn" onClick={onToggle} type="button">
-          {isCollapsed ? "Näytä" : "Piilota"}
-        </button>
-      </div>
-      {!isCollapsed && <div className="page-collapsible-body">{children}</div>}
-    </section>
   );
 }
