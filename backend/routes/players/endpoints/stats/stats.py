@@ -1,3 +1,5 @@
+import time
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -22,13 +24,8 @@ from db.pydantic_schema.player_page import (
 
 from utils import get_current_user_and_team, ensure_team_owns_player, ensure_player_exists
 from routes.players.endpoints.stats.data_collectors import get_player_all_games, get_player_tags, build_all_player_tags
-from routes.players.endpoints.stats.kpis import calculate_summary_kpis
-from routes.players.endpoints.stats.maps import calculate_map_stats
-from routes.players.endpoints.stats.shot_types import calculate_shot_type_stats
 
 router = APIRouter()
-
-
 
 
 def calculate_trend_data(db: Session, team_id: int, player_id: int, player_position: Positions, all_games: list[PlayerGameMetadata], shooter_tags: list[PlayerStatsTag]) -> list[GameTrendPoint]:
@@ -158,38 +155,22 @@ def calculate_game_log(shooter_tags: list[PlayerStatsTag], on_ice_tags: list[Pla
         log.append(GameLogEntry(game_id=g.game_id, date=g.date, opponent=g.opponent, home=g.home, goals=s["goals"], chances=s["chances"], efficiency=round(eff, 1), part_m_plus=s["part_m_plus"], part_m_minus=s["part_m_minus"], part_m_diff=s["part_m_plus"] - s["part_m_minus"], part_mp_plus=s["part_mp_plus"], part_mp_minus=s["part_mp_minus"], part_mp_diff=s["part_mp_plus"] - s["part_mp_minus"], onice_m_plus=s["onice_m_plus"], onice_m_minus=s["onice_m_minus"], onice_m_diff=s["onice_m_plus"] - s["onice_m_minus"], onice_mp_plus=s["onice_mp_plus"], onice_mp_minus=s["onice_mp_minus"], onice_mp_diff=s["onice_mp_plus"] - s["onice_mp_minus"]))
     return log
 
-def calculate_team_averages(db: Session, team_id: int, player_position: Positions) -> tuple[float, float]:
-    peers = db.query(Player).filter(Player.team_id == team_id, Player.position == player_position).all(); peer_ids = [p.id for p in peers]
-    if not peer_ids: return 0.0, 0.0
-    total_peer_games = db.query(func.count(GameInRoster.game_id)).filter(GameInRoster.player_id.in_(peer_ids)).scalar() or 0
-    if total_peer_games == 0: return 0.0, 0.0
-    shooter_tags = db.query(PlayerStatsTag).filter(PlayerStatsTag.shooter_id.in_(peer_ids)).all(); total_goals = total_chances = 0
-    for tag in shooter_tags:
-        if tag.shot_result.value == ShotResultTypes.GOAL_FOR: total_goals += 1; total_chances += 1
-        elif tag.shot_result.value == ShotResultTypes.CHANCE_FOR: total_chances += 1
-    return round(total_goals / total_peer_games, 2), round(total_chances / total_peer_games, 2)
-
 def build_stats_response_for_player(player: Player, team: Team, db: Session) -> PlayerStatsResponse:
     # 1. Get the player's games and tags
     all_games = get_player_all_games(db, player.id)
+
     shooter_tags, on_ice_tags, participating_tags = get_player_tags(db, player.id)
+
     all_tags: list[PlayerTagData] = build_all_player_tags(shooter_tags, on_ice_tags, participating_tags)
 
-    # 2. Calculate summary KPIs
-    summary = calculate_summary_kpis(len(all_games), shooter_tags, on_ice_tags, participating_tags)
-
-    # 3. Calculate map stats
-    ice_zones, net_zones, ice_markers, net_markers = calculate_map_stats(shooter_tags)
-
-    # 4. Calculate shot type stats
-    shot_type_stats = calculate_shot_type_stats(shooter_tags)
-
-
     trend_data = calculate_trend_data(db, team.id, player.id, player.position, all_games, shooter_tags)
-    team_avg_goals, team_avg_chances = calculate_team_averages(db, team.id, player.position)
+
     spider_data = calculate_spider_data(db, team.id, player.id, shooter_tags, on_ice_tags, participating_tags, all_games)
+    
     synergy_data = calculate_synergy_data(db, team.id, player.id, all_games)
+
     chemistry_data = calculate_chemistry_data(db, team.id, player.id, all_games)
+
     game_log = calculate_game_log(shooter_tags, on_ice_tags, participating_tags, all_games)
 
     return PlayerStatsResponse(
@@ -199,17 +180,9 @@ def build_stats_response_for_player(player: Player, team: Team, db: Session) -> 
         jersey_number=player.jersey_number,
         position=player.position.name,
         team_name=player.team.name if player.team else "No Team",
-        summary=summary,
-        ice_zones=ice_zones,
-        net_zones=net_zones,
-        ice_markers=ice_markers,
-        net_markers=net_markers,
         all_tags=all_tags,
         all_games=all_games,
-        shot_type_stats=shot_type_stats,
         trend_data=trend_data,
-        team_avg_goals=team_avg_goals,
-        team_avg_chances=team_avg_chances,
         spider_data=spider_data,
         synergy_data=synergy_data,
         chemistry_data=chemistry_data,

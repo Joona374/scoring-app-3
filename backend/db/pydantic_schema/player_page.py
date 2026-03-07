@@ -1,7 +1,5 @@
 from pydantic import BaseModel
 
-from db.pydantic_schema.shared import ZoneData
-
 
 class MarkerData(BaseModel):
     x: int
@@ -126,17 +124,9 @@ class PlayerStatsResponse(BaseModel):
     jersey_number: int
     position: str
     team_name: str
-    summary: "SeasonSummaryKPIs"
-    ice_zones: dict[str, ZoneData]
-    net_zones: dict[str, ZoneData]
-    ice_markers: list[MarkerData]
-    net_markers: list[MarkerData]
     all_tags: list[PlayerTagData]
     all_games: list[PlayerGameMetadata]
-    shot_type_stats: list[ShotTypeStats]
     trend_data: list[GameTrendPoint]
-    team_avg_goals: float
-    team_avg_chances: float
     spider_data: SpiderChartData
     synergy_data: SynergyData
     chemistry_data: ChemistrySectionData

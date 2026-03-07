@@ -48,7 +48,8 @@
   content: "";
   position: absolute;
   top: 100%;
-  left: 10px;
+  left: var(--arrow-left, 16px);
+  transform: translateX(-50%);
   border-width: 6px;
   border-style: solid;
   border-color: #2a292e transparent transparent transparent;

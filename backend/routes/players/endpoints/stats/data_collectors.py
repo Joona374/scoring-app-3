@@ -1,32 +1,54 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import desc, select
 
 from routes.players.endpoints.stats.maps import get_zone_names
 from db.models import PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, GameInRoster, Game
 from db.pydantic_schema.player_page import PlayerGameMetadata, PlayerTagData
 
 
+def _player_tag_query(db: Session):
+    return db.query(PlayerStatsTag).options(
+        joinedload(PlayerStatsTag.game),
+        joinedload(PlayerStatsTag.shot_area),
+        joinedload(PlayerStatsTag.shot_result),
+        joinedload(PlayerStatsTag.shot_type),
+    )
+
+
 def get_player_all_games(db: Session, player_id: int) -> list[PlayerGameMetadata]:
-    roster_entries = db.query(GameInRoster).join(Game).filter(GameInRoster.player_id == player_id).order_by(desc(Game.date)).all()
-    
-    all_games = []
-    for entry in roster_entries:
-        all_games.append(PlayerGameMetadata(game_id=entry.game.id, date=str(entry.game.date), opponent=entry.game.opponent, home=entry.game.home))
- 
-    return all_games
+    game_rows = (
+        db.query(
+            Game.id,
+            Game.date,
+            Game.opponent,
+            Game.home,
+        )
+        .join(GameInRoster, GameInRoster.game_id == Game.id)
+        .filter(GameInRoster.player_id == player_id)
+        .order_by(desc(Game.date))
+        .all()
+    )
+
+    return [
+        PlayerGameMetadata(
+            game_id=game_id,
+            date=str(game_date),
+            opponent=opponent,
+            home=home,
+        )
+        for game_id, game_date, opponent, home in game_rows
+    ]
 
 
 def get_player_tags(db: Session, player_id: int) -> tuple[list[PlayerStatsTag], list[PlayerStatsTag], list[PlayerStatsTag]]:
-    shooter_tags = db.query(PlayerStatsTag).filter(PlayerStatsTag.shooter_id == player_id).all()
+    shooter_tags = _player_tag_query(db).filter(PlayerStatsTag.shooter_id == player_id).all()
 
-    on_ice_tag_ids = db.query(PlayerStatsTagOnIce.tag_id).filter(PlayerStatsTagOnIce.player_id == player_id).all()
-    on_ice_tag_ids = [t[0] for t in on_ice_tag_ids]
-    on_ice_tags = db.query(PlayerStatsTag).filter(PlayerStatsTag.id.in_(on_ice_tag_ids)).all() if on_ice_tag_ids else []
-    
-    participating_tag_ids = db.query(PlayerStatsTagParticipating.tag_id).filter(PlayerStatsTagParticipating.player_id == player_id).all()
-    participating_tag_ids = [t[0] for t in participating_tag_ids]
-    participating_tags = db.query(PlayerStatsTag).filter(PlayerStatsTag.id.in_(participating_tag_ids)).all() if participating_tag_ids else []
-    
+    on_ice_tag_ids = select(PlayerStatsTagOnIce.tag_id).where(PlayerStatsTagOnIce.player_id == player_id)
+    on_ice_tags = _player_tag_query(db).filter(PlayerStatsTag.id.in_(on_ice_tag_ids)).all()
+
+    participating_tag_ids = select(PlayerStatsTagParticipating.tag_id).where(PlayerStatsTagParticipating.player_id == player_id)
+    participating_tags = _player_tag_query(db).filter(PlayerStatsTag.id.in_(participating_tag_ids)).all()
+
     return shooter_tags, on_ice_tags, participating_tags
 
 

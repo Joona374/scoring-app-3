@@ -699,7 +699,19 @@ export default function TeamDashboard() {
                     <tr key={player.player_id}>
                       <td
                         className="dashboard-player-info"
-                        onClick={() => navigate(`/player/${player.player_id}`)}
+                        onClick={() =>
+                          navigate(`/player/${player.player_id}`, {
+                            state: {
+                              playerPreview: {
+                                player_id: player.player_id,
+                                first_name: player.first_name,
+                                last_name: player.last_name,
+                                jersey_number: player.jersey_number,
+                                team_name,
+                              },
+                            },
+                          })
+                        }
                         style={{ cursor: "pointer" }}
                       >
                         <span className="dashboard-player-number">
