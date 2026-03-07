@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from db.db_manager import get_db_session
 from db.models import (
     Game,
+    Player,
     RegCode,
     ShotResultTypes,
     ShotTypeTypes,
@@ -257,3 +258,18 @@ def ensure_team_owns_game(game: Game, team: Team):
 
     if game.team_id != team.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to modify games belonging to another team.")
+
+
+def ensure_player_exists(player_id: int, db_session: Session):
+    player = db_session.query(Player).filter(Player.id == player_id).first()
+    if not player:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found.")
+    return player
+
+
+def ensure_team_owns_player(player: Player, team: Team):
+    if not player:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found.")
+
+    if player.team_id != team.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to modify players belonging to another team.")

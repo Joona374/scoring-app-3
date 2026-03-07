@@ -152,13 +152,13 @@ class SeasonSummaryKPIs(BaseModel):
     chances_per_game: float = 0.0
     participation_m_plus: int = 0
     participation_m_minus: int = 0
-    participation_m_diff: int = 0
+    participation_m_diff: float = 0  # Per game
     participation_mp_plus: int = 0
     participation_mp_minus: int = 0
-    participation_mp_diff: int = 0
+    participation_mp_diff: float = 0  # Per game
     on_ice_m_plus: int = 0
     on_ice_m_minus: int = 0
-    on_ice_m_diff: int = 0
+    on_ice_m_diff: float = 0  # Per game
     on_ice_mp_plus: int = 0
     on_ice_mp_minus: int = 0
-    on_ice_mp_diff: int = 0
+    on_ice_mp_diff: float = 0  # Per game

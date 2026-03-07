@@ -1,19 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
-from typing import List, Dict, Tuple, Set
+from sqlalchemy import func
 from db.db_manager import get_db_session
 from db.models import (
     Player, Team, PlayerStatsTag, PlayerStatsTagOnIce, 
-    PlayerStatsTagParticipating, ShotResultTypes, GameInRoster, User, Game, Positions, ShotResult
+    PlayerStatsTagParticipating, ShotResultTypes, GameInRoster, User, Positions, ShotResult
 )
 from db.pydantic_schema.player_page import (
     PlayerStatsResponse,
-    SeasonSummaryKPIs,
-    MarkerData,
     PlayerTagData,
     PlayerGameMetadata,
-    ShotTypeStats,
     GameTrendPoint,
     SpiderChartData,
     SpiderChartKPI,
@@ -24,103 +20,18 @@ from db.pydantic_schema.player_page import (
     GameLogEntry,
 )
 
-from db.pydantic_schema.shared import ZoneData
-
-from utils import get_current_user_and_team
+from utils import get_current_user_and_team, ensure_team_owns_player, ensure_player_exists
+from routes.players.endpoints.stats.data_collectors import get_player_all_games, get_player_tags, build_all_player_tags
+from routes.players.endpoints.stats.kpis import calculate_summary_kpis
+from routes.players.endpoints.stats.maps import calculate_map_stats
+from routes.players.endpoints.stats.shot_types import calculate_shot_type_stats
 
 router = APIRouter()
 
-def get_player_all_games(db: Session, player_id: int) -> List[PlayerGameMetadata]:
-    roster_entries = db.query(GameInRoster).join(Game).filter(
-        GameInRoster.player_id == player_id
-    ).order_by(desc(Game.date)).all()
-    return [
-        PlayerGameMetadata(
-            game_id=r.game.id,
-            date=str(r.game.date),
-            opponent=r.game.opponent,
-            home=r.game.home
-        ) for r in roster_entries
-    ]
 
-def get_player_tags(db: Session, player_id: int):
-    shooter_tags = db.query(PlayerStatsTag).filter(PlayerStatsTag.shooter_id == player_id).all()
-    on_ice_tag_ids = db.query(PlayerStatsTagOnIce.tag_id).filter(PlayerStatsTagOnIce.player_id == player_id).all()
-    on_ice_tag_ids = [t[0] for t in on_ice_tag_ids]
-    on_ice_tags = db.query(PlayerStatsTag).filter(PlayerStatsTag.id.in_(on_ice_tag_ids)).all() if on_ice_tag_ids else []
-    participating_tag_ids = db.query(PlayerStatsTagParticipating.tag_id).filter(PlayerStatsTagParticipating.player_id == player_id).all()
-    participating_tag_ids = [t[0] for t in participating_tag_ids]
-    participating_tags = db.query(PlayerStatsTag).filter(PlayerStatsTag.id.in_(participating_tag_ids)).all() if participating_tag_ids else []
-    return shooter_tags, on_ice_tags, participating_tags
 
-def calculate_summary_kpis(games_played: int, shooter_tags: List[PlayerStatsTag], on_ice_tags: List[PlayerStatsTag], participating_tags: List[PlayerStatsTag]) -> SeasonSummaryKPIs:
-    summary = SeasonSummaryKPIs(games_played=games_played)
-    for tag in shooter_tags:
-        result = tag.shot_result.value
-        if result == ShotResultTypes.GOAL_FOR: summary.goals += 1; summary.chances += 1
-        elif result == ShotResultTypes.CHANCE_FOR: summary.chances += 1
-    summary.efficiency = round((summary.goals / summary.chances * 100), 1) if summary.chances > 0 else 0.0
-    summary.chances_per_game = round((summary.chances / games_played), 1) if games_played > 0 else 0.0
-    for tag in participating_tags:
-        result = tag.shot_result.value
-        if result == ShotResultTypes.GOAL_FOR: summary.participation_m_plus += 1; summary.participation_mp_plus += 1
-        elif result == ShotResultTypes.GOAL_AGAINST: summary.participation_m_minus += 1; summary.participation_mp_minus += 1
-        elif result == ShotResultTypes.CHANCE_FOR: summary.participation_mp_plus += 1
-        elif result == ShotResultTypes.CHANCE_AGAINST: summary.participation_mp_minus += 1
-    
-    # +/- Per Game
-    denom = max(games_played, 1)
-    summary.participation_m_diff = round((summary.participation_m_plus - summary.participation_m_minus) / denom, 2)
-    summary.participation_mp_diff = round((summary.participation_mp_plus - summary.participation_mp_minus) / denom, 2)
-    
-    for tag in on_ice_tags:
-        result = tag.shot_result.value
-        if result == ShotResultTypes.GOAL_FOR: summary.on_ice_m_plus += 1; summary.on_ice_mp_plus += 1
-        elif result == ShotResultTypes.GOAL_AGAINST: summary.on_ice_m_minus += 1; summary.on_ice_mp_minus += 1
-        elif result == ShotResultTypes.CHANCE_FOR: summary.on_ice_mp_plus += 1
-        elif result == ShotResultTypes.CHANCE_AGAINST: summary.on_ice_mp_minus += 1
-    
-    summary.on_ice_m_diff = round((summary.on_ice_m_plus - summary.on_ice_m_minus) / denom, 2)
-    summary.on_ice_mp_diff = round((summary.on_ice_mp_plus - summary.on_ice_mp_minus) / denom, 2)
-    
-    return summary
 
-def get_zone_names(tag: PlayerStatsTag) -> Tuple[str, str]:
-    ice_zone_name = tag.shot_area.value.value if tag.shot_area else "UNKNOWN"
-    if ice_zone_name in ["ZONE_2_SIDE", "ZONE_4", "OUTSIDE_FAR", "OUTSIDE_CLOSE"]:
-        side = "_LEFT" if tag.ice_x < 50 else "_RIGHT"; ice_zone_name += side
-    net_zone_name = f"{tag.net_height}-{tag.net_width}"
-    return ice_zone_name, net_zone_name
-
-def calculate_map_stats(player_id: int, shooter_tags: List[PlayerStatsTag], participating_tags: List[PlayerStatsTag]) -> Tuple[Dict[str, ZoneData], Dict[str, ZoneData], List[MarkerData], List[MarkerData]]:
-    ice_zones: Dict[str, ZoneData] = {}; net_zones: Dict[str, ZoneData] = {}; ice_markers: List[MarkerData] = []; net_markers: List[MarkerData] = []
-    for tag in shooter_tags:
-        result = tag.shot_result.value
-        if result not in [ShotResultTypes.GOAL_FOR, ShotResultTypes.CHANCE_FOR]: continue
-        ice_markers.append(MarkerData(x=tag.ice_x, y=tag.ice_y, result=result.value)); net_markers.append(MarkerData(x=tag.net_x, y=tag.net_y, result=result.value))
-        ice_zone_name, net_zone_name = get_zone_names(tag)
-        if ice_zone_name not in ice_zones: ice_zones[ice_zone_name] = ZoneData()
-        if net_zone_name not in net_zones: net_zones[net_zone_name] = ZoneData()
-        if result == ShotResultTypes.GOAL_FOR:
-            ice_zones[ice_zone_name].goals_for += 1; ice_zones[ice_zone_name].chances_for += 1
-            net_zones[net_zone_name].goals_for += 1; net_zones[net_zone_name].chances_for += 1
-        elif result == ShotResultTypes.CHANCE_FOR:
-            ice_zones[ice_zone_name].chances_for += 1; net_zones[net_zone_name].chances_for += 1
-    return ice_zones, net_zones, ice_markers, net_markers
-
-def calculate_shot_type_stats(shooter_tags: List[PlayerStatsTag]) -> List[ShotTypeStats]:
-    stats_dict: Dict[str, ShotTypeStats] = {}
-    for tag in shooter_tags:
-        s_type = tag.shot_type.value.value if tag.shot_type else "UNKNOWN"; result = tag.shot_result.value
-        if s_type not in stats_dict: stats_dict[s_type] = ShotTypeStats(shot_type=s_type)
-        stat = stats_dict[s_type]
-        if result == ShotResultTypes.GOAL_FOR: stat.goals += 1; stat.chances += 1
-        elif result == ShotResultTypes.CHANCE_FOR: stat.chances += 1
-    for stat in stats_dict.values():
-        if stat.chances > 0: stat.efficiency = round((stat.goals / stat.chances * 100), 1)
-    return list(stats_dict.values())
-
-def calculate_trend_data(db: Session, team_id: int, player_id: int, player_position: Positions, all_games: List[PlayerGameMetadata], shooter_tags: List[PlayerStatsTag]) -> List[GameTrendPoint]:
+def calculate_trend_data(db: Session, team_id: int, player_id: int, player_position: Positions, all_games: list[PlayerGameMetadata], shooter_tags: list[PlayerStatsTag]) -> list[GameTrendPoint]:
     games_asc = sorted(all_games, key=lambda x: x.date); game_ids = [g.game_id for g in games_asc]
     player_game_stats = {g_id: {"goals": 0, "chances": 0} for g_id in game_ids}
     for tag in shooter_tags:
@@ -153,7 +64,7 @@ def calculate_trend_data(db: Session, team_id: int, player_id: int, player_posit
         result.append(GameTrendPoint(game_id=g.game_id, opponent=g.opponent, date=g.date, goals=player_game_stats[g.game_id]["goals"], chances=player_game_stats[g.game_id]["chances"], rolling_goals=round(rolling_goals, 2), rolling_chances=round(rolling_chances, 2), team_rolling_goals=round(team_rolling_goals, 2), team_rolling_chances=round(team_rolling_chances, 2)))
     return result
 
-def calculate_spider_data(db: Session, team_id: int, player_id: int, shooter_tags: List[PlayerStatsTag], on_ice_tags: List[PlayerStatsTag], participating_tags: List[PlayerStatsTag], all_games: List[PlayerGameMetadata]) -> SpiderChartData:
+def calculate_spider_data(db: Session, team_id: int, player_id: int, shooter_tags: list[PlayerStatsTag], on_ice_tags: list[PlayerStatsTag], participating_tags: list[PlayerStatsTag], all_games: list[PlayerGameMetadata]) -> SpiderChartData:
     num_games = len(all_games)
     if num_games == 0: return SpiderChartData(kpis=[])
     player_goals = sum(1 for t in shooter_tags if t.shot_result.value == ShotResultTypes.GOAL_FOR); gpg = player_goals / num_games
@@ -170,7 +81,7 @@ def calculate_spider_data(db: Session, team_id: int, player_id: int, shooter_tag
     team_v5v5_for = stats.get(("ES", ShotResultTypes.GOAL_FOR), 0) + stats.get(("ES", ShotResultTypes.CHANCE_FOR), 0); team_v5v5_against = stats.get(("ES", ShotResultTypes.GOAL_AGAINST), 0) + stats.get(("ES", ShotResultTypes.CHANCE_AGAINST), 0); team_corsi = (team_v5v5_for / (team_v5v5_for + team_v5v5_against) * 100) if (team_v5v5_for + team_v5v5_against) > 0 else 50.0; team_pp_goals = stats.get(("PP", ShotResultTypes.GOAL_FOR), 0); team_pp_chances = team_pp_goals + stats.get(("PP", ShotResultTypes.CHANCE_FOR), 0); team_pp_eff = (team_pp_goals / team_pp_chances * 100) if team_pp_chances > 0 else 0.0; team_pk_against = stats.get(("PK", ShotResultTypes.GOAL_AGAINST), 0) + stats.get(("PK", ShotResultTypes.CHANCE_AGAINST), 0); team_pk_workload = team_pk_against / team_roster_count
     return SpiderChartData(kpis=[SpiderChartKPI(label="Maalit / peli", player_value=round(gpg, 2), team_avg=round(team_gpg, 2)), SpiderChartKPI(label="Osallisuudet / peli", player_value=round(cpg, 2), team_avg=round(team_cpg, 2)), SpiderChartKPI(label="5v5 Corsi %", player_value=round(corsi, 1), team_avg=round(team_corsi, 1)), SpiderChartKPI(label="YV Tehokkuus %", player_value=round(pp_eff, 1), team_avg=round(team_pp_eff, 1)), SpiderChartKPI(label="AV Työkuorma", player_value=round(pk_workload, 2), team_avg=round(team_pk_workload, 2))])
 
-def calculate_synergy_data(db: Session, team_id: int, player_id: int, all_games: List[PlayerGameMetadata]) -> SynergyData:
+def calculate_synergy_data(db: Session, team_id: int, player_id: int, all_games: list[PlayerGameMetadata]) -> SynergyData:
     game_ids = [g.game_id for g in all_games]; shared_rosters = db.query(GameInRoster).filter(GameInRoster.game_id.in_(game_ids)).all()
     teammate_shared_games = {}
     for entry in shared_rosters:
@@ -201,7 +112,7 @@ def calculate_synergy_data(db: Session, team_id: int, player_id: int, all_games:
         points.append(SynergyDataPoint(teammate_id=t_id, teammate_name=f"{p_map[t_id].first_name} {p_map[t_id].last_name}", jersey_number=p_map[t_id].jersey_number, net_mp_per_game=round(net_mp, 2), shared_games=num_shared))
     points.sort(key=lambda x: x.net_mp_per_game, reverse=True); return SynergyData(points=points)
 
-def calculate_chemistry_data(db: Session, team_id: int, player_id: int, all_games: List[PlayerGameMetadata]) -> ChemistrySectionData:
+def calculate_chemistry_data(db: Session, team_id: int, player_id: int, all_games: list[PlayerGameMetadata]) -> ChemistrySectionData:
     game_ids = [g.game_id for g in all_games]; rosters = db.query(GameInRoster).filter(GameInRoster.game_id.in_(game_ids)).all(); shared_games_map = {}
     for r in rosters:
         if r.player_id == player_id: continue
@@ -221,7 +132,7 @@ def calculate_chemistry_data(db: Session, team_id: int, player_id: int, all_game
     avg_volume = sum(t.participations_per_game for t in teammates) / len(teammates) if teammates else 0; avg_eff = sum(t.efficiency for t in teammates) / len(teammates) if teammates else 0
     return ChemistrySectionData(teammates=teammates, team_avg_volume=round(avg_volume, 2), team_avg_efficiency=round(avg_eff, 1))
 
-def calculate_game_log(shooter_tags: List[PlayerStatsTag], on_ice_tags: List[PlayerStatsTag], participating_tags: List[PlayerStatsTag], all_games: List[PlayerGameMetadata]) -> List[GameLogEntry]:
+def calculate_game_log(shooter_tags: list[PlayerStatsTag], on_ice_tags: list[PlayerStatsTag], participating_tags: list[PlayerStatsTag], all_games: list[PlayerGameMetadata]) -> list[GameLogEntry]:
     game_stats = {g.game_id: { "goals": 0, "chances": 0, "part_m_plus": 0, "part_m_minus": 0, "part_mp_plus": 0, "part_mp_minus": 0, "onice_m_plus": 0, "onice_m_minus": 0, "onice_mp_plus": 0, "onice_mp_minus": 0 } for g in all_games}
     for t in shooter_tags:
         if t.game_id in game_stats:
@@ -247,7 +158,7 @@ def calculate_game_log(shooter_tags: List[PlayerStatsTag], on_ice_tags: List[Pla
         log.append(GameLogEntry(game_id=g.game_id, date=g.date, opponent=g.opponent, home=g.home, goals=s["goals"], chances=s["chances"], efficiency=round(eff, 1), part_m_plus=s["part_m_plus"], part_m_minus=s["part_m_minus"], part_m_diff=s["part_m_plus"] - s["part_m_minus"], part_mp_plus=s["part_mp_plus"], part_mp_minus=s["part_mp_minus"], part_mp_diff=s["part_mp_plus"] - s["part_mp_minus"], onice_m_plus=s["onice_m_plus"], onice_m_minus=s["onice_m_minus"], onice_m_diff=s["onice_m_plus"] - s["onice_m_minus"], onice_mp_plus=s["onice_mp_plus"], onice_mp_minus=s["onice_mp_minus"], onice_mp_diff=s["onice_mp_plus"] - s["onice_mp_minus"]))
     return log
 
-def calculate_team_averages(db: Session, team_id: int, player_position: Positions) -> Tuple[float, float]:
+def calculate_team_averages(db: Session, team_id: int, player_position: Positions) -> tuple[float, float]:
     peers = db.query(Player).filter(Player.team_id == team_id, Player.position == player_position).all(); peer_ids = [p.id for p in peers]
     if not peer_ids: return 0.0, 0.0
     total_peer_games = db.query(func.count(GameInRoster.game_id)).filter(GameInRoster.player_id.in_(peer_ids)).scalar() or 0
@@ -258,20 +169,57 @@ def calculate_team_averages(db: Session, team_id: int, player_position: Position
         elif tag.shot_result.value == ShotResultTypes.CHANCE_FOR: total_chances += 1
     return round(total_goals / total_peer_games, 2), round(total_chances / total_peer_games, 2)
 
-def build_all_player_tags(shooter_tags: List[PlayerStatsTag], on_ice_tags: List[PlayerStatsTag], participating_tags: List[PlayerStatsTag]) -> List[PlayerTagData]:
-    shooter_ids = {t.id for t in shooter_tags}; on_ice_ids = {t.id for t in on_ice_tags}; participating_ids = {t.id for t in participating_tags}; unique_tags: Dict[int, PlayerStatsTag] = {}
-    for t in shooter_tags: unique_tags[t.id] = t
-    for t in on_ice_tags: unique_tags[t.id] = t
-    for t in participating_tags: unique_tags[t.id] = t
-    result = []
-    for tag_id, tag in unique_tags.items():
-        game = tag.game; ice_zone, net_zone = get_zone_names(tag); result.append(PlayerTagData(id=tag.id, game_id=game.id, date=str(game.date), opponent=game.opponent, home=game.home, strengths=tag.strengths or "ES", ice_x=tag.ice_x, ice_y=tag.ice_y, ice_zone=ice_zone, net_x=tag.net_x, net_y=tag.net_y, net_zone=net_zone, net_height=tag.net_height, net_width=tag.net_width, shot_result=tag.shot_result.value.value, shot_type=tag.shot_type.value.value if tag.shot_type else "UNKNOWN", is_shooter=(tag.id in shooter_ids), is_participating=(tag.id in participating_ids), is_on_ice=(tag.id in on_ice_ids)))
-    result.sort(key=lambda x: x.date, reverse=True); return result
+def build_stats_response_for_player(player: Player, team: Team, db: Session) -> PlayerStatsResponse:
+    # 1. Get the player's games and tags
+    all_games = get_player_all_games(db, player.id)
+    shooter_tags, on_ice_tags, participating_tags = get_player_tags(db, player.id)
+    all_tags: list[PlayerTagData] = build_all_player_tags(shooter_tags, on_ice_tags, participating_tags)
+
+    # 2. Calculate summary KPIs
+    summary = calculate_summary_kpis(len(all_games), shooter_tags, on_ice_tags, participating_tags)
+
+    # 3. Calculate map stats
+    ice_zones, net_zones, ice_markers, net_markers = calculate_map_stats(shooter_tags)
+
+    # 4. Calculate shot type stats
+    shot_type_stats = calculate_shot_type_stats(shooter_tags)
+
+
+    trend_data = calculate_trend_data(db, team.id, player.id, player.position, all_games, shooter_tags)
+    team_avg_goals, team_avg_chances = calculate_team_averages(db, team.id, player.position)
+    spider_data = calculate_spider_data(db, team.id, player.id, shooter_tags, on_ice_tags, participating_tags, all_games)
+    synergy_data = calculate_synergy_data(db, team.id, player.id, all_games)
+    chemistry_data = calculate_chemistry_data(db, team.id, player.id, all_games)
+    game_log = calculate_game_log(shooter_tags, on_ice_tags, participating_tags, all_games)
+
+    return PlayerStatsResponse(
+        player_id=player.id,
+        first_name=player.first_name,
+        last_name=player.last_name,
+        jersey_number=player.jersey_number,
+        position=player.position.name,
+        team_name=player.team.name if player.team else "No Team",
+        summary=summary,
+        ice_zones=ice_zones,
+        net_zones=net_zones,
+        ice_markers=ice_markers,
+        net_markers=net_markers,
+        all_tags=all_tags,
+        all_games=all_games,
+        shot_type_stats=shot_type_stats,
+        trend_data=trend_data,
+        team_avg_goals=team_avg_goals,
+        team_avg_chances=team_avg_chances,
+        spider_data=spider_data,
+        synergy_data=synergy_data,
+        chemistry_data=chemistry_data,
+        game_log=game_log,
+    )
+
 
 @router.get("/{player_id}/stats", response_model=PlayerStatsResponse)
 def get_player_stats(player_id: int, db: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
-    _, team = user_and_team; player = db.query(Player).filter(Player.id == player_id).first()
-    if not player: raise HTTPException(status_code=404, detail="Player not found")
-    if player.team_id != team.id: raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have access to this player's statistics.")
-    all_games = get_player_all_games(db, player_id); shooter_tags, on_ice_tags, participating_tags = get_player_tags(db, player_id); summary = calculate_summary_kpis(len(all_games), shooter_tags, on_ice_tags, participating_tags); ice_zones, net_zones, ice_markers, net_markers = calculate_map_stats(player_id, shooter_tags, participating_tags); all_tags = build_all_player_tags(shooter_tags, on_ice_tags, participating_tags); shot_type_stats = calculate_shot_type_stats(shooter_tags); trend_data = calculate_trend_data(db, team.id, player.id, player.position, all_games, shooter_tags); team_avg_goals, team_avg_chances = calculate_team_averages(db, team.id, player.position); spider_data = calculate_spider_data(db, team.id, player.id, shooter_tags, on_ice_tags, participating_tags, all_games); synergy_data = calculate_synergy_data(db, team.id, player.id, all_games); chemistry_data = calculate_chemistry_data(db, team.id, player.id, all_games); game_log = calculate_game_log(shooter_tags, on_ice_tags, participating_tags, all_games)
-    return PlayerStatsResponse(player_id=player.id, first_name=player.first_name, last_name=player.last_name, jersey_number=player.jersey_number, position=player.position.name, team_name=player.team.name if player.team else "No Team", summary=summary, ice_zones=ice_zones, net_zones=net_zones, ice_markers=ice_markers, net_markers=net_markers, all_tags=all_tags, all_games=all_games, shot_type_stats=shot_type_stats, trend_data=trend_data, team_avg_goals=team_avg_goals, team_avg_chances=team_avg_chances, spider_data=spider_data, synergy_data=synergy_data, chemistry_data=chemistry_data, game_log=game_log)
+    _, team = user_and_team
+    player = ensure_player_exists(player_id, db)
+    ensure_team_owns_player(player, team)
+    return build_stats_response_for_player(player, team, db)
