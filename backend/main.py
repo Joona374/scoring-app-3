@@ -34,10 +34,10 @@ app.include_router(dashboard_router.router)
 # Middleware to handle CORS.
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https:\/\/scoring-app-3(-git-[\w-]+)?\.vercel\.app|http:\/\/localhost(:\d+)?",
-    allow_credentials=True, # Allows cookies to be included in requests
-    allow_methods=["*"],    # Allows all methods (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"],    # Allows all headers
+    allow_origin_regex=r"https:\/\/scoring-app-3(-git-[\w-]+)?\.vercel\.app|http:\/\/localhost(:\d+)?|https:\/\/scoring-app-3.pages.dev",  # Allows requests from the specified origins
+    allow_credentials=True,  # Allows cookies to be included in requests
+    allow_methods=["*"],  # Allows all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allows all headers
 )
 
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
