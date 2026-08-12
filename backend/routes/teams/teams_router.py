@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from db.pydantic_schemas import TeamCreate, TeamCreateResponse, PlayerResponse, TeamResponse
+from db.pydantic_schema.player import PlayerResponse
+from db.pydantic_schema.team import TeamCreate, TeamCreateResponse, TeamResponse
 from db.db_manager import get_db_session
 from db.models import Team, User, RegCode
-from utils import get_current_user_id, generate_random_code
+from utils import get_current_user_id, generate_random_code, get_current_user_and_team
 
 router = APIRouter(
     prefix="/teams",
@@ -14,20 +15,18 @@ router = APIRouter(
 
 
 @router.post("/create")
-def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_session), user_and_team=Depends(get_current_user_and_team)):
+    # Find the user who want to create a team
+    user, team = user_and_team
+
     # Pull the required data from the request body
     team_name = team_data.name.strip()
-    
-    # Find the user who want to create a team
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such user")
 
     # Check if the user already has a team or team with same name exists
-    existing_team = db_session.query(Team).filter((Team.creator_id == current_user_id) | (Team.name == team_name)).first()
+    existing_team = db_session.query(Team).filter((Team.creator_id == user.id) | (Team.name == team_name)).first()
     if existing_team:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Either the user already has created a team, or a team with same name exists")
-    
+
     code_for_team = generate_random_code()
     new_code = RegCode(
         code=code_for_team,
@@ -37,7 +36,6 @@ def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_sess
 
     db_session.add(new_code)
     db_session.commit()
-
 
     new_team = Team(
         name=team_name,
@@ -52,7 +50,7 @@ def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_sess
 
     user.has_creation_privilege = False
     user.team = new_team
-    
+
     db_session.commit()
     db_session.refresh(new_team)
 
@@ -62,9 +60,8 @@ def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_sess
 
 
 @router.get("/me")
-def get_my_team(db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    team: Team = user.team
+def get_my_team(db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    _, team = user_and_team
 
     if not team:
         return TeamResponse(
@@ -83,10 +80,10 @@ def get_my_team(db_session: Session = Depends(get_db_session), current_user_id: 
                 position=player.position.name
                 )
             teams_players.append(player_response)
-    
+
     team_response = TeamResponse(
         team_name=team.name,
         join_code=team.code[0].code,
         players=teams_players)
-    
+
     return team_response

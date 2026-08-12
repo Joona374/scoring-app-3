@@ -1,0 +1,68 @@
+.spider-chart-section {
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 1.5rem;
+}
+
+.spider-container {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.spider-labels-guide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.label-guide-item {
+  display: flex;
+  align-items: center;
+}
+
+.label-text {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted-text);
+  text-transform: uppercase;
+}
+
+.spider-tooltip {
+  background-color: #1e1d22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.tooltip-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.tooltip-value {
+  font-size: 0.75rem;
+  margin: 0.2rem 0;
+}
+
+.tooltip-value span {
+  font-weight: 700;
+}
+
+.tooltip-value.player {
+  color: var(--accent-color);
+}
+
+.tooltip-value.team {
+  color: rgba(255, 255, 255, 0.6);
+}

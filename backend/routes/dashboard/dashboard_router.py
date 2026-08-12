@@ -7,7 +7,9 @@ from db.models import (
     User, Game, Player, PlayerStatsTag, PlayerStatsTagOnIce, 
     PlayerStatsTagParticipating, ShotResultTypes, GameInRoster
 )
-from db.pydantic_schemas import ZoneData, GamePlayerStats, GameKPI, DashboardResponse
+from db.pydantic_schema.dashboard import GamePlayerStats, GameKPI, DashboardResponse
+from db.pydantic_schema.shared import ZoneData
+
 from utils import get_current_user_id
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])

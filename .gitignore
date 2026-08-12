@@ -79,3 +79,5 @@ stats_ideas
 
 .dockerignore
 Dockerfile
+GEMINI.md
+TODO.txt

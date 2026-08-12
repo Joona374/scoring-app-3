@@ -1,11 +1,29 @@
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 import json
-from db.pydantic_schemas import AddTag, TagSchema, GameInRosterResponse, PlayerResponse, TeamStatsTagResponse, PlayerStatsTagResponse
-from db.models import User, Game, ShotResult, ShotType, ShotResultTypes, ShotTypeTypes, TeamStatsTag, PlayerStatsTag, PlayerStatsTagOnIce, PlayerStatsTagParticipating, ShotArea, ShotAreaTypes, GameInRoster
+from db.pydantic_schema.tag import AddTag, TeamStatsTagResponse, PlayerStatsTagResponse
+from db.pydantic_schema.player import PlayerResponse
+from db.pydantic_schema.game import GameInRosterResponse
+
+from db.models import (
+    Team,
+    User,
+    Game,
+    ShotResult,
+    ShotType,
+    ShotResultTypes,
+    ShotTypeTypes,
+    TeamStatsTag,
+    PlayerStatsTag,
+    PlayerStatsTagOnIce,
+    PlayerStatsTagParticipating,
+    ShotArea,
+    ShotAreaTypes,
+    GameInRoster,
+)
 from db.db_manager import get_db_session
 from sqlalchemy.orm import Session
-from utils import get_current_user_id
+from utils import ensure_game_exists, ensure_team_exists, ensure_team_owns_game, get_current_user_and_team
 
 router = APIRouter(
     prefix="/tagging",
@@ -13,25 +31,36 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @router.get("/questions/team")
-def get_questions():
+def get_team_questions():
     questions_json_path = Path("./tagging/team_stats_questions.json")
     text = questions_json_path.read_text()
     parsed_json = json.loads(text)
 
     return parsed_json
 
+
 @router.get("/questions/player")
-def get_questions():
+def get_player_questions():
     questions_json_path = Path("./tagging/player_stats_questions.json")
     text = questions_json_path.read_text()
     parsed_json = json.loads(text)
 
     return parsed_json
 
+
 @router.post("/add-team-tag")
-def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    filtered_tag = {k: v for k, v in tag_data.tag.items() if k != "new_question"}
+def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    _, team = user_and_team
+    ensure_team_exists(team)
+
+    received_tag = tag_data.tag.model_dump(mode="json")
+    game = ensure_game_exists(received_tag["game_id"], db_session)
+    ensure_team_owns_game(game, team)
+
+    filtered_tag = {k: v for k, v in received_tag.items() if k != "new_question"}
+
     tag_for_model = {}
     for key, value in filtered_tag.items():
         key_to_use = key
@@ -45,8 +74,13 @@ def add_game_stats_tag(tag_data: AddTag, db_session: Session = Depends(get_db_se
 
 
 @router.post("/add-players-tag")
-def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    received_tag = tag_data.tag
+def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    _, team = user_and_team
+    ensure_team_exists(team)
+
+    received_tag = tag_data.tag.model_dump(mode="json")
+    game = ensure_game_exists(received_tag["game_id"], db_session)
+    ensure_team_owns_game(game, team)
 
     shot_location = received_tag["location"]
     shot_zone = received_tag["shotZone"]
@@ -123,44 +157,54 @@ def add_tag(tag_data: AddTag, db_session: Session = Depends(get_db_session), cur
 
     return PlayerStatsTagResponse(id=new_tag.id, succes=True)
 
+
 @router.get("/load/team-tags/{game_id}")
-def load_team_tags(game_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    game = db_session.query(Game).filter(Game.id == game_id).first()
-    if user.team == game.team:
-        tags = game.team_stats_tags
-        return tags
-    else:
+def load_team_tags(game_id: int, db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    user, team = user_and_team
+    game = ensure_game_exists(game_id, db_session)
+
+    if team != game.team:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to access these tags")
+
+    tags = game.team_stats_tags
+    return tags
 
 
 @router.get("/load/player-tags/{game_id}")
-def load_player_tags(game_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    game = db_session.query(Game).filter(Game.id == game_id).first()
-    if user.team == game.team:
-        tags = game.player_stats_tags
-        normalized_tags = []
-        for tag in tags:
-            normal_tag = {
-                "crossice": tag.crossice,
-                "game_id": tag.game_id,
-                "location": {"x": tag.ice_x, "y": tag.ice_y},
-                "net": {"x": tag.net_x, "y": tag.net_y},
-                "netZone": f"{tag.net_height}-{tag.net_width}",
-                "shotZone": tag.shot_area.value, 
-                "shot_result": tag.shot_result.value,
-                "shot_type": tag.shot_type.value,
-                "strengths": tag.strengths,
-                "id": tag.id
-            }
-            if tag.shooter:
-                normal_tag["shooter"] = {"id": tag.shooter.id, "first_name": tag.shooter.first_name, "last_name": tag.shooter.last_name, "jersey_number": tag.shooter.jersey_number, "position": tag.shooter.position}
+def load_player_tags(game_id: int, db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    user, team = user_and_team
+    game = ensure_game_exists(game_id, db_session)
 
-            normalized_tags.append(normal_tag)
-        return normalized_tags
-    else:
+    if team != game.team:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to access these tags")
+
+    tags = game.player_stats_tags
+    normalized_tags = []
+    for tag in tags:
+        normal_tag = {
+            "crossice": tag.crossice,
+            "game_id": tag.game_id,
+            "location": {"x": tag.ice_x, "y": tag.ice_y},
+            "net": {"x": tag.net_x, "y": tag.net_y},
+            "netZone": f"{tag.net_height}-{tag.net_width}",
+            "shotZone": tag.shot_area.value,
+            "shot_result": tag.shot_result.value,
+            "shot_type": tag.shot_type.value,
+            "strengths": tag.strengths,
+            "id": tag.id,
+        }
+        if tag.shooter:
+            normal_tag["shooter"] = {
+                "id": tag.shooter.id,
+                "first_name": tag.shooter.first_name,
+                "last_name": tag.shooter.last_name,
+                "jersey_number": tag.shooter.jersey_number,
+                "position": tag.shooter.position,
+            }
+
+        normalized_tags.append(normal_tag)
+    return normalized_tags
+
 
 def create_position_response(line_n: int, position: str, in_rosters_list: list[GameInRoster]):
     in_roster_object = next((in_roster for in_roster in in_rosters_list if in_roster.line == line_n and in_roster.position == position), None)
@@ -186,12 +230,14 @@ def create_position_response(line_n: int, position: str, in_rosters_list: list[G
 
     return player_in_roster
 
-@router.get("/roster-for-game")
-def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    game = db_session.query(Game).filter(Game.id == game_id).first()
 
-    if user.team != game.team:
+@router.get("/roster-for-game")
+def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    _, team = user_and_team
+    game = ensure_game_exists(game_id, db_session)
+
+    ensure_team_owns_game(game, team)
+    if team != game.team:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User has no rights to this game")
 
     NUMBER_OF_FORWARD_LINES = 5
@@ -199,7 +245,7 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
     NUMBER_OF_GOALIES = 2
 
     players_in_roster = []
-    
+
     for i in range(1, NUMBER_OF_FORWARD_LINES + 1):
         for pos in ["LW", "C", "RW"]:
             player_in_roster = create_position_response(i, pos, game.in_rosters)
@@ -215,6 +261,7 @@ def get_roster_for_game(game_id: int, db_session: Session = Depends(get_db_sessi
         players_in_roster.append(player_in_roster)
 
     return players_in_roster
+
 
 def filter_changed_in_rosters(frontend_entries: list[GameInRosterResponse], db_entries: list[GameInRoster], game_id: int):
     matched = []
@@ -254,13 +301,15 @@ def filter_changed_in_rosters(frontend_entries: list[GameInRosterResponse], db_e
 def find_in_roster_entry(line: int, position: str, in_rosters: list[GameInRoster]):
     return next((entry for entry in in_rosters if entry.line == line and entry.position == position), None)
 
-@router.put("/roster-for-game")
-def update_roster_for_game(game_id: int, new_roster: list[GameInRosterResponse], db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    try:
-        user = db_session.query(User).filter(User.id == current_user_id).first()
-        game = db_session.query(Game).filter(Game.id == game_id).first()
 
-        if user.team != game.team:
+@router.put("/roster-for-game")
+def update_roster_for_game(game_id: int, new_roster: list[GameInRosterResponse], db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    try:
+        _, team = user_and_team
+        game = ensure_game_exists(game_id, db_session)
+        ensure_team_owns_game(game, team)
+
+        if team != game.team:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to update this game's roster")
 
         roster_entries_for_game = db_session.query(GameInRoster).filter(GameInRoster.game_id == game_id).all()
@@ -282,16 +331,20 @@ def update_roster_for_game(game_id: int, new_roster: list[GameInRosterResponse],
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error processing the roster update")
 
+
 @router.delete("/delete/team-tag/{tag_id}")
-def update_player(tag_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
+def delete_team_tag(tag_id: int, db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    _, team = user_and_team
     tag = db_session.query(TeamStatsTag).filter(TeamStatsTag.id == tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
     tag_game = tag.game
+    ensure_team_owns_game(tag_game, team)
 
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
 
-    if user.team != tag_game.team:
+    if team != tag_game.team:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to delete this tag")
 
     db_session.delete(tag)
@@ -299,17 +352,17 @@ def update_player(tag_id: int, db_session: Session = Depends(get_db_session), cu
 
     return {"message": "Tag deleted successfully", "success": True}
 
-@router.delete("/delete/player-tag/{tag_id}")
-def update_player(tag_id: int, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
-    user = db_session.query(User).filter(User.id == current_user_id).first()
-    tag = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.id == tag_id).first()
-    tag_game = tag.game
 
+@router.delete("/delete/player-tag/{tag_id}")
+def delete_player_tag(tag_id: int, db_session: Session = Depends(get_db_session), user_and_team: tuple[User, Team] = Depends(get_current_user_and_team)):
+    _, team = user_and_team
+    tag = db_session.query(PlayerStatsTag).filter(PlayerStatsTag.id == tag_id).first()
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
 
-    if user.team != tag_game.team:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No permission to delete this tag")
+    tag_game = tag.game
+
+    ensure_team_owns_game(tag_game, team)
 
     db_session.delete(tag)
     db_session.commit()

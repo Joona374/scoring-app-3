@@ -8,7 +8,7 @@ from redis import Redis
 from redis.exceptions import RedisError
 from pydantic import TypeAdapter
 
-from db.pydantic_schemas import PlayerResponse
+from db.pydantic_schema.player import PlayerResponse
 from db.redis_client import get_redis
 from db.models import Team, User
 from utils import get_current_user_and_team
@@ -67,4 +67,3 @@ def get_player_for_team(user_and_team: tuple["User", "Team"] = Depends(get_curre
         logger.warning(f"⚠️ Redis error while setting cache: {e}. Proceeding without caching.")
     
     return validated_players
-    

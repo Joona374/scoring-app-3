@@ -1,0 +1,50 @@
+.rolling-avg-section {
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.charts-vertical-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.chart-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-subtitle {
+  font-size: 0.75rem;
+  color: var(--muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: var(--muted-text);
+}
+
+.recharts-legend-item-text {
+  color: var(--text-color) !important;
+}
+
+.recharts-default-tooltip {
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Remove focus outline on click */
+.recharts-wrapper:focus, 
+.recharts-surface:focus {
+  outline: none !important;
+}
+
+svg:focus {
+  outline: none !important;
+}
