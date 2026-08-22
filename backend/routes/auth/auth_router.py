@@ -22,9 +22,9 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
     elif reg_code.used:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Registration code already used")
 
-    existing_user = db_session.query(User).filter((User.username == user_data.username) | (User.email == user_data.email)).first()
+    existing_user = db_session.query(User).filter(User.username == user_data.username).first()
     if existing_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username or email already exists")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already exists")
 
     hashed_password = hash_password(user_data.password)
 
@@ -64,7 +64,7 @@ def register(user_data: UserCreate, db_session: Session = Depends(get_db_session
 
 @router.post("/login", response_model=LoginResponse)
 def login(login_data: UserLogin, db_session: Session = Depends(get_db_session)):
-    found_user = db_session.query(User).filter((User.username == login_data.user) | (User.email == login_data.user)).first()
+    found_user = db_session.query(User).filter(User.username == login_data.user).first()
 
     if not found_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Käyttäjätunnus tai salasana on virheellinen")

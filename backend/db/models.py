@@ -14,7 +14,7 @@ class User(Base):
     __tablename__ = "users"
 
     username: Mapped[str] = mapped_column(String(30), unique=True)
-    email: Mapped[str] = mapped_column(String(60), unique=True)
+    email: Mapped[str] = mapped_column(String(60))
     is_admin: Mapped[bool] = mapped_column(default=False)
     password_hash: Mapped[str] = mapped_column(String(128))
     has_creation_privilege: Mapped[bool] = mapped_column(default=False)
