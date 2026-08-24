@@ -15,9 +15,10 @@ router = APIRouter(
 
 
 @router.post("/create")
-def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_session), user_and_team=Depends(get_current_user_and_team)):
-    # Find the user who want to create a team
-    user, team = user_and_team
+def create_team(team_data: TeamCreate, db_session: Session = Depends(get_db_session), current_user_id: int = Depends(get_current_user_id)):
+    # Find the user who wants to create a team (creator users may not have a team yet)
+    user = db_session.query(User).filter(User.id == current_user_id).first()
+    team = user.team if user else None
 
     # Pull the required data from the request body
     team_name = team_data.name.strip()
