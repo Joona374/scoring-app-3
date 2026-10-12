@@ -116,6 +116,7 @@ class PlusMinusPlayer:
         self.first_name: str = player.first_name
         self.last_name: str = player.last_name
         self.position: Positions = player.position
+        self.games_played: int = 0
         self.plusminus_tags: defaultdict[int, list[PlusMinusTag]] = defaultdict(list[PlusMinusTag])  # Key is game id
 
     def add_tag(self, game_id: int, tag: PlusMinusTag):
@@ -125,7 +126,6 @@ class PlusMinusPlayer:
     def get_tags_for_game(self, game_id) -> list[PlusMinusTag]:
         """Get all plus/minus tags for a specific game."""
         return self.plusminus_tags[game_id]
-
 
     def _build_empty_stats_dict(self) -> StatsDict:
         """
@@ -172,7 +172,7 @@ class PlusMinusPlayer:
 
     def get_games_played(self) -> int:
         """Get the number of games the player has participated in."""
-        return len(self.plusminus_tags)
+        return self.games_played
 
     def __str__(self):
         return f"PlusMinusPlayer(id={self.id}, first_name='{self.first_name}', last_name='{self.last_name}', position={self.position}, plusminus_tags=\n{dict(self.plusminus_tags)})"

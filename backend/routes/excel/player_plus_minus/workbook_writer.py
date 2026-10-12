@@ -50,7 +50,7 @@ def add_player_to_total_sheets(player: PlusMinusPlayer, players: list[PlusMinusP
                 # Write the data for each [strength][participation_type][result] combination to both total_sheet and avg_sheet
                 column = get_column_for_stat(strength, participation_type, result)
                 total_sheet[f"{column}{current_rows[player.position]}"] = value
-                avg_sheet[f"{column}{current_rows[player.position]}"] = value / games_played
+                avg_sheet[f"{column}{current_rows[player.position]}"] = value / games_played if games_played else 0
 
     current_rows[player.position] += 1
 
