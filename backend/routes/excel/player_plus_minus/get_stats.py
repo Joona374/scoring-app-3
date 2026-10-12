@@ -5,14 +5,20 @@ from routes.excel.player_plus_minus.plus_minus_utils import ParticipationTypes, 
 
 
 def get_players_in_games(game_ids_str: str | None, team: Team, db: Session) -> dict[int, PlusMinusPlayer]:
-    """Fetch all players who participated in the specified games."""
+    """Fetch rostered players and their selected games."""
+
     if not game_ids_str:
         return {}
 
     selected_ids = [int(game_id) for game_id in game_ids_str.split(",")]
-    players = db.query(Player).join(GameInRoster).filter(GameInRoster.game_id.in_(selected_ids), Player.team_id == team.id).distinct().all()
+    rostered_games = db.query(Player, GameInRoster.game_id).join(GameInRoster).filter(GameInRoster.game_id.in_(selected_ids), Player.team_id == team.id).distinct().all()
 
-    plus_minus_players = {player.id: PlusMinusPlayer(player) for player in players}
+    plus_minus_players: dict[int, PlusMinusPlayer] = {}
+    for player, _ in rostered_games:
+        if player.id not in plus_minus_players:
+            plus_minus_players[player.id] = PlusMinusPlayer(player)
+        plus_minus_players[player.id].games_played += 1
+
     return plus_minus_players
 
 
